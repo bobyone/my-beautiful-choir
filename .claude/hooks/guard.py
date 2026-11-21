@@ -10,7 +10,10 @@ It blocks:
   ``.example`` counterparts;
 - forced pushes;
 - bypassing Git hooks (``--no-verify``, ``git commit -n``,
-  ``core.hooksPath``).
+  ``core.hooksPath``, pre-commit's ``SKIP``).
+
+File names are compared case-insensitively. The content of quoted commit
+messages is not checked.
 
 The hook reads the tool call as JSON on stdin and exits with code 2, with the
 reason on stderr, to block it.
@@ -26,7 +29,8 @@ FILE_TOOLS = frozenset({"Read", "Edit", "MultiEdit", "Write", "NotebookEdit", "G
 SHELL_TOOLS = frozenset({"Bash", "PowerShell"})
 PATH_KEYS = ("file_path", "notebook_path", "path", "pattern", "glob")
 
-_ENV_FILE = re.compile(r"(?:^|(?<=[\s'\"/\\=<>:(]))\.env(?:\.[\w-]+)*(?![\w])")
+# Case-insensitive: Windows and macOS file systems open .env for .ENV.
+_ENV_FILE = re.compile(r"(?:^|(?<=[\s'\"/\\=<>:(]))\.env(?:\.[\w-]+)*(?![\w])", re.IGNORECASE)
 _SECRET_PATH = re.compile(r"(?:\.pem|\.key)$|(?:^|[/\\])secrets(?:[/\\]|$)", re.IGNORECASE)
 _SEGMENT = r"[^;&|\n]*"
 _FORCE_PUSH = re.compile(
@@ -35,6 +39,14 @@ _FORCE_PUSH = re.compile(
 _NO_VERIFY = re.compile(rf"\bgit\b{_SEGMENT}\s--no-verify\b")
 _COMMIT_NO_VERIFY = re.compile(rf"\bgit\b{_SEGMENT}\bcommit\b{_SEGMENT}\s-[a-zA-Z]*n[a-zA-Z]*\b")
 _HOOKS_PATH = re.compile(r"core\.hooksPath", re.IGNORECASE)
+# pre-commit skips the hooks listed in SKIP, and runs without configuration with this variable.
+_SKIP_HOOKS = re.compile(
+    r"(?:^|[\s;&|(])(?:\$env:)?(?:SKIP|PRE_COMMIT_ALLOW_NO_CONFIG)\s*=", re.IGNORECASE
+)
+_COMMIT = re.compile(rf"\bgit\b{_SEGMENT}\bcommit\b")
+# Quoted commit messages are literal text: their content is not checked. Double-quoted
+# messages containing an expansion ($, `) are kept, since the shell would run it.
+_QUOTED_MESSAGE = re.compile(r"""(\s(?:-[a-zA-Z]*m|--message)(?:\s+|=))(?:'[^']*'|"[^"$`]*")""")
 
 ENV_FILE_REASON = (
     "Environment configuration files and secrets must never be read: "
@@ -45,7 +57,9 @@ NO_VERIFY_REASON = "Git hooks must never be bypassed: fix the failing check inst
 
 
 def _mentions_env_file(text: str) -> bool:
-    return any(not match.group(0).endswith(".example") for match in _ENV_FILE.finditer(text))
+    return any(
+        not match.group(0).lower().endswith(".example") for match in _ENV_FILE.finditer(text)
+    )
 
 
 def _is_secret_path(path: str) -> bool:
@@ -62,9 +76,14 @@ def find_violation(tool_name: str, tool_input: Mapping[str, object]) -> str | No
                 return ENV_FILE_REASON
         return None
     if tool_name in SHELL_TOOLS:
-        command = tool_input.get("command")
-        if not isinstance(command, str):
+        raw_command = tool_input.get("command")
+        if not isinstance(raw_command, str):
             return None
+        command = (
+            _QUOTED_MESSAGE.sub(r"\1''", raw_command)
+            if _COMMIT.search(raw_command)
+            else raw_command
+        )
         tokens = (token.strip("'\"") for token in command.split())
         if _mentions_env_file(command) or any(_SECRET_PATH.search(token) for token in tokens):
             return ENV_FILE_REASON
@@ -74,6 +93,7 @@ def find_violation(tool_name: str, tool_input: Mapping[str, object]) -> str | No
             _NO_VERIFY.search(command)
             or _COMMIT_NO_VERIFY.search(command)
             or _HOOKS_PATH.search(command)
+            or _SKIP_HOOKS.search(command)
         ):
             return NO_VERIFY_REASON
     return None
