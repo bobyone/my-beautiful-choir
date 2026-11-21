@@ -10,6 +10,7 @@ that local runs and CI runs use exactly the locked versions.
 import re
 import shutil
 import subprocess
+import zipfile
 from pathlib import Path
 
 import nox
@@ -190,6 +191,25 @@ def ui(session: nox.Session) -> None:
     shutil.copyfile(
         UI_DIRECTORY / "dist" / ".vite" / "license.md", VIEWS_PACKAGE / THIRD_PARTY_NOTICES
     )
+
+
+@nox.session
+def package(session: nox.Session) -> None:
+    """Build the views, then the wheel and the sdist, and check that the views are packaged."""
+    ui(session)
+    dist = PROJECT_DIRECTORY / "dist"
+    shutil.rmtree(dist, ignore_errors=True)
+    session.run("uv", "build", "--out-dir", str(dist), external=True)
+    [wheel] = dist.glob("*.whl")
+    with zipfile.ZipFile(wheel) as archive:
+        names = set(archive.namelist())
+    expected = {
+        f"my_beautiful_choir/views/static/{name}" for name in ("about.html", THIRD_PARTY_NOTICES)
+    }
+    missing = sorted(expected - names)
+    if missing:
+        session.error(f"Missing from {wheel.name}: {', '.join(missing)}")
+    session.log(f"{wheel.name} contains the views and their licence notices.")
 
 
 @nox.session

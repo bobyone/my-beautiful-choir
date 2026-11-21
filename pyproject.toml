@@ -53,8 +53,15 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+# Built views are ignored by Git but must be packaged: build them first (nox -s ui).
+artifacts = ["src/my_beautiful_choir/views/static/*.html", "src/my_beautiful_choir/views/static/*.md"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/my_beautiful_choir"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["ui/node_modules", "ui/dist", "ui/coverage"]
 
 [tool.ruff]
 line-length = 100

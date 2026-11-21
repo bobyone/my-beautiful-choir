@@ -6,7 +6,7 @@ repos:
   - repo: local
     hooks:
       - id: nox-check
-        name: lint, types, tests and REUSE (nox -s check)
+        name: lint, types, tests, REUSE and user interface (nox -s check)
         entry: uv run --frozen nox -s check
         language: system
         pass_filenames: false

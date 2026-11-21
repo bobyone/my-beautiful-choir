@@ -42,4 +42,6 @@ Contributions are welcome: read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 my-beautiful-choir is free software, licensed under the
 [GNU General Public License, version 2 or later](LICENSE)
 (`GPL-2.0-or-later`). The project follows the [REUSE](https://reuse.software)
-specification.
+specification. The licences of the libraries bundled into the user
+interface are listed in `THIRD-PARTY-LICENSES.md`, next to the views in the
+installed package.
