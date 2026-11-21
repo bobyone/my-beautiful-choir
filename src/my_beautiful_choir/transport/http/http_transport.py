@@ -5,7 +5,9 @@
 
 import logging
 import os
+import signal
 import socket
+from types import FrameType
 
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -56,6 +58,18 @@ class _LifecycleServer(uvicorn.Server):
     async def shutdown(self, sockets: list[socket.socket] | None = None) -> None:
         self._health_check.mark_unavailable()
         await super().shutdown(sockets)
+
+    def handle_exit(self, sig: int, frame: FrameType | None) -> None:
+        """Stop gracefully; a stop signal is not raised again once the server has stopped.
+
+        Uvicorn re-raises the captured signals after a graceful shutdown, which
+        would kill the process with SIGTERM before the application returns its
+        exit code. SIGINT is still re-raised: it becomes KeyboardInterrupt,
+        handled by the entry point.
+        """
+        super().handle_exit(sig, frame)
+        if sig == signal.SIGTERM:
+            self._captured_signals.remove(sig)
 
 
 class HttpTransport(Transport):

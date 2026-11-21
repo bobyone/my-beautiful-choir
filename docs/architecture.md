@@ -176,7 +176,9 @@ Routes: `/mcp` (Streamable HTTP, stateful sessions in memory), `/healthz`
   `other` route.
 - The listening socket is opened before uvicorn starts: an address in use
   raises `PortUnavailableError` (`MBC-PORT`, exit code 3).
-- `request_stop()` stops the server gracefully, like a stop signal.
+- `request_stop()` stops the server gracefully, like a stop signal. A
+  SIGTERM (`docker stop`) stops it gracefully too, and the process then exits
+  with code 0; uvicorn would otherwise raise SIGTERM again after the shutdown.
 - **Limit**: no authentication yet; web mode must not be exposed publicly
   until OAuth is implemented.
 

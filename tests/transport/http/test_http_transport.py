@@ -3,8 +3,9 @@
 
 """Integration tests of the HTTP transport."""
 
+import signal
 import socket
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 import anyio
 import httpx
@@ -133,8 +134,8 @@ def test_port_in_use_is_reported() -> None:
     assert str(port) in raised.value.message
 
 
-@pytest.mark.anyio
-async def test_run_serves_until_stop_is_requested() -> None:
+async def _serve_until_ready_then(stop: Callable[[HttpTransport], None]) -> ServerHealthCheck:
+    """Run a real server, wait until it is ready, stop it with ``stop`` and wait for its end."""
     port = _free_port()
     health = ServerHealthCheck()
     transport = HttpTransport(WebSettings(port=port), SpyMetrics(), health)
@@ -152,8 +153,21 @@ async def test_run_serves_until_stop_is_requested() -> None:
                     if response.status_code == 200:
                         break
                     await anyio.sleep(0.05)
-            transport.request_stop()
+            stop(transport)
     assert response.json() == {"status": "ready"}
+    return health
+
+
+@pytest.mark.anyio
+async def test_run_serves_until_stop_is_requested() -> None:
+    health = await _serve_until_ready_then(lambda transport: transport.request_stop())
+    assert health.status().value == "unavailable"
+
+
+@pytest.mark.anyio
+async def test_stop_signal_ends_run_normally() -> None:
+    """A stop signal (docker stop) is handled once, without killing the process afterwards."""
+    health = await _serve_until_ready_then(lambda _: signal.raise_signal(signal.SIGTERM))
     assert health.status().value == "unavailable"
 
 
