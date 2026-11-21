@@ -27,10 +27,16 @@ flowchart LR
     impl --> files[("File system / S3")]
 ```
 
-- **Entry point**: reads the configuration once, selects the mode, builds
-  the dependency injection container (`dependency-injector`) and starts the
-  transport. It is the only place where concrete implementations are
-  chosen.
+- **Entry point** (`cli.main`): reads the configuration once, configures
+  the logs, assembles the application with `create_container(settings)` and
+  runs it. It turns startup errors into a message and an exit code (see
+  [troubleshooting](how-to/troubleshoot-startup.md)).
+- **Assembly** (`containers`, `dependency-injector`): the only place where
+  concrete implementations are chosen. `ApplicationContainer` holds the
+  providers common to both modes; it receives, through a
+  `DependenciesContainer` named `mode`, either `PersonalModeContainer` or
+  `WebModeContainer`, which provide `metrics` and `transport`. Singletons
+  are scoped to the container.
 - **Business core**: repertoire and scores; depends only on abstractions.
 - **Implementations**: one set per mode, for identity, authorization
   ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md),
@@ -62,6 +68,32 @@ Value objects: `Settings` and `WebSettings` (`configuration`, immutable),
 (`tools`: `text`, `structured`), `MetricsExport` (`monitoring`).
 
 ## Implementations
+
+### `cli.main(argv=None) -> int`
+
+Exit codes: 0 normal stop (including Ctrl+C), 1 unexpected error
+(`MBC-UNEXPECTED`), 2 invalid configuration or usage (`MBC-CONFIG`), 3
+unavailable resource (`MBC-PORT`), 4 incomplete installation
+(`MBC-INSTALL`). Installed as the `my-beautiful-choir` command, and run by
+`python -m my_beautiful_choir`.
+
+### Containers (`containers`)
+
+| Container | Provides | Depends on |
+|---|---|---|
+| `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools`, `server_builder`, `application` | `settings`, `mode` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`) | `settings` |
+| `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`) | `settings` |
+
+`create_container(settings)` picks the mode container from `settings.mode`.
+Tests replace a provider with `override()`, for instance
+`container.mode.transport.override(...)`.
+
+### `Application` (`application`)
+
+`run()` builds the MCP server (failing at startup if a view is missing),
+then serves it with the transport until it stops. Depends on
+`ApplicationInfo`, `McpServerBuilder` and `Transport`.
 
 ### `load_settings(argv)` (`configuration.loader`)
 

@@ -14,12 +14,10 @@ from typing import Any, NoReturn
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
-from my_beautiful_choir import __version__
+from my_beautiful_choir import APPLICATION_NAME, __version__
 from my_beautiful_choir.configuration.errors import ConfigurationError, ConfigurationIssue
 from my_beautiful_choir.configuration.mode import Mode
 from my_beautiful_choir.configuration.settings import ENV_NESTED_DELIMITER, ENV_PREFIX, Settings
-
-PROGRAM_NAME = "my-beautiful-choir"
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -31,7 +29,7 @@ class _ArgumentParser(argparse.ArgumentParser):
 
 def _build_parser() -> _ArgumentParser:
     parser = _ArgumentParser(
-        prog=PROGRAM_NAME,
+        prog=APPLICATION_NAME,
         description="Choir management application, delivered as an MCP app.",
     )
     parser.add_argument(

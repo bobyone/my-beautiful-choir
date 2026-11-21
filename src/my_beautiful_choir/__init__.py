@@ -5,4 +5,6 @@
 
 from importlib.metadata import version
 
-__version__ = version("my-beautiful-choir")
+APPLICATION_NAME = "my-beautiful-choir"
+
+__version__ = version(APPLICATION_NAME)

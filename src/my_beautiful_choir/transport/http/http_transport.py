@@ -73,6 +73,11 @@ class HttpTransport(Transport):
         self._health_check = health_check
         self._server: _LifecycleServer | None = None
 
+    @property
+    def address(self) -> tuple[str, int]:
+        """Host and port listened on."""
+        return self._settings.host, self._settings.port
+
     def request_stop(self) -> None:
         """Ask the running server to stop gracefully, as a stop signal would."""
         if self._server is not None:
