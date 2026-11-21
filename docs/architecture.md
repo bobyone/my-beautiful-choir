@@ -72,13 +72,15 @@ code and the process exit code.
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
 | `ScoreFormatDetector` | `scores.formats` | `detect(content) -> ScoreFormat`: tries its signatures in order and gives the format of the first one that matches; raises `UnsupportedScoreFormatError`, listing the accepted formats. |
+| `ScoreSource` | `scores.sources` | `async fetch(limit) -> ScoreContent`: gives the content of a score being added and its original file name, of at most `limit` bytes; stops as soon as the content exceeds the limit and raises `InvalidScoreSizeError`; raises a `ScoreSourceError` when the content cannot be obtained. An empty content is returned as is: the score service refuses it. One source is built per request, from the tool arguments. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
-`ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
+`ScoreContent` (`scores.sources`: `original_name`, metadata only and never
+used as a path, `content`, `size`), `ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
 `display_name` and `extension`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
@@ -240,6 +242,29 @@ Limits: a MusicXML file whose prolog exceeds 16 KiB, or in UTF-16 without
 byte order mark, is not recognized. A zip signature only reads the index of
 the archive (`zipfile.ZipFile.namelist`): no zip bomb; the MusicXML
 signature never parses XML: no external entity.
+
+### `UploadedScoreSource` (`scores.sources`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `file_name` | `str` | Name of the file the user chose with the file picker of a view. |
+| `content` | `bytes` | Content already received from the view. |
+
+Gives the received content; raises `InvalidScoreSizeError` when it exceeds
+the limit.
+
+### `LocalFileScoreSource` (`scores.sources`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `path` | `Path` | Absolute path of a file of the user's computer; a leading `~` is the user's home directory. |
+
+Reads at most `limit + 1` bytes of the file, in a worker thread. Raises
+`UnreadableLocalFileError` (with the path and the reason) when the path is
+not absolute, the home directory is unknown, the path is not a regular file
+(a directory, a device or a pipe is never read) or reading fails; raises
+`InvalidScoreSizeError` beyond the limit. The path may come from the model:
+the score service refuses any content that is not a score.
 
 ### `ShowAboutTool` (`tools.view_tool.about`)
 
