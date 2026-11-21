@@ -13,8 +13,14 @@ from pydantic import BaseModel, Field, model_validator
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.configuration.mode import Mode
-from my_beautiful_choir.mcp.mcp_server_builder import UNEXPECTED_ERROR_TEXT, McpServerBuilder
+from my_beautiful_choir.errors import DomainError
+from my_beautiful_choir.mcp.mcp_server_builder import (
+    CONTEXT_PARAMETER,
+    UNEXPECTED_ERROR_TEXT,
+    McpServerBuilder,
+)
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.errors import ViewNotFoundError
 from my_beautiful_choir.views.view import View
@@ -25,7 +31,7 @@ VIEW_URI = "ui://my-beautiful-choir/stub.html"
 
 
 class _CrashingTool(StubTool):
-    async def execute(self, arguments: StubArguments) -> ToolResult:
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
         raise RuntimeError("boom")
 
 
@@ -65,7 +71,7 @@ class _ConstrainedTool(Tool[_ConstrainedArguments]):
     def arguments_model(self) -> type[_ConstrainedArguments]:
         return _ConstrainedArguments
 
-    async def execute(self, arguments: _ConstrainedArguments) -> ToolResult:
+    async def execute(self, arguments: _ConstrainedArguments, context: ToolContext) -> ToolResult:
         self.calls.append(arguments)
         return ToolResult(text="done")
 
@@ -195,3 +201,32 @@ async def test_server_reports_application_name_and_version() -> None:
 def test_missing_view_fails_the_build() -> None:
     with pytest.raises(ViewNotFoundError):
         McpServerBuilder(INFO, [StubTool(view=_MissingView())]).build()
+
+
+class _NotFoundTool(StubTool):
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
+        raise DomainError("Work 42 not found.")
+
+
+@pytest.mark.anyio
+async def test_domain_error_is_returned_to_the_model() -> None:
+    async with _client([_NotFoundTool()]) as client:
+        result = await client.call_tool("stub", {"title": "x"})
+    assert result.is_error
+    assert _text(result.content[0]) == "Work 42 not found."
+
+
+class _ReservedArguments(BaseModel):
+    mbc_request_context: str
+
+
+class _ReservedNameTool(_ConstrainedTool):
+    @property
+    def arguments_model(self) -> type[_ReservedArguments]:  # type: ignore[override]
+        return _ReservedArguments
+
+
+def test_reserved_argument_name_is_refused() -> None:
+    assert CONTEXT_PARAMETER == "mbc_request_context"
+    with pytest.raises(ValueError, match="reserved"):
+        McpServerBuilder(INFO, [_ReservedNameTool()]).build()

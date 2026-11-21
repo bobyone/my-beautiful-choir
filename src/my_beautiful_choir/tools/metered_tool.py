@@ -8,7 +8,9 @@ import time
 from pydantic import BaseModel
 
 from my_beautiful_choir.monitoring.metrics import Metrics
+from my_beautiful_choir.tools.errors import ToolCallSuspended
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
@@ -40,13 +42,21 @@ class MeteredTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
         """View of the wrapped tool."""
         return self._inner.view
 
-    async def execute(self, arguments: ArgumentsT) -> ToolResult:
-        """Run the wrapped tool and record the call, whatever its outcome."""
+    async def execute(self, arguments: ArgumentsT, context: ToolContext) -> ToolResult:
+        """Run the wrapped tool and record the call, whatever its outcome.
+
+        A suspended call is not recorded: it is recorded when the client calls
+        the tool again.
+        """
         start = time.perf_counter()
-        failed = True
+        failed: bool | None = True
         try:
-            result = await self._inner.execute(arguments)
+            result = await self._inner.execute(arguments, context)
             failed = False
             return result
+        except ToolCallSuspended:
+            failed = None
+            raise
         finally:
-            self._metrics.record_tool_call(self.name, time.perf_counter() - start, failed)
+            if failed is not None:
+                self._metrics.record_tool_call(self.name, time.perf_counter() - start, failed)

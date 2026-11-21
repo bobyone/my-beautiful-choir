@@ -22,7 +22,11 @@ document. The user must confirm every deletion.
   giving a `ConfirmationRequester`, which asks the user a question and
   answers `confirmed`, `refused` or `unavailable`.
 - With MCP clients supporting **elicitation**, the deletion tool asks the
-  user directly; a refusal deletes nothing.
+  user directly; a refusal deletes nothing. Up to protocol 2025-11-25, the
+  question is asked during the call. From protocol 2026-07-28 (SEP-2322),
+  the call ends with an input request carrying the question, and the client
+  retries the call with the answer: the tool then runs twice, so a tool
+  never changes anything before asking for confirmation.
 - When elicitation is unavailable, the deletion is kept under a
   **single-use token**, valid 10 minutes, and the "Deletion" view shows what
   will be deleted with a button calling an app-only tool
@@ -44,6 +48,8 @@ The model can therefore never delete without a user action.
 
 ## Consequences
 
-- The `Tool` contract changes: every tool receives the context.
+- The `Tool` contract changes: every tool receives the context, and a tool
+  asking for confirmation must have no effect before the question.
+- Both protocol behaviours are tested with the SDK in-memory client.
 - Pending confirmations are kept in memory: they are lost when the server
   restarts, which only cancels the deletion.

@@ -5,10 +5,13 @@
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.confirmation.confirmation_outcome import ConfirmationOutcome
+from my_beautiful_choir.confirmation.confirmation_requester import ConfirmationRequester
 from my_beautiful_choir.monitoring.metrics import Metrics
 from my_beautiful_choir.monitoring.metrics_export import MetricsExport
 from my_beautiful_choir.tools.errors import ToolExecutionError
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
@@ -60,7 +63,7 @@ class StubTool(Tool[StubArguments]):
     def view(self) -> View | None:
         return self._view
 
-    async def execute(self, arguments: StubArguments) -> ToolResult:
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
         self.calls.append(arguments)
         if self._fail:
             raise ToolExecutionError("stub failure")
@@ -87,3 +90,20 @@ class SpyMetrics(Metrics):
 
     def export(self) -> MetricsExport:
         return MetricsExport(content_type="text/plain", body=b"spy")
+
+
+class StubConfirmation(ConfirmationRequester):
+    """Confirmation requester giving a fixed answer and keeping the questions asked."""
+
+    def __init__(self, outcome: ConfirmationOutcome = ConfirmationOutcome.CONFIRMED) -> None:
+        self.outcome = outcome
+        self.questions: list[str] = []
+
+    async def ask(self, question: str) -> ConfirmationOutcome:
+        self.questions.append(question)
+        return self.outcome
+
+
+def tool_context(confirmation: ConfirmationRequester | None = None) -> ToolContext:
+    """Context of a tool call in tests; confirmations are accepted by default."""
+    return ToolContext(confirmation=confirmation or StubConfirmation())

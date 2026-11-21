@@ -49,24 +49,28 @@ flowchart LR
 Each notion is a package of `src/my_beautiful_choir/`. Its general
 abstraction sits at the root of the package; specializations and
 implementations sit in sub-packages. Each notion defines its own exceptions
-in `errors.py`; every exception derives from `MyBeautifulChoirError`, and
-errors preventing startup derive from `StartupError`, which carries a stable
-error code and the process exit code.
+in `errors.py`; every exception derives from `MyBeautifulChoirError`.
+Expected failures of an operation (element not found, invalid value) derive
+from `DomainError`: their English message is returned to the model. Errors
+preventing startup derive from `StartupError`, which carries a stable error
+code and the process exit code.
 
 ## Abstractions
 
 | Abstraction | Package | Role and contract |
 |---|---|---|
-| `Tool[ArgumentsT]` | `tools` | Operation offered to the MCP client, independent of the MCP SDK: `name`, `description` (English, for the model), `arguments_model` (pydantic model of the arguments, `NoArguments` when there is none; the MCP layer publishes its JSON Schema and validates the arguments), `view` (None by default), `async execute(arguments: ArgumentsT) -> ToolResult`; raises `ToolExecutionError`. |
-| `ViewTool[ArgumentsT](Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
+| `Tool[ArgumentsT]` | `tools` | Operation offered to the MCP client, independent of the MCP SDK: `name`, `description` (English, for the model), `arguments_model` (pydantic model of the arguments, `NoArguments` when there is none; the MCP layer publishes its JSON Schema and validates the arguments), `view` (None by default), `async execute(arguments: ArgumentsT, context: ToolContext) -> ToolResult`; raises a `DomainError`. A tool asking for confirmation may run twice for one call (see `ElicitationConfirmation`): it changes nothing before asking. |
+| `ViewTool[ArgumentsT](Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments, context)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
 | `View` | `views` | User interface rendered by the client: `uri` (`ui://`), `content()` (self-contained HTML); raises `ViewNotFoundError`. |
+| `ConfirmationRequester` | `confirmation` | `async ask(question) -> ConfirmationOutcome` (`confirmed`, `refused` or `unavailable` when the user cannot be asked); never raises because the user cannot be asked. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
-(`tools`: `text`, `structured`), `MetricsExport` (`monitoring`).
+(`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
+a tool can use during one call), `MetricsExport` (`monitoring`).
 
 ## Implementations
 
@@ -113,7 +117,28 @@ application (`{"name", "version", "mode"}`) and the text
 
 Decorator of any `Tool`: delegates name, description, arguments model and view, and
 records each call (duration, failure when an exception is raised) in the
-injected `Metrics`. Exceptions are re-raised unchanged.
+injected `Metrics`. Exceptions are re-raised unchanged. A call suspended to
+wait for the user (`ToolCallSuspended`) is not recorded: the retry is.
+
+### `ElicitationConfirmation` (`confirmation.mcp`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `context` | SDK `Context` | Request context of the current tool call. |
+
+Asks the user through the MCP client (form elicitation with one checkbox,
+checked by default):
+
+1. if the call carries the answer (a retry), returns `confirmed` when the
+   form was accepted with the box checked, `refused` otherwise;
+2. if the client does not support elicitation, returns `unavailable`;
+3. from protocol 2026-07-28, raises `ConfirmationInputRequired`: the MCP
+   layer ends the call with an input request, and the client retries it
+   with the answer;
+4. before, asks during the call; a client error gives `unavailable`.
+
+**Limit:** the question is in English: the server does not know the
+user's language.
 
 ### `PackagedView` (`views.packaged`)
 
@@ -129,7 +154,8 @@ was not built (`uv run nox -s ui`) or the installation is broken.
 ### `McpServerBuilder` (`mcp`)
 
 Adapter between our tools and views and the MCP SDK (`MCPServer` and its
-`Apps` extension); the only module of the core that imports the SDK.
+`Apps` extension). With the MCP adapters of other notions (`*/mcp/`), the
+only code that imports the SDK.
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -148,8 +174,12 @@ Adapter between our tools and views and the MCP SDK (`MCPServer` and its
 - arguments rejected by the model itself (for instance by a model
   validator) are returned to the model as an error result with the
   validation message;
-- a `ToolExecutionError` is returned to the model as an error result with
-  its message; any other exception is logged with its stack trace and
+- each call receives a `ToolContext` whose confirmation is an
+  `ElicitationConfirmation` on the SDK request context, passed through a
+  reserved parameter (`mbc_request_context`, refused as an argument name);
+- a `ConfirmationInputRequired` ends the call with its input request;
+- a `DomainError` is returned to the model as an error result with its
+  message; any other exception is logged with its stack trace and
   returned as a generic error, without technical details;
 - a missing view raises `ViewNotFoundError` during the build, hence at
   startup.
