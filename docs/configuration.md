@@ -36,3 +36,10 @@ invalid key with the expected value on stderr and exits with code 2 (see
 
 Keys starting with `MBC_WEB__` are ignored in personal mode. Set them one
 by one: a `MBC_WEB` variable is invalid.
+
+## With Docker Compose
+
+`compose.yaml` reads `.env` when it exists, but always sets `MBC_MODE=web`,
+`MBC_WEB__HOST=0.0.0.0` and `MBC_WEB__PORT=9000` inside the container; the
+port is published on `127.0.0.1:9000` only. `MBC_WEB__ALLOWED_HOSTS`
+defaults to `localhost:9000`.

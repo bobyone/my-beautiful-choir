@@ -14,7 +14,11 @@ services:
     env_file:
       - path: .env
         required: false
+    # Fixed for the container, whatever .env says: these take precedence over env_file.
     environment:
+      MBC_MODE: web
+      MBC_WEB__HOST: 0.0.0.0
+      MBC_WEB__PORT: 9000
       MBC_WEB__ALLOWED_HOSTS: ${MBC_WEB__ALLOWED_HOSTS:-localhost:9000}
     ports:
       - "127.0.0.1:9000:9000"
