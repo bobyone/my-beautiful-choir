@@ -9,6 +9,7 @@ from types import TracebackType
 from typing import Self
 
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
+from my_beautiful_choir.repertoire.work_repository import WorkRepository
 
 
 class UnitOfWork(ABC):
@@ -36,6 +37,11 @@ class UnitOfWork(ABC):
     @abstractmethod
     def choirs(self) -> ChoirRepository:
         """Repository of the choirs."""
+
+    @property
+    @abstractmethod
+    def works(self) -> WorkRepository:
+        """Repository of the works."""
 
     @abstractmethod
     async def commit(self) -> None:

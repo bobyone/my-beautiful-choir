@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncTransactio
 
 from my_beautiful_choir.choirs.sql.sql_choir_repository import SqlChoirRepository
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork
+from my_beautiful_choir.repertoire.sql.sql_work_repository import SqlWorkRepository
 
 
 class SqlUnitOfWork(UnitOfWork):
@@ -35,6 +36,11 @@ class SqlUnitOfWork(UnitOfWork):
     def choirs(self) -> SqlChoirRepository:
         """Choirs, in the transaction of this unit of work."""
         return SqlChoirRepository(self.connection)
+
+    @property
+    def works(self) -> SqlWorkRepository:
+        """Works, in the transaction of this unit of work."""
+        return SqlWorkRepository(self.connection)
 
     async def __aenter__(self) -> Self:
         """Open a connection and begin a transaction."""

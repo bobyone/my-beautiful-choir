@@ -37,4 +37,6 @@ and this project adheres to
   migration stops the startup with `MBC-DATA` (exit code 5) (#7).
 - Choirs in personal mode: create, rename, list, and choose the default
   choir (#7).
-- Plugin skill: manage choirs (#7).
+- Works in personal mode: add and edit the works of a choir's repertoire,
+  searched ignoring case and accents (#7).
+- Plugin skills: manage choirs, manage works (#7).

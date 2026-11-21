@@ -14,11 +14,14 @@ from my_beautiful_choir.configuration.settings import Settings
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
+from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
 from my_beautiful_choir.tools.choirs.rename_choir_tool import RenameChoirTool
 from my_beautiful_choir.tools.choirs.set_default_choir_tool import SetDefaultChoirTool
 from my_beautiful_choir.tools.metered_tool import MeteredTool
+from my_beautiful_choir.tools.repertoire.add_work_tool import AddWorkTool
+from my_beautiful_choir.tools.repertoire.edit_work_tool import EditWorkTool
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
 
@@ -54,9 +57,15 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         ChoirService, unit_of_work=unit_of_work, clock=clock, authorization=authorization
     )
 
+    repertoire_service = providers.Singleton(
+        RepertoireService, unit_of_work=unit_of_work, clock=clock, authorization=authorization
+    )
+
     mode_tools = providers.List(
         _metered(ListChoirsTool, choir_service, metrics),
         _metered(CreateChoirTool, choir_service, metrics),
         _metered(RenameChoirTool, choir_service, metrics),
         _metered(SetDefaultChoirTool, choir_service, metrics),
+        _metered(AddWorkTool, repertoire_service, metrics),
+        _metered(EditWorkTool, repertoire_service, metrics),
     )

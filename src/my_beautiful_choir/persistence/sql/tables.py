@@ -61,6 +61,7 @@ works = Table(
         "choir_id", Uuid, ForeignKey("choirs.id", ondelete="CASCADE"), nullable=False, index=True
     ),
     Column("title", String(WORK_TEXT_LENGTH), nullable=False),
+    # Normalized for searching (case-folded, without accents): see search_text().
     Column("title_search", String(WORK_TEXT_LENGTH), nullable=False),
     Column("composer", String(WORK_TEXT_LENGTH)),
     Column("composer_search", String(WORK_TEXT_LENGTH)),

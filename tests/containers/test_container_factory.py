@@ -89,6 +89,8 @@ def test_personal_mode_offers_the_choir_tools(tmp_path: Path) -> None:
         "create_choir",
         "rename_choir",
         "set_default_choir",
+        "add_work",
+        "edit_work",
     ]
     assert all(isinstance(tool, MeteredTool) for tool in container.tools())
 

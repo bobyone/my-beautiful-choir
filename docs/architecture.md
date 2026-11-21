@@ -66,13 +66,15 @@ code and the process exit code.
 | `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
 | `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
 | `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
-| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
+| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
+| `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
+`Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
 (`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
@@ -93,7 +95,7 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `mode_tools` (the choir tools, metered) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
 | `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
@@ -177,6 +179,33 @@ Text tools, without view: `list_choirs` (no argument), `create_choir(name)`,
 `rename_choir(choir, new_name)`, `set_default_choir(choir)`. Choirs are
 named by their name, ignoring case. The structured content describes the
 choirs (`name`, `is_default`).
+
+### `RepertoireService` (`repertoire`)
+
+Same parameters as `ChoirService`; `manage_repertoire` to change,
+`consult_repertoire` to read.
+
+- `add_work(choir, details)`: adds a work to the named choir, or the default
+  choir. Rules (`work_rules.py`, `InvalidWorkError` naming the attribute):
+  title required, at most 200 characters; composer and arranger 200;
+  voicing 50; notes 2000; at most 10 sung languages, BCP 47 codes put in
+  canonical case (`sr-Latn`, `pt-BR`), duplicates removed; texts trimmed,
+  NFC, empty values dropped.
+- `edit_work(work_id, changes)`: `None` keeps an attribute, an empty value
+  clears it; updates the modification date.
+- `get_work(work_id)`, `search(choir, text=None)`.
+
+### `SqlWorkRepository` (`repertoire.sql`)
+
+Table `works`; `title_search` and `composer_search` hold the case-folded
+text without accents (`search_text`), computed on every write; searching
+uses `LIKE` on them with `%` and `_` escaped.
+
+### Work tools (`tools.repertoire`)
+
+Text tools: `add_work(choir?, title, composer?, arranger?, voicing?,
+sung_languages?, notes?)` and `edit_work(work_id, ...)`. Works are named by
+their id. The structured content describes the work (`work_data`).
 
 ### `ShowAboutTool` (`tools.view_tool.about`)
 

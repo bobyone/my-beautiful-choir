@@ -14,6 +14,10 @@ from my_beautiful_choir.choirs.choir_name import choir_name_key
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
 from my_beautiful_choir.choirs.errors import ChoirNotFoundError
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork
+from my_beautiful_choir.repertoire.errors import WorkNotFoundError
+from my_beautiful_choir.repertoire.work import Work
+from my_beautiful_choir.repertoire.work_repository import WorkRepository
+from my_beautiful_choir.repertoire.work_rules import search_text
 
 
 @dataclass
@@ -21,6 +25,7 @@ class InMemoryData:
     """Content of the in-memory data store."""
 
     choirs: dict[UUID, Choir] = field(default_factory=dict)
+    works: dict[UUID, Work] = field(default_factory=dict)
 
 
 class InMemoryChoirRepository(ChoirRepository):
@@ -56,6 +61,44 @@ class InMemoryChoirRepository(ChoirRepository):
 
     async def delete(self, choir_id: UUID) -> None:
         del self._data.choirs[choir_id]
+        for work in [w for w in self._data.works.values() if w.choir_id == choir_id]:
+            await InMemoryWorkRepository(self._data).delete(work.id)
+
+
+class InMemoryWorkRepository(WorkRepository):
+    """Works kept in the data of a unit of work."""
+
+    def __init__(self, data: InMemoryData) -> None:
+        self._data = data
+
+    async def add(self, work: Work) -> None:
+        self._data.works[work.id] = work
+
+    async def get(self, work_id: UUID) -> Work:
+        if work_id not in self._data.works:
+            raise WorkNotFoundError(work_id)
+        return self._data.works[work_id]
+
+    async def search(self, choir_id: UUID, text: str | None = None) -> list[Work]:
+        needle = search_text(text) or ""
+        return [
+            work
+            for work in self._data.works.values()
+            if work.choir_id == choir_id
+            and (
+                needle in (search_text(work.title) or "")
+                or needle in (search_text(work.details.composer) or "")
+            )
+        ]
+
+    async def update(self, work: Work) -> None:
+        self._data.works[work.id] = work
+
+    async def delete(self, work_id: UUID) -> None:
+        del self._data.works[work_id]
+
+    async def count(self, choir_id: UUID) -> int:
+        return sum(1 for work in self._data.works.values() if work.choir_id == choir_id)
 
 
 class InMemoryDatabase:
@@ -80,6 +123,10 @@ class InMemoryUnitOfWork(UnitOfWork):
     @property
     def choirs(self) -> InMemoryChoirRepository:
         return InMemoryChoirRepository(self._data)
+
+    @property
+    def works(self) -> InMemoryWorkRepository:
+        return InMemoryWorkRepository(self._data)
 
     async def __aenter__(self) -> Self:
         self._data = copy.deepcopy(self._database.data)
