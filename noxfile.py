@@ -36,7 +36,9 @@ SIGNED_OFF_BY = re.compile(r"^Signed-off-by: .+ <.+>$", re.MULTILINE)
 
 
 def _uv_run(session: nox.Session, *args: str) -> None:
-    session.run("uv", "run", "--frozen", *args, external=True)
+    # No bytecode cache: `reuse lint` reports __pycache__ files found in directories
+    # that Git does not track yet.
+    session.run("uv", "run", "--frozen", *args, external=True, env={"PYTHONDONTWRITEBYTECODE": "1"})
 
 
 @nox.session
