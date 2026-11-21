@@ -23,6 +23,7 @@ dependencies = [
     "alembic>=1.20.1,<2",
     "asgi-correlation-id>=5.0.1",
     "dependency-injector>=4.49.1",
+    "httpx>=0.28.1,<1",
     "mcp>=2.3.0,<3",
     "platformdirs>=4.14.8,<5",
     "prometheus-client>=0.26.0",
@@ -42,7 +43,6 @@ Changelog = "https://github.com/bobyone/my-beautiful-choir/blob/main/CHANGELOG.m
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "mypy",
     "nox",
     "pip-audit",

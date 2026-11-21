@@ -18,7 +18,10 @@ advice.
 ## Who is responsible
 
 - **Personal mode**: everything stays on the user's computer; the project
-  receives nothing. The user is their own controller.
+  receives nothing. The user is their own controller. The only exception is
+  importing a score from a Google Drive link, at the user's request: Google
+  then receives the computer's IP address and the file id (see the records
+  of processing, entry P1).
 - **Web mode**: the organization operating the instance is the controller.
   For any request about an account on an instance, the user contacts that
   organization; the project does not hold their data.

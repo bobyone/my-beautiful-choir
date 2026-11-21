@@ -1189,6 +1189,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asgi-correlation-id" },
     { name = "dependency-injector" },
+    { name = "httpx" },
     { name = "mcp" },
     { name = "platformdirs" },
     { name = "prometheus-client" },
@@ -1200,7 +1201,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "mypy" },
     { name = "nox" },
     { name = "pip-audit" },
@@ -1217,6 +1217,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.20.1,<2" },
     { name = "asgi-correlation-id", specifier = ">=5.0.1" },
     { name = "dependency-injector", specifier = ">=4.49.1" },
+    { name = "httpx", specifier = ">=0.28.1,<1" },
     { name = "mcp", specifier = ">=2.3.0,<3" },
     { name = "platformdirs", specifier = ">=4.14.8,<5" },
     { name = "prometheus-client", specifier = ">=0.26.0" },
@@ -1228,7 +1229,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx", specifier = ">=0.28.1" },
     { name = "mypy" },
     { name = "nox" },
     { name = "pip-audit" },

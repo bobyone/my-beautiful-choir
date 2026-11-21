@@ -18,6 +18,22 @@ processing.
 
 Personal mode runs on the user's own computer. All data stays on that
 computer; the project receives nothing. The user is their own controller.
+The only data leaving the computer is the request described below, made
+when the user imports a score from a Google Drive link.
+
+### P1. Score import from a public Google Drive link (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Copy into the user's repertoire a score file the user shared publicly on Google Drive, at the user's request. |
+| Legal basis | The user acts for themselves (household use); for a choir, legitimate interest of the controller in collecting its scores — Art. 6(1)(f) GDPR. |
+| Data subjects | The user importing the score. |
+| Data categories | Sent to Google: the IP address of the user's computer, the id of the Google Drive file and the usual technical HTTP headers. No account, cookie, name or e-mail address is sent. Received: the file and its name, stored on the user's computer with the link. |
+| Recipients | Google (Google Drive), which receives the request. |
+| Processors | None: Google acts as the provider of the file the user chose to share, under its own terms. |
+| Transfers outside the EU | Possible: Google may serve the request from servers outside the EU, under its own privacy policy. |
+| Retention | Nothing is kept by the software beyond the imported score, kept until the user deletes it. Google's retention of its request logs is set by Google. |
+| Security measures | HTTPS only; only a closed list of Google Drive domains is contacted, checked again on every redirect; time limit; download stopped beyond 50 MB; the file name sent by Google is never used as a path; nothing is downloaded without a request from the user. |
 
 ## Web mode
 

@@ -79,6 +79,10 @@ code and the process exit code.
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
+`GoogleDriveLink` (`scores.sources.google_drive`: `file_id`, `resource_key`;
+`parse(link)` accepts `https://drive.google.com/file/d/<id>/...`, `/open?id=`
+and `/uc?id=` and raises `UnsupportedLinkError` otherwise; `url`, the
+canonical sharing link kept with the score; `download_url`),
 `ScoreContent` (`scores.sources`: `original_name`, metadata only and never
 used as a path, `content`, `size`), `ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
 `display_name` and `extension`),
@@ -265,6 +269,34 @@ not absolute, the home directory is unknown, the path is not a regular file
 (a directory, a device or a pipe is never read) or reading fails; raises
 `InvalidScoreSizeError` beyond the limit. The path may come from the model:
 the score service refuses any content that is not a score.
+
+### `GoogleDriveScoreSource` (`scores.sources.google_drive`)
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `link` | `GoogleDriveLink` | required | File to download. |
+| `transport` | `httpx.AsyncBaseTransport` or `None` | `None` (network) | HTTP transport; the tests give a mocked one. |
+| `timeout_seconds` | `float` | `30.0` | Time limit of each network operation. |
+
+Downloads `https://drive.usercontent.google.com/download?id=<id>&export=download&confirm=t`
+(`confirm=t` skips the virus scan warning page of large files). Redirects
+are followed one by one, at most 5: each must be HTTPS, without user
+information, on port 443, to `drive.google.com`, `drive.usercontent.google.com`
+or a `*.googleusercontent.com` host; a redirect to `accounts.google.com` (the
+sign-in page) raises `NotPubliclyAccessibleError`, any other one
+`DownloadFailedError`. Statuses 401, 403 and 404, and a web page (`text/html`)
+instead of the file, raise `NotPubliclyAccessibleError`; another status, a
+timeout or a network failure, `DownloadFailedError`. The content is requested
+uncompressed (`Accept-Encoding: identity`) and read raw, never decompressed;
+a declared length over the limit, or the content as soon as it exceeds the
+limit, raises `InvalidScoreSizeError`. The original name comes from
+`Content-Disposition` (the UTF-8 form first), reduced to its last segment,
+without control characters, at most 255 characters; `Google Drive file`
+otherwise.
+
+Limits: the download address is not a documented API of Google; files too
+large for Google's virus scan, or over their download quota, may be refused
+as not publicly accessible.
 
 ### `ShowAboutTool` (`tools.view_tool.about`)
 
