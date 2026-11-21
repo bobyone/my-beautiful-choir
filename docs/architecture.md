@@ -142,8 +142,12 @@ Adapter between our tools and views and the MCP SDK (`MCPServer` and its
   and its view as a `ui://` resource (`text/html;profile=mcp-app`), once
   per URI; a tool without a view is a plain tool;
 - the function registered for each tool gets a signature generated from the
-  tool's arguments model, so that the SDK publishes the JSON Schema (with
-  field descriptions) and validates the arguments;
+  tool's arguments model (types, constraints, descriptions, defaults and
+  default factories), so that the SDK publishes the JSON Schema and
+  validates the arguments;
+- arguments rejected by the model itself (for instance by a model
+  validator) are returned to the model as an error result with the
+  validation message;
 - a `ToolExecutionError` is returned to the model as an error result with
   its message; any other exception is logged with its stack trace and
   returned as a generic error, without technical details;

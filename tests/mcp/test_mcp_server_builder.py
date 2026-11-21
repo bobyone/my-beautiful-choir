@@ -4,11 +4,12 @@
 """Integration tests of the MCP adapter, through the SDK in-memory client."""
 
 from collections.abc import Sequence
-from typing import Any
+from typing import Annotated, Any, Self
 
 import pytest
 from mcp.client import Client
 from mcp.types import TextContent
+from pydantic import BaseModel, Field, model_validator
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.configuration.mode import Mode
@@ -35,6 +36,38 @@ class _MissingView(View):
 
     def content(self) -> str:
         raise ViewNotFoundError(VIEW_URI)
+
+
+class _ConstrainedArguments(BaseModel):
+    voices: Annotated[int, Field(ge=1, description="Number of voices.")] = 4
+    tags: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _no_reserved_tag(self) -> Self:
+        if "reserved" in self.tags:
+            raise ValueError("the reserved tag cannot be used")
+        return self
+
+
+class _ConstrainedTool(Tool[_ConstrainedArguments]):
+    def __init__(self) -> None:
+        self.calls: list[_ConstrainedArguments] = []
+
+    @property
+    def name(self) -> str:
+        return "constrained"
+
+    @property
+    def description(self) -> str:
+        return "A tool with constrained arguments."
+
+    @property
+    def arguments_model(self) -> type[_ConstrainedArguments]:
+        return _ConstrainedArguments
+
+    async def execute(self, arguments: _ConstrainedArguments) -> ToolResult:
+        self.calls.append(arguments)
+        return ToolResult(text="done")
 
 
 def _client(tools: Sequence[Tool[Any]]) -> Client:
@@ -79,6 +112,38 @@ async def test_invalid_arguments_are_rejected_before_execution() -> None:
     async with _client([tool]) as client:
         result = await client.call_tool("stub", {"count": "many"})
     assert result.is_error
+    assert tool.calls == []
+
+
+@pytest.mark.anyio
+async def test_schema_keeps_constraints_and_default_factories() -> None:
+    async with _client([_ConstrainedTool()]) as client:
+        [published] = (await client.list_tools()).tools
+    properties = published.input_schema["properties"]
+    assert properties["voices"]["minimum"] == 1
+    assert properties["voices"]["default"] == 4
+    assert properties["voices"]["description"] == "Number of voices."
+    assert properties["tags"]["default"] == []
+
+
+@pytest.mark.anyio
+async def test_defaults_and_constraints_apply_to_calls() -> None:
+    tool = _ConstrainedTool()
+    async with _client([tool]) as client:
+        accepted = await client.call_tool("constrained", {})
+        too_few = await client.call_tool("constrained", {"voices": 0})
+    assert not accepted.is_error
+    assert too_few.is_error
+    assert tool.calls == [_ConstrainedArguments(voices=4, tags=[])]
+
+
+@pytest.mark.anyio
+async def test_model_validation_error_is_returned_to_the_model() -> None:
+    tool = _ConstrainedTool()
+    async with _client([tool]) as client:
+        result = await client.call_tool("constrained", {"tags": ["reserved"]})
+    assert result.is_error
+    assert "the reserved tag cannot be used" in _text(result.content[0])
     assert tool.calls == []
 
 

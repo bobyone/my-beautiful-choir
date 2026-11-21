@@ -15,7 +15,8 @@ from typing import Annotated, Any
 from mcp.server.apps import Apps
 from mcp.server.mcpserver import MCPServer
 from mcp.types import CallToolResult, TextContent
-from pydantic import Field
+from pydantic import Field, ValidationError
+from pydantic.fields import FieldInfo
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.tools.errors import ToolExecutionError
@@ -43,16 +44,25 @@ def _to_call_tool_result(result: ToolResult) -> CallToolResult:
     )
 
 
+def _parameter_for(name: str, field: FieldInfo) -> inspect.Parameter:
+    """Keyword-only parameter carrying the field's type, constraints, description and default."""
+    metadata = (*field.metadata, Field(description=field.description))
+    annotation: Any = Annotated[(field.annotation, *metadata)]
+    if field.is_required():
+        default: Any = inspect.Parameter.empty
+    elif field.default_factory is not None:
+        default = field.get_default(call_default_factory=True, validated_data={})
+    else:
+        default = field.default
+    return inspect.Parameter(
+        name, inspect.Parameter.KEYWORD_ONLY, annotation=annotation, default=default
+    )
+
+
 def _signature_of(tool: Tool[Any]) -> inspect.Signature:
     """Keyword-only parameters mirroring the fields of the tool's arguments model."""
     parameters = [
-        inspect.Parameter(
-            name,
-            inspect.Parameter.KEYWORD_ONLY,
-            annotation=Annotated[field.annotation, Field(description=field.description)],
-            default=inspect.Parameter.empty if field.is_required() else field.default,
-        )
-        for name, field in tool.arguments_model.model_fields.items()
+        _parameter_for(name, field) for name, field in tool.arguments_model.model_fields.items()
     ]
     return inspect.Signature(parameters, return_annotation=CallToolResult)
 
@@ -65,9 +75,11 @@ def _handler_for(tool: Tool[Any]) -> ToolHandler:
     """
 
     async def handler(**raw_arguments: object) -> CallToolResult:
-        arguments = tool.arguments_model.model_validate(raw_arguments)
         try:
+            arguments = tool.arguments_model.model_validate(raw_arguments)
             return _to_call_tool_result(await tool.execute(arguments))
+        except ValidationError as error:
+            return _text_result(f"Invalid arguments: {error}", is_error=True)
         except ToolExecutionError as error:
             return _text_result(str(error), is_error=True)
         except Exception:
