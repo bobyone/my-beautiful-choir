@@ -7,16 +7,17 @@ import pytest
 
 from my_beautiful_choir.tools.errors import ToolExecutionError
 from my_beautiful_choir.tools.metered_tool import MeteredTool
-from tests.doubles import SpyMetrics, StubTool, StubView
+from tests.doubles import SpyMetrics, StubArguments, StubTool, StubView
 
 
 @pytest.mark.anyio
 async def test_successful_call_is_recorded() -> None:
     metrics = SpyMetrics()
     inner = StubTool(name="stub")
-    result = await MeteredTool(inner, metrics).execute({"a": 1})
-    assert result.text == "stub result"
-    assert inner.calls == [{"a": 1}]
+    arguments = StubArguments(title="Ave Maria")
+    result = await MeteredTool(inner, metrics).execute(arguments)
+    assert result.text == "stub result for Ave Maria"
+    assert inner.calls == [arguments]
     [(name, duration, failed)] = metrics.tool_calls
     assert (name, failed) == ("stub", False)
     assert duration >= 0
@@ -26,7 +27,7 @@ async def test_successful_call_is_recorded() -> None:
 async def test_failed_call_is_recorded_and_raised() -> None:
     metrics = SpyMetrics()
     with pytest.raises(ToolExecutionError):
-        await MeteredTool(StubTool(fail=True), metrics).execute({})
+        await MeteredTool(StubTool(fail=True), metrics).execute(StubArguments(title="x"))
     assert [failed for _, _, failed in metrics.tool_calls] == [True]
 
 
@@ -36,5 +37,5 @@ def test_delegates_its_description_to_the_inner_tool() -> None:
     tool = MeteredTool(inner, SpyMetrics())
     assert tool.name == "stub"
     assert tool.description == inner.description
-    assert tool.input_schema == inner.input_schema
+    assert tool.arguments_model is StubArguments
     assert tool.view is view

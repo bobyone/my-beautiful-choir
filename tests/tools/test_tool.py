@@ -3,11 +3,35 @@
 
 """Tests of the default behaviour of the tool abstraction."""
 
-from my_beautiful_choir.tools.tool import EMPTY_INPUT_SCHEMA
-from tests.doubles import StubTool
+import pytest
+from pydantic import ValidationError
+
+from my_beautiful_choir.tools.no_arguments import NoArguments
+from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_result import ToolResult
 
 
-def test_defaults_to_no_argument_and_no_view() -> None:
-    tool = StubTool()
-    assert tool.input_schema == EMPTY_INPUT_SCHEMA
-    assert tool.view is None
+class _MinimalTool(Tool[NoArguments]):
+    @property
+    def name(self) -> str:
+        return "minimal"
+
+    @property
+    def description(self) -> str:
+        return "Minimal tool."
+
+    @property
+    def arguments_model(self) -> type[NoArguments]:
+        return NoArguments
+
+    async def execute(self, arguments: NoArguments) -> ToolResult:
+        return ToolResult(text="done")
+
+
+def test_has_no_view_by_default() -> None:
+    assert _MinimalTool().view is None
+
+
+def test_no_arguments_rejects_any_argument() -> None:
+    with pytest.raises(ValidationError):
+        NoArguments.model_validate({"unexpected": 1})

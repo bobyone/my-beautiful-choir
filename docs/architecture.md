@@ -50,8 +50,8 @@ error code and the process exit code.
 
 | Abstraction | Package | Role and contract |
 |---|---|---|
-| `Tool` | `tools` | Operation offered to the MCP client, independent of the MCP SDK: `name`, `description` (English, for the model), `input_schema` (JSON Schema, no argument by default), `view` (None by default), `async execute(arguments) -> ToolResult`; raises `ToolExecutionError`. |
-| `ViewTool(Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
+| `Tool[ArgumentsT]` | `tools` | Operation offered to the MCP client, independent of the MCP SDK: `name`, `description` (English, for the model), `arguments_model` (pydantic model of the arguments, `NoArguments` when there is none; the MCP layer publishes its JSON Schema and validates the arguments), `view` (None by default), `async execute(arguments: ArgumentsT) -> ToolResult`; raises `ToolExecutionError`. |
+| `ViewTool[ArgumentsT](Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
 | `View` | `views` | User interface rendered by the client: `uri` (`ui://`), `content()` (self-contained HTML); raises `ViewNotFoundError`. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
@@ -77,7 +77,7 @@ application (`{"name", "version", "mode"}`) and the text
 
 ### `MeteredTool` (`tools`)
 
-Decorator of any `Tool`: delegates name, description, schema and view, and
+Decorator of any `Tool`: delegates name, description, arguments model and view, and
 records each call (duration, failure when an exception is raised) in the
 injected `Metrics`. Exceptions are re-raised unchanged.
 

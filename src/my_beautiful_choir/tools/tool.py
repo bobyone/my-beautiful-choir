@@ -4,16 +4,19 @@
 """Tool abstraction."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+
+from pydantic import BaseModel
 
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
-EMPTY_INPUT_SCHEMA: Mapping[str, object] = {"type": "object", "properties": {}}
 
+class Tool[ArgumentsT: BaseModel](ABC):
+    """An operation offered to the MCP client, independent of the MCP SDK.
 
-class Tool(ABC):
-    """An operation offered to the MCP client, independent of the MCP SDK."""
+    Its arguments are described by a pydantic model: the MCP layer publishes
+    its JSON Schema and validates the arguments before calling ``execute``.
+    """
 
     @property
     @abstractmethod
@@ -26,9 +29,9 @@ class Tool(ABC):
         """English description telling the model when to use the tool."""
 
     @property
-    def input_schema(self) -> Mapping[str, object]:
-        """JSON Schema of the arguments; no argument by default."""
-        return EMPTY_INPUT_SCHEMA
+    @abstractmethod
+    def arguments_model(self) -> type[ArgumentsT]:
+        """Pydantic model of the arguments (``NoArguments`` for a tool without arguments)."""
 
     @property
     def view(self) -> View | None:
@@ -36,8 +39,8 @@ class Tool(ABC):
         return None
 
     @abstractmethod
-    async def execute(self, arguments: Mapping[str, object]) -> ToolResult:
-        """Run the tool.
+    async def execute(self, arguments: ArgumentsT) -> ToolResult:
+        """Run the tool with validated arguments.
 
         Raises:
             ToolExecutionError: if the tool cannot complete.

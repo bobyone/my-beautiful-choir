@@ -7,6 +7,7 @@ import pytest
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.configuration.mode import Mode
+from my_beautiful_choir.tools.no_arguments import NoArguments
 from my_beautiful_choir.tools.view_tool.about.show_about_tool import ShowAboutTool
 from tests.doubles import StubView
 
@@ -15,7 +16,7 @@ from tests.doubles import StubView
 @pytest.mark.parametrize(("mode", "label"), [(Mode.PERSONAL, "personal"), (Mode.WEB, "web")])
 async def test_result_describes_the_application(mode: Mode, label: str) -> None:
     tool = ShowAboutTool(StubView(), ApplicationInfo("my-beautiful-choir", "1.2.3", mode))
-    result = await tool.execute({})
+    result = await tool.execute(NoArguments())
     assert result.text == f"my-beautiful-choir 1.2.3, {label} mode."
     assert result.structured == {"name": "my-beautiful-choir", "version": "1.2.3", "mode": label}
 
@@ -25,4 +26,5 @@ def test_is_bound_to_its_view() -> None:
     tool = ShowAboutTool(view, ApplicationInfo("my-beautiful-choir", "1.2.3", Mode.WEB))
     assert tool.view is view
     assert tool.name == "show_about"
+    assert tool.arguments_model is NoArguments
     assert "version" in tool.description

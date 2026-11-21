@@ -3,7 +3,7 @@
 
 """Test doubles of the abstractions, shared by the tests."""
 
-from collections.abc import Mapping
+from pydantic import BaseModel, Field
 
 from my_beautiful_choir.monitoring.metrics import Metrics
 from my_beautiful_choir.monitoring.metrics_export import MetricsExport
@@ -28,14 +28,21 @@ class StubView(View):
         return self._html
 
 
-class StubTool(Tool):
+class StubArguments(BaseModel):
+    """Arguments of the stub tool."""
+
+    title: str = Field(description="Title to echo.")
+    count: int = 1
+
+
+class StubTool(Tool[StubArguments]):
     """Tool returning a fixed result, or failing on demand."""
 
     def __init__(self, name: str = "stub", view: View | None = None, fail: bool = False) -> None:
         self._name = name
         self._view = view
         self._fail = fail
-        self.calls: list[Mapping[str, object]] = []
+        self.calls: list[StubArguments] = []
 
     @property
     def name(self) -> str:
@@ -46,14 +53,21 @@ class StubTool(Tool):
         return "A stub tool."
 
     @property
+    def arguments_model(self) -> type[StubArguments]:
+        return StubArguments
+
+    @property
     def view(self) -> View | None:
         return self._view
 
-    async def execute(self, arguments: Mapping[str, object]) -> ToolResult:
+    async def execute(self, arguments: StubArguments) -> ToolResult:
         self.calls.append(arguments)
         if self._fail:
             raise ToolExecutionError("stub failure")
-        return ToolResult(text="stub result", structured={"value": 1})
+        return ToolResult(
+            text=f"stub result for {arguments.title}",
+            structured={"title": arguments.title, "count": arguments.count},
+        )
 
 
 class SpyMetrics(Metrics):

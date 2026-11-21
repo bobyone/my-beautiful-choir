@@ -6,12 +6,14 @@
 from abc import abstractmethod
 from collections.abc import Mapping
 
+from pydantic import BaseModel
+
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
 
-class ViewTool(Tool):
+class ViewTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
     """Template method: the same data feeds both the view and the text result.
 
     Subclasses collect the data and describe it in text; ``execute`` assembles
@@ -26,13 +28,13 @@ class ViewTool(Tool):
         """View displaying the result."""
         return self._view
 
-    async def execute(self, arguments: Mapping[str, object]) -> ToolResult:
+    async def execute(self, arguments: ArgumentsT) -> ToolResult:
         """Collect the data, then return it with its text description."""
         data = await self._collect(arguments)
         return ToolResult(text=self._describe(data), structured=data)
 
     @abstractmethod
-    async def _collect(self, arguments: Mapping[str, object]) -> Mapping[str, object]:
+    async def _collect(self, arguments: ArgumentsT) -> Mapping[str, object]:
         """Collect the data displayed by the view.
 
         Raises:
