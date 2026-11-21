@@ -19,7 +19,7 @@ and be checked by the same commands locally and in CI.
 
 | Concern | Tool |
 |---|---|
-| Language | Python 3.14 |
+| Language | Python 3.13 minimum (`requires-python = ">=3.13"`); CI also tests the latest stable version |
 | MCP server | official `mcp` SDK (FastMCP API), Starlette, uvicorn |
 | Dependency injection | `dependency-injector` (declarative containers, configuration from environment and files) |
 | Persistence | SQLAlchemy 2, Alembic, psycopg 3 |
@@ -43,6 +43,10 @@ optional configuration file) and injected through the container.
 
 ## Alternatives
 
+- Python 3.14 minimum: longer support and deferred evaluation of
+  annotations, but no functional benefit for the project, while it would
+  narrow compatibility of the personal mode package installed on users'
+  computers.
 - Standalone FastMCP library: richer ergonomics (middlewares, in-memory
   client, auth providers), but a third-party layer over the official SDK
   with frequent breaking changes.
