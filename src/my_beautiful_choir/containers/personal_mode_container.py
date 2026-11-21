@@ -86,11 +86,19 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     authorization = providers.Singleton(LocalUserAuthorization)
 
     choir_service = providers.Singleton(
-        ChoirService, unit_of_work=unit_of_work, clock=clock, authorization=authorization
+        ChoirService,
+        unit_of_work=unit_of_work,
+        clock=clock,
+        authorization=authorization,
+        file_storage=file_storage,
     )
 
     repertoire_service = providers.Singleton(
-        RepertoireService, unit_of_work=unit_of_work, clock=clock, authorization=authorization
+        RepertoireService,
+        unit_of_work=unit_of_work,
+        clock=clock,
+        authorization=authorization,
+        file_storage=file_storage,
     )
 
     score_opener = providers.Singleton(SystemScoreOpener.in_temporary_directory)

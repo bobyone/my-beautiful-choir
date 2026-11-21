@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""Operations on the works of a choir (flows D, E and F of issue #7)."""
+"""Operations on the works of a choir (flows D, E, F and I of issue #7)."""
 
 from dataclasses import replace
 from uuid import UUID, uuid4
@@ -11,20 +11,29 @@ from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.choirs.choir import Choir
 from my_beautiful_choir.choirs.choir_service import find_choir
 from my_beautiful_choir.clock.clock import Clock
-from my_beautiful_choir.persistence.unit_of_work import UnitOfWorkFactory
+from my_beautiful_choir.deletion.deleter import Deleter
+from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
+from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.repertoire.work import Work, WorkChanges, WorkDetails
 from my_beautiful_choir.repertoire.work_rules import apply_work_changes, clean_work_details
+from my_beautiful_choir.storage.file_storage import FileStorage
 
 
-class RepertoireService:
-    """Adds, edits and finds the works of a choir."""
+class RepertoireService(Deleter):
+    """Adds, edits, finds and deletes the works of a choir."""
 
     def __init__(
-        self, unit_of_work: UnitOfWorkFactory, clock: Clock, authorization: Authorization
+        self,
+        unit_of_work: UnitOfWorkFactory,
+        clock: Clock,
+        authorization: Authorization,
+        file_storage: FileStorage,
     ) -> None:
         self._unit_of_work = unit_of_work
         self._clock = clock
         self._authorization = authorization
+        self._file_storage = file_storage
 
     async def add_work(self, choir: str | None, details: WorkDetails) -> tuple[Choir, Work]:
         """Add a work to the choir named ``choir``, or to the default choir.
@@ -80,3 +89,43 @@ class RepertoireService:
             target = await find_choir(unit_of_work.choirs, choir)
             self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
             return target, await unit_of_work.works.search(target.id, text)
+
+    @property
+    def deletion_target(self) -> DeletionTarget:
+        """Works."""
+        return DeletionTarget.WORK
+
+    async def describe_deletion(self, target_id: UUID) -> Deletion:
+        """The work, its choir and its number of scores.
+
+        Raises:
+            WorkNotFoundError: if no work has this id.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            deletion, _ = await self._deletion(unit_of_work, target_id)
+        return deletion
+
+    async def delete(self, target_id: UUID) -> Deletion:
+        """Delete the work, its scores and their stored contents.
+
+        Raises:
+            WorkNotFoundError: if no work has this id.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            deletion, keys = await self._deletion(unit_of_work, target_id)
+            await unit_of_work.works.delete(target_id)
+            await unit_of_work.commit()
+        await remove_stored_contents(self._file_storage, keys)
+        return deletion
+
+    async def _deletion(
+        self, unit_of_work: UnitOfWork, work_id: UUID
+    ) -> tuple[Deletion, list[str]]:
+        work = await unit_of_work.works.get(work_id)
+        self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+        choir = await unit_of_work.choirs.get(work.choir_id)
+        keys = await unit_of_work.scores.storage_keys_of_work(work.id)
+        deletion = Deletion(
+            DeletionTarget.WORK, work.id, work.title, choir.name, score_count=len(keys)
+        )
+        return deletion, keys

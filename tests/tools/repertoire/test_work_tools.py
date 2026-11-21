@@ -15,13 +15,18 @@ from my_beautiful_choir.tools.repertoire.add_work_tool import AddWorkArguments, 
 from my_beautiful_choir.tools.repertoire.edit_work_tool import EditWorkArguments, EditWorkTool
 from tests.doubles import FakeClock, tool_context
 from tests.persistence_doubles import InMemoryDatabase
+from tests.score_doubles import InMemoryFileStorage
 
 
 @pytest.fixture
 async def service() -> RepertoireService:
     database, clock = InMemoryDatabase(), FakeClock()
-    await ChoirService(database.unit_of_work, clock, LocalUserAuthorization()).create("Chœur")
-    return RepertoireService(database.unit_of_work, clock, LocalUserAuthorization())
+    await ChoirService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    ).create("Chœur")
+    return RepertoireService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    )
 
 
 @pytest.mark.anyio

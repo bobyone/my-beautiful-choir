@@ -65,8 +65,12 @@ class _Fixture:
 
     async def work(self) -> Work:
         authorization = LocalUserAuthorization()
-        await ChoirService(self.database.unit_of_work, self.clock, authorization).create("Chœur")
-        repertoire = RepertoireService(self.database.unit_of_work, self.clock, authorization)
+        await ChoirService(
+            self.database.unit_of_work, self.clock, authorization, InMemoryFileStorage()
+        ).create("Chœur")
+        repertoire = RepertoireService(
+            self.database.unit_of_work, self.clock, authorization, InMemoryFileStorage()
+        )
         _, work = await repertoire.add_work(None, WorkDetails(title="Ave Maria"))
         return work
 
@@ -219,7 +223,7 @@ async def test_a_content_left_after_a_failed_removal_is_logged(
 
     with pytest.raises(WorkNotFoundError):
         await fixture.service().add_score(work.id, _DeletingSource(score_samples.pdf()))
-    assert "Stored content of an unsaved score left" in caplog.text
+    assert "A stored content could not be deleted and is left" in caplog.text
 
 
 @pytest.mark.anyio

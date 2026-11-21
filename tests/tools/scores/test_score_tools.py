@@ -60,8 +60,12 @@ class _Fixture:
 
     async def work(self) -> Work:
         authorization = LocalUserAuthorization()
-        await ChoirService(self.database.unit_of_work, self.clock, authorization).create("Chœur")
-        repertoire = RepertoireService(self.database.unit_of_work, self.clock, authorization)
+        await ChoirService(
+            self.database.unit_of_work, self.clock, authorization, InMemoryFileStorage()
+        ).create("Chœur")
+        repertoire = RepertoireService(
+            self.database.unit_of_work, self.clock, authorization, InMemoryFileStorage()
+        )
         _, work = await repertoire.add_work(None, WorkDetails(title="Ave Maria", composer="Bach"))
         return work
 

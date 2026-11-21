@@ -131,3 +131,17 @@ async def test_a_score_needs_an_existing_work(database: SqlDatabase) -> None:
     orphan = _score(Work(UUID(int=1), CHOIR.id, WorkDetails(title="Missing"), NOW, NOW))
     with pytest.raises(IntegrityError):
         await _add(database, orphan)
+
+
+@pytest.mark.anyio
+async def test_deleting_a_choir_deletes_the_scores_of_its_works(database: SqlDatabase) -> None:
+    deleted, kept = _score(), _score(OTHER_WORK)
+    await _add(database, deleted, kept)
+    async with database.unit_of_work() as unit_of_work:
+        await unit_of_work.choirs.delete(CHOIR.id)
+        await unit_of_work.commit()
+    async with database.unit_of_work() as unit_of_work:
+        assert await unit_of_work.scores.storage_keys_of_choir(CHOIR.id) == []
+        assert await unit_of_work.scores.get(kept.id) == kept
+        with pytest.raises(ScoreNotFoundError):
+            await unit_of_work.scores.get(deleted.id)

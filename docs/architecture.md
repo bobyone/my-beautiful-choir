@@ -70,6 +70,7 @@ code and the process exit code.
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`. |
+| `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> Deletion` (what would be removed; changes nothing, so the user can be asked first), `delete(id) -> Deletion` (removes the element, everything it contains and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
@@ -81,6 +82,9 @@ code and the process exit code.
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
+`Deletion` (`deletion`: `target`, `target_id`, `name`, `parent_name` (the choir
+of a work, the work of a score), `work_count`, `score_count`), `DeletionTarget`
+(`deletion`: `choir`, `work`, `score`),
 `Score` (`scores`: `id`, `work_id`, `label`, `format`, `size`, `original_name`,
 `origin`, `link`, `storage_key`, `added_at`), `ScoreOrigin` (`scores`:
 `file_picker`, `local_file`, `google_drive`),
@@ -184,6 +188,7 @@ Only the entry point calls it. See the [configuration reference](configuration.m
 | `unit_of_work` | `UnitOfWorkFactory` | One unit of work per operation. |
 | `clock` | `Clock` | Creation dates. |
 | `authorization` | `Authorization` | `consult_repertoire` to list, `manage_choirs` to change. |
+| `file_storage` | `FileStorage` | Stored contents of the scores, removed with a choir. |
 
 - `list_choirs()`: every choir, the oldest first.
 - `create(name)`: the name is trimmed and normalized (Unicode NFC), from 1 to
@@ -195,6 +200,19 @@ Only the entry point calls it. See the [configuration reference](configuration.m
   (`ChoirNotFoundError`), or the default choir when `name` is None
   (`NoChoirError` when there is no choir). Used by every operation taking
   an optional choir.
+
+Deletion (`Deleter`, receives the `file_storage`): `delete(id)` removes the
+choir, its works and scores, then their stored contents; when the default
+choir is deleted and choirs remain, the oldest one becomes the default
+choir. `get_choir(name)` finds a choir by name, to delete it by id.
+
+### Removal of stored contents (`deletion.stored_contents`)
+
+`remove_stored_contents(file_storage, keys)`: called once the scores are
+deleted (or not saved). Data is deleted first, contents second: a content
+that cannot be deleted is logged (`A stored content could not be deleted
+and is left`, with its key) and left as wasted space, never a score without
+content.
 
 ### `SqlChoirRepository` (`choirs.sql`)
 
@@ -211,7 +229,8 @@ choirs (`name`, `is_default`).
 
 ### `RepertoireService` (`repertoire`)
 
-Same parameters as `ChoirService`; `manage_repertoire` to change,
+Same parameters as `ChoirService` (the `file_storage` holds the contents removed
+with a work); `manage_repertoire` to change,
 `consult_repertoire` to read.
 
 - `add_work(choir, details)`: adds a work to the named choir, or the default
@@ -223,6 +242,8 @@ Same parameters as `ChoirService`; `manage_repertoire` to change,
 - `edit_work(work_id, changes)`: `None` keeps an attribute, an empty value
   clears it; updates the modification date.
 - `get_work(work_id)`, `search(choir, text=None)`.
+- Deletion (`Deleter`, receives the `file_storage`): a work with its scores
+  and their stored contents.
 
 ### `SqlWorkRepository` (`repertoire.sql`)
 
@@ -261,6 +282,7 @@ their id. The structured content describes the work (`work_data`).
 - `list_scores(work_id)`.
 - `open_score(score_id)`: raises `ScoreFileMissingError` when the content is
   missing from the storage, then gives the content to the opener.
+- Deletion (`Deleter`): a score, then its stored content.
 
 ### `SqlScoreRepository` (`scores.sql`)
 

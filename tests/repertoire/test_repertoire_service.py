@@ -18,6 +18,7 @@ from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work import WorkChanges, WorkDetails
 from tests.doubles import DenyingAuthorization, FakeClock
 from tests.persistence_doubles import InMemoryDatabase
+from tests.score_doubles import InMemoryFileStorage
 
 
 @pytest.fixture
@@ -32,12 +33,16 @@ def clock() -> FakeClock:
 
 @pytest.fixture
 def service(database: InMemoryDatabase, clock: FakeClock) -> RepertoireService:
-    return RepertoireService(database.unit_of_work, clock, LocalUserAuthorization())
+    return RepertoireService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    )
 
 
 @pytest.fixture
 async def choirs(database: InMemoryDatabase, clock: FakeClock) -> ChoirService:
-    choirs = ChoirService(database.unit_of_work, clock, LocalUserAuthorization())
+    choirs = ChoirService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    )
     await choirs.create("Chœur")
     await choirs.create("Ensemble")
     return choirs
@@ -118,7 +123,10 @@ async def test_permissions_are_required(
 ) -> None:
     _, work = await service.add_work(None, WorkDetails(title="Ave Maria"))
     managing = RepertoireService(
-        database.unit_of_work, clock, DenyingAuthorization(Permission.MANAGE_REPERTOIRE)
+        database.unit_of_work,
+        clock,
+        DenyingAuthorization(Permission.MANAGE_REPERTOIRE),
+        InMemoryFileStorage(),
     )
     with pytest.raises(AccessDeniedError):
         await managing.add_work(None, WorkDetails(title="x"))
@@ -126,7 +134,10 @@ async def test_permissions_are_required(
         await managing.edit_work(work.id, WorkChanges(title="x"))
     assert (await managing.search(None))[1] == [work]
     consulting = RepertoireService(
-        database.unit_of_work, clock, DenyingAuthorization(Permission.CONSULT_REPERTOIRE)
+        database.unit_of_work,
+        clock,
+        DenyingAuthorization(Permission.CONSULT_REPERTOIRE),
+        InMemoryFileStorage(),
     )
     with pytest.raises(AccessDeniedError):
         await consulting.search(None)

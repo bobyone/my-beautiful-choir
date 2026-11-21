@@ -17,11 +17,17 @@ from my_beautiful_choir.tools.choirs.set_default_choir_tool import (
 from my_beautiful_choir.tools.no_arguments import NoArguments
 from tests.doubles import FakeClock, tool_context
 from tests.persistence_doubles import InMemoryDatabase
+from tests.score_doubles import InMemoryFileStorage
 
 
 @pytest.fixture
 def service() -> ChoirService:
-    return ChoirService(InMemoryDatabase().unit_of_work, FakeClock(), LocalUserAuthorization())
+    return ChoirService(
+        InMemoryDatabase().unit_of_work,
+        FakeClock(),
+        LocalUserAuthorization(),
+        InMemoryFileStorage(),
+    )
 
 
 @pytest.mark.anyio

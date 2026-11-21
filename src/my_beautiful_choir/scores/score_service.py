@@ -1,15 +1,17 @@
 # SPDX-FileCopyrightText: 2026 bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""Operations on the scores of a work (flows G and H of issue #7)."""
+"""Operations on the scores of a work (flows G, H and I of issue #7)."""
 
-import logging
 from uuid import UUID, uuid4
 
 from my_beautiful_choir.authorization.authorization import Authorization
 from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.clock.clock import Clock
-from my_beautiful_choir.persistence.unit_of_work import UnitOfWorkFactory
+from my_beautiful_choir.deletion.deleter import Deleter
+from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
+from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError, ScoreFileMissingError
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
@@ -24,11 +26,9 @@ from my_beautiful_choir.scores.score_rules import (
 from my_beautiful_choir.scores.sources.score_source import ScoreSource
 from my_beautiful_choir.storage.file_storage import FileStorage
 
-_LOGGER = logging.getLogger(__name__)
 
-
-class ScoreService:
-    """Adds, lists and opens the scores of the works."""
+class ScoreService(Deleter):
+    """Adds, lists, opens and deletes the scores of the works."""
 
     def __init__(
         self,
@@ -93,7 +93,7 @@ class ScoreService:
                 await unit_of_work.scores.add(score)
                 await unit_of_work.commit()
         except BaseException:
-            await self._remove_content(score.storage_key)
+            await remove_stored_contents(self._file_storage, [score.storage_key])
             raise
         return work, score
 
@@ -126,8 +126,37 @@ class ScoreService:
         await self._opener.open(score, content)
         return work, score
 
-    async def _remove_content(self, key: str) -> None:
-        try:
-            await self._file_storage.delete(key)
-        except Exception:
-            _LOGGER.exception("Stored content of an unsaved score left", extra={"key": key})
+    @property
+    def deletion_target(self) -> DeletionTarget:
+        """Scores."""
+        return DeletionTarget.SCORE
+
+    async def describe_deletion(self, target_id: UUID) -> Deletion:
+        """The score and its work.
+
+        Raises:
+            ScoreNotFoundError: if no score has this id.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            deletion, _ = await self._deletion(unit_of_work, target_id)
+        return deletion
+
+    async def delete(self, target_id: UUID) -> Deletion:
+        """Delete the score, then its stored content.
+
+        Raises:
+            ScoreNotFoundError: if no score has this id.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            deletion, key = await self._deletion(unit_of_work, target_id)
+            await unit_of_work.scores.delete(target_id)
+            await unit_of_work.commit()
+        await remove_stored_contents(self._file_storage, [key])
+        return deletion
+
+    async def _deletion(self, unit_of_work: UnitOfWork, score_id: UUID) -> tuple[Deletion, str]:
+        score = await unit_of_work.scores.get(score_id)
+        work = await unit_of_work.works.get(score.work_id)
+        self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+        deletion = Deletion(DeletionTarget.SCORE, score.id, score.label, work.title)
+        return deletion, score.storage_key

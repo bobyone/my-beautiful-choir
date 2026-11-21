@@ -19,6 +19,7 @@ from my_beautiful_choir.choirs.errors import (
 )
 from tests.doubles import DenyingAuthorization, FakeClock
 from tests.persistence_doubles import InMemoryDatabase
+from tests.score_doubles import InMemoryFileStorage
 
 
 @pytest.fixture
@@ -33,7 +34,9 @@ def clock() -> FakeClock:
 
 @pytest.fixture
 def service(database: InMemoryDatabase, clock: FakeClock) -> ChoirService:
-    return ChoirService(database.unit_of_work, clock, LocalUserAuthorization())
+    return ChoirService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    )
 
 
 async def _create(service: ChoirService, clock: FakeClock, *names: str) -> None:
@@ -134,9 +137,13 @@ async def test_failed_operations_change_nothing(
 
 @pytest.mark.anyio
 async def test_permissions_are_required(database: InMemoryDatabase, clock: FakeClock) -> None:
-    allowed = ChoirService(database.unit_of_work, clock, LocalUserAuthorization())
+    allowed = ChoirService(
+        database.unit_of_work, clock, LocalUserAuthorization(), InMemoryFileStorage()
+    )
     await allowed.create("Chœur")
-    denied = ChoirService(database.unit_of_work, clock, DenyingAuthorization(*Permission))
+    denied = ChoirService(
+        database.unit_of_work, clock, DenyingAuthorization(*Permission), InMemoryFileStorage()
+    )
     for operation in (
         denied.list_choirs(),
         denied.create("Ensemble"),
