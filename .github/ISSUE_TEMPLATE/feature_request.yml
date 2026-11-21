@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+name: Feature request
+description: Propose a new feature or a change.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your proposal. Once the need is agreed, the design is validated in this issue,
+        step by step, before any code is written (see CONTRIBUTING.md).
+  - type: textarea
+    id: need
+    attributes:
+      label: Need
+      description: What do you want to achieve, and for whom? Use the terms of docs/glossary.md.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Modes concerned
+      multiple: true
+      options:
+        - web mode
+        - personal mode
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to implement this change myself.
