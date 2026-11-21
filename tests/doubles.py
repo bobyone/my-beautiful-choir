@@ -3,8 +3,15 @@
 
 """Test doubles of the abstractions, shared by the tests."""
 
+from datetime import UTC, datetime, timedelta
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.authorization.authorization import Authorization
+from my_beautiful_choir.authorization.errors import AccessDeniedError
+from my_beautiful_choir.authorization.permission import Permission
+from my_beautiful_choir.clock.clock import Clock
 from my_beautiful_choir.confirmation.confirmation_outcome import ConfirmationOutcome
 from my_beautiful_choir.confirmation.confirmation_requester import ConfirmationRequester
 from my_beautiful_choir.monitoring.metrics import Metrics
@@ -107,3 +114,27 @@ class StubConfirmation(ConfirmationRequester):
 def tool_context(confirmation: ConfirmationRequester | None = None) -> ToolContext:
     """Context of a tool call in tests; confirmations are accepted by default."""
     return ToolContext(confirmation=confirmation or StubConfirmation())
+
+
+class FakeClock(Clock):
+    """Clock at a fixed time, moved forward by the tests."""
+
+    def __init__(self, start: datetime = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)) -> None:
+        self.current = start
+
+    def now(self) -> datetime:
+        return self.current
+
+    def advance(self, delta: timedelta) -> None:
+        self.current += delta
+
+
+class DenyingAuthorization(Authorization):
+    """Authorization refusing the given permissions, and allowing the others."""
+
+    def __init__(self, *denied: Permission) -> None:
+        self.denied = set(denied)
+
+    def require(self, permission: Permission, choir_id: UUID | None = None) -> None:
+        if permission in self.denied:
+            raise AccessDeniedError(f"Permission {permission} denied.")

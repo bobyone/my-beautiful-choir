@@ -63,6 +63,8 @@ code and the process exit code.
 | `ViewTool[ArgumentsT](Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments, context)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
 | `View` | `views` | User interface rendered by the client: `uri` (`ui://`), `content()` (self-contained HTML); raises `ViewNotFoundError`. |
 | `ConfirmationRequester` | `confirmation` | `async ask(question) -> ConfirmationOutcome` (`confirmed`, `refused` or `unavailable` when the user cannot be asked); never raises because the user cannot be asked. |
+| `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
+| `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
@@ -236,6 +238,15 @@ Every user-facing text goes through a translation key; labels of glossary
 terms use the `glossary.*` keys. See
 [how to add a language](how-to/add-a-language.md) and
 [how to build the user interface](how-to/build-the-ui.md).
+
+### `LocalUserAuthorization` (`authorization.local`)
+
+Personal mode: the implicit user manages every choir, so every permission
+is granted. No parameter.
+
+### `SystemClock` (`clock`)
+
+Reads the system clock, in UTC. No parameter.
 
 ### `NullMetrics` (`monitoring`)
 
