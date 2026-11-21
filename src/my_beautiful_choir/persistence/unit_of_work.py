@@ -10,6 +10,7 @@ from typing import Self
 
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
+from my_beautiful_choir.scores.score_repository import ScoreRepository
 
 
 class UnitOfWork(ABC):
@@ -42,6 +43,11 @@ class UnitOfWork(ABC):
     @abstractmethod
     def works(self) -> WorkRepository:
         """Repository of the works."""
+
+    @property
+    @abstractmethod
+    def scores(self) -> ScoreRepository:
+        """Repository of the scores."""
 
     @abstractmethod
     async def commit(self) -> None:

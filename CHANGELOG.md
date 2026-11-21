@@ -39,4 +39,8 @@ and this project adheres to
   choir (#7).
 - Works in personal mode: add and edit the works of a choir's repertoire,
   searched ignoring case and accents (#7).
-- Plugin skills: manage choirs, manage works (#7).
+- Scores in personal mode: add a score to a work from a local file or a
+  public Google Drive link (PDF, MusicXML, compressed MusicXML, MuseScore,
+  up to 50 MB, recognized from the file content), and open a copy of it
+  with the default application of the computer (#7).
+- Plugin skills: manage choirs, manage works, manage scores (#7).

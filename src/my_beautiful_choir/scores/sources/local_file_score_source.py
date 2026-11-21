@@ -7,6 +7,7 @@ import asyncio
 from pathlib import Path
 
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.sources.errors import UnreadableLocalFileError
 from my_beautiful_choir.scores.sources.score_content import ScoreContent
 from my_beautiful_choir.scores.sources.score_source import ScoreSource
@@ -22,6 +23,10 @@ class LocalFileScoreSource(ScoreSource):
 
     def __init__(self, path: Path) -> None:
         self._path = path
+
+    @property
+    def origin(self) -> ScoreOrigin:
+        return ScoreOrigin.LOCAL_FILE
 
     async def fetch(self, limit: int) -> ScoreContent:
         return await asyncio.to_thread(self._read, limit)

@@ -9,6 +9,7 @@ import httpx
 import pytest
 
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.sources.errors import (
     DownloadFailedError,
     NotPubliclyAccessibleError,
@@ -45,6 +46,12 @@ async def _fetch(handler: Handler, limit: int = LIMIT) -> ScoreContent:
 
 def _redirect(location: str) -> httpx.Response:
     return httpx.Response(303, headers={"location": location})
+
+
+def test_origin_and_link() -> None:
+    source = GoogleDriveScoreSource(LINK)
+    assert source.origin is ScoreOrigin.GOOGLE_DRIVE
+    assert source.link == LINK.url
 
 
 @pytest.mark.anyio

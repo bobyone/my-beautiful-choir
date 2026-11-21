@@ -3,6 +3,7 @@
 
 """In-memory doubles of the unit of work and the repositories."""
 
+import builtins
 import copy
 from dataclasses import dataclass, field, replace
 from types import TracebackType
@@ -18,6 +19,9 @@ from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
 from my_beautiful_choir.repertoire.work_rules import search_text
+from my_beautiful_choir.scores.errors import ScoreNotFoundError
+from my_beautiful_choir.scores.score import Score
+from my_beautiful_choir.scores.score_repository import ScoreRepository
 
 
 @dataclass
@@ -26,6 +30,7 @@ class InMemoryData:
 
     choirs: dict[UUID, Choir] = field(default_factory=dict)
     works: dict[UUID, Work] = field(default_factory=dict)
+    scores: dict[UUID, Score] = field(default_factory=dict)
 
 
 class InMemoryChoirRepository(ChoirRepository):
@@ -96,9 +101,47 @@ class InMemoryWorkRepository(WorkRepository):
 
     async def delete(self, work_id: UUID) -> None:
         del self._data.works[work_id]
+        for score in [s for s in self._data.scores.values() if s.work_id == work_id]:
+            del self._data.scores[score.id]
 
     async def count(self, choir_id: UUID) -> int:
         return sum(1 for work in self._data.works.values() if work.choir_id == choir_id)
+
+
+class InMemoryScoreRepository(ScoreRepository):
+    """Scores kept in the data of a unit of work."""
+
+    def __init__(self, data: InMemoryData) -> None:
+        self._data = data
+
+    async def add(self, score: Score) -> None:
+        if score.work_id not in self._data.works:
+            raise LookupError("the work of the score does not exist (foreign key)")
+        self._data.scores[score.id] = score
+
+    async def get(self, score_id: UUID) -> Score:
+        if score_id not in self._data.scores:
+            raise ScoreNotFoundError(score_id)
+        return self._data.scores[score_id]
+
+    async def list(self, work_id: UUID) -> list[Score]:
+        return sorted(
+            (s for s in self._data.scores.values() if s.work_id == work_id),
+            key=lambda s: (s.added_at, s.label, s.id),
+        )
+
+    async def delete(self, score_id: UUID) -> None:
+        del self._data.scores[score_id]
+
+    async def storage_keys_of_work(self, work_id: UUID) -> builtins.list[str]:
+        return [s.storage_key for s in self._data.scores.values() if s.work_id == work_id]
+
+    async def storage_keys_of_choir(self, choir_id: UUID) -> builtins.list[str]:
+        return [
+            s.storage_key
+            for s in self._data.scores.values()
+            if self._data.works[s.work_id].choir_id == choir_id
+        ]
 
 
 class InMemoryDatabase:
@@ -127,6 +170,10 @@ class InMemoryUnitOfWork(UnitOfWork):
     @property
     def works(self) -> InMemoryWorkRepository:
         return InMemoryWorkRepository(self._data)
+
+    @property
+    def scores(self) -> InMemoryScoreRepository:
+        return InMemoryScoreRepository(self._data)
 
     async def __aenter__(self) -> Self:
         self._data = copy.deepcopy(self._database.data)

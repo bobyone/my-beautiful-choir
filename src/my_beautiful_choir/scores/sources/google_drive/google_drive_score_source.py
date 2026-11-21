@@ -11,6 +11,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.sources.errors import (
     DownloadFailedError,
     NotPubliclyAccessibleError,
@@ -53,6 +54,15 @@ class GoogleDriveScoreSource(ScoreSource):
         self._link = link
         self._transport = transport
         self._timeout_seconds = timeout_seconds
+
+    @property
+    def origin(self) -> ScoreOrigin:
+        return ScoreOrigin.GOOGLE_DRIVE
+
+    @property
+    def link(self) -> str:
+        """Canonical sharing link of the file."""
+        return self._link.url
 
     async def fetch(self, limit: int) -> ScoreContent:
         try:

@@ -20,6 +20,11 @@ from my_beautiful_choir.monitoring.server.server_health_check import ServerHealt
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
+from my_beautiful_choir.scores.score_service import ScoreService
+from my_beautiful_choir.scores.sources.google_drive.google_drive_link import GoogleDriveLink
+from my_beautiful_choir.scores.sources.google_drive.google_drive_score_source import (
+    GoogleDriveScoreSource,
+)
 from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.transport.http.http_transport import HttpTransport
@@ -104,11 +109,21 @@ def test_personal_mode_recognizes_every_score_format(
     assert detector.detect(content) is score_format
 
 
+def test_personal_mode_downloads_from_google_drive_with_a_new_source() -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL))
+    link = GoogleDriveLink("1aBcD_eFgH-ijKlMnOpQrStUvWxYz0123")
+    first = container.mode.google_drive_source(link)
+    assert isinstance(first, GoogleDriveScoreSource)
+    assert first.link == link.url
+    assert container.mode.google_drive_source(link) is not first
+    assert isinstance(container.mode.score_service(), ScoreService)
+
+
 def test_web_mode_has_no_startup_step() -> None:
     assert list(create_container(Settings(mode=Mode.WEB)).mode.startup_steps()) == []
 
 
-def test_personal_mode_offers_the_choir_tools(tmp_path: Path) -> None:
+def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
     container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
     names = [tool.name for tool in container.tools()]
     assert names == [
@@ -119,6 +134,9 @@ def test_personal_mode_offers_the_choir_tools(tmp_path: Path) -> None:
         "set_default_choir",
         "add_work",
         "edit_work",
+        "add_score_from_file",
+        "add_score_from_google_drive",
+        "open_score",
     ]
     assert all(isinstance(tool, MeteredTool) for tool in container.tools())
 

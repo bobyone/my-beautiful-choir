@@ -7,6 +7,7 @@ import pytest
 
 from my_beautiful_choir.errors import DomainError
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.sources.score_content import ScoreContent
 from my_beautiful_choir.scores.sources.uploaded_score_source import UploadedScoreSource
 
@@ -14,7 +15,10 @@ from my_beautiful_choir.scores.sources.uploaded_score_source import UploadedScor
 @pytest.mark.anyio
 @pytest.mark.parametrize("content", [b"", b"12345"])
 async def test_gives_the_received_content(content: bytes) -> None:
-    fetched = await UploadedScoreSource("Ave Maria.pdf", content).fetch(limit=5)
+    source = UploadedScoreSource("Ave Maria.pdf", content)
+    assert source.origin is ScoreOrigin.FILE_PICKER
+    assert source.link is None
+    fetched = await source.fetch(limit=5)
     assert fetched == ScoreContent(original_name="Ave Maria.pdf", content=content)
     assert fetched.size == len(content)
 

@@ -34,6 +34,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | | score | partition |
 | Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | | format | format |
 | Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | | label | libellé |
+| Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | | sung language | langue chantée |
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | | voicing | effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |

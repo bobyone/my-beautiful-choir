@@ -24,6 +24,11 @@ from my_beautiful_choir.scores.formats.signatures.zip.compressed_music_xml_signa
 from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature import (
     MuseScoreSignature,
 )
+from my_beautiful_choir.scores.opening.system.system_score_opener import SystemScoreOpener
+from my_beautiful_choir.scores.score_service import ScoreService
+from my_beautiful_choir.scores.sources.google_drive.google_drive_score_source import (
+    GoogleDriveScoreSource,
+)
 from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
@@ -32,16 +37,21 @@ from my_beautiful_choir.tools.choirs.set_default_choir_tool import SetDefaultCho
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.tools.repertoire.add_work_tool import AddWorkTool
 from my_beautiful_choir.tools.repertoire.edit_work_tool import EditWorkTool
+from my_beautiful_choir.tools.scores.add_score_from_file_tool import AddScoreFromFileTool
+from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
+    AddScoreFromGoogleDriveTool,
+)
+from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
 
 
 def _metered(
-    tool: type[Tool[Any]], service: providers.Provider[Any], metrics: providers.Provider[Any]
+    tool: type[Tool[Any]], metrics: providers.Provider[Any], **dependencies: providers.Provider[Any]
 ) -> providers.Singleton[MeteredTool[Any]]:
-    """Provider of ``tool``, built with ``service`` and wrapped to record its metrics."""
+    """Provider of ``tool``, built with ``dependencies`` and wrapped to record its metrics."""
     return providers.Singleton(
-        MeteredTool, inner=providers.Singleton(tool, service=service), metrics=metrics
+        MeteredTool, inner=providers.Singleton(tool, **dependencies), metrics=metrics
     )
 
 
@@ -83,11 +93,32 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         RepertoireService, unit_of_work=unit_of_work, clock=clock, authorization=authorization
     )
 
+    score_opener = providers.Singleton(SystemScoreOpener.in_temporary_directory)
+    google_drive_source = providers.Factory(GoogleDriveScoreSource)
+
+    score_service = providers.Singleton(
+        ScoreService,
+        unit_of_work=unit_of_work,
+        clock=clock,
+        authorization=authorization,
+        file_storage=file_storage,
+        format_detector=score_format_detector,
+        opener=score_opener,
+    )
+
     mode_tools = providers.List(
-        _metered(ListChoirsTool, choir_service, metrics),
-        _metered(CreateChoirTool, choir_service, metrics),
-        _metered(RenameChoirTool, choir_service, metrics),
-        _metered(SetDefaultChoirTool, choir_service, metrics),
-        _metered(AddWorkTool, repertoire_service, metrics),
-        _metered(EditWorkTool, repertoire_service, metrics),
+        _metered(ListChoirsTool, metrics, service=choir_service),
+        _metered(CreateChoirTool, metrics, service=choir_service),
+        _metered(RenameChoirTool, metrics, service=choir_service),
+        _metered(SetDefaultChoirTool, metrics, service=choir_service),
+        _metered(AddWorkTool, metrics, service=repertoire_service),
+        _metered(EditWorkTool, metrics, service=repertoire_service),
+        _metered(AddScoreFromFileTool, metrics, service=score_service),
+        _metered(
+            AddScoreFromGoogleDriveTool,
+            metrics,
+            service=score_service,
+            source_factory=google_drive_source.provider,
+        ),
+        _metered(OpenScoreTool, metrics, service=score_service),
     )

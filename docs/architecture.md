@@ -66,19 +66,24 @@ code and the process exit code.
 | `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
 | `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
 | `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
-| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
+| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`, `scores`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
+| `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`. |
+| `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
 | `ScoreFormatDetector` | `scores.formats` | `detect(content) -> ScoreFormat`: tries its signatures in order and gives the format of the first one that matches; raises `UnsupportedScoreFormatError`, listing the accepted formats. |
-| `ScoreSource` | `scores.sources` | `async fetch(limit) -> ScoreContent`: gives the content of a score being added and its original file name, of at most `limit` bytes; stops as soon as the content exceeds the limit and raises `InvalidScoreSizeError`; raises a `ScoreSourceError` when the content cannot be obtained. An empty content is returned as is: the score service refuses it. One source is built per request, from the tool arguments. |
+| `ScoreSource` | `scores.sources` | `origin` (`ScoreOrigin`) and `link` (`None` by default), recorded with the score; `async fetch(limit) -> ScoreContent`: gives the content of a score being added and its original file name, of at most `limit` bytes; stops as soon as the content exceeds the limit and raises `InvalidScoreSizeError`; raises a `ScoreSourceError` when the content cannot be obtained. An empty content is returned as is: the score service refuses it. One source is built per request, from the tool arguments. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
+`Score` (`scores`: `id`, `work_id`, `label`, `format`, `size`, `original_name`,
+`origin`, `link`, `storage_key`, `added_at`), `ScoreOrigin` (`scores`:
+`file_picker`, `local_file`, `google_drive`),
 `GoogleDriveLink` (`scores.sources.google_drive`: `file_id`, `resource_key`;
 `parse(link)` accepts `https://drive.google.com/file/d/<id>/...`, `/open?id=`
 and `/uc?id=` and raises `UnsupportedLinkError` otherwise; `url`, the
@@ -106,7 +111,7 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `score_format_detector` (the four signatures, MuseScore before compressed MusicXML), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `score_format_detector` (the four signatures, MuseScore before compressed MusicXML), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `score_opener` (`SystemScoreOpener` in the temporary directory of the system), `google_drive_source` (a new `GoogleDriveScoreSource` per link), `score_service`, `mode_tools` (the choir, work and score tools, metered) | `settings` |
 | `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
@@ -230,6 +235,58 @@ uses `LIKE` on them with `%` and `_` escaped.
 Text tools: `add_work(choir?, title, composer?, arranger?, voicing?,
 sung_languages?, notes?)` and `edit_work(work_id, ...)`. Works are named by
 their id. The structured content describes the work (`work_data`).
+
+### `ScoreService` (`scores`)
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `unit_of_work` | `UnitOfWorkFactory` | required | One unit of work per operation. |
+| `clock` | `Clock` | required | Date added. |
+| `authorization` | `Authorization` | required | `manage_repertoire` to add, `consult_repertoire` to list and open. |
+| `file_storage` | `FileStorage` | required | Content of the scores. |
+| `format_detector` | `ScoreFormatDetector` | required | Format recognized from the content. |
+| `opener` | `ScoreOpener` | required | Opens the scores. |
+| `maximum_size` | `int` | 50 MB | Largest content accepted, in bytes. |
+
+- `add_score(work_id, source, label=None)`: checks the work and the right,
+  then fetches the content outside any transaction (a download may be long);
+  refuses an empty content (`InvalidScoreSizeError`), then recognizes the
+  format. Rules (`score_rules.py`): label trimmed, NFC, without control
+  characters, at most 100 characters (`InvalidScoreError`); by default the
+  original name without its extension, or the format name; original name at
+  most 255 characters; storage key `choirs/<choir id>/scores/<score id>`.
+  The content is stored, then the score saved; if saving fails (the work
+  was deleted meanwhile, for instance), the stored content is removed, and
+  a failed removal is logged.
+- `list_scores(work_id)`.
+- `open_score(score_id)`: raises `ScoreFileMissingError` when the content is
+  missing from the storage, then gives the content to the opener.
+
+### `SqlScoreRepository` (`scores.sql`)
+
+Table `scores`; the work's foreign key deletes its scores with it.
+
+### `SystemScoreOpener` (`scores.opening.system`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `directory` | `Path` | Directory of the temporary copies. `SystemScoreOpener.in_temporary_directory()` gives `my-beautiful-choir` in the temporary directory of the system, with `system_launcher()`. |
+| `launch` | `Callable[[Path], None]` | Opens a file with its default application: `os.startfile` on Windows, `open` on macOS, `xdg-open` elsewhere (`system_launcher(platform)`), with no access to the standard input, which is the MCP channel of personal mode. |
+
+Writes a copy of the score in `<directory>/<score id>/<label><extension>`
+(the label reduced to letters, digits, spaces, `-` and `_`, at most 100
+characters), replaced at each opening, then launches it. The stored score
+never changes: an edit in the application only changes the copy. Raises
+`ScoreOpenError` when the copy cannot be written or the launch fails.
+Limits: copies are left for the system to clean its temporary directory; a
+launch that succeeds does not prove that an application showed the file.
+
+### Score tools (`tools.scores`)
+
+Text tools: `add_score_from_file(work_id, path, label?)`,
+`add_score_from_google_drive(work_id, link, label?)` (receives a factory of
+Google Drive sources) and `open_score(score_id)`. Scores are named by their
+id. The structured content gives the `work_id` and the score (`score_data`).
 
 ### Score format signatures (`scores.formats.signatures`)
 

@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from my_beautiful_choir.scores.errors import InvalidScoreSizeError
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.sources.errors import ScoreSourceError, UnreadableLocalFileError
 from my_beautiful_choir.scores.sources.local_file_score_source import LocalFileScoreSource
 from my_beautiful_choir.scores.sources.score_content import ScoreContent
@@ -18,7 +19,10 @@ from tests import score_samples
 async def test_reads_the_file_and_its_name(tmp_path: Path) -> None:
     path = tmp_path / "Ave Maria.pdf"
     path.write_bytes(score_samples.pdf())
-    fetched = await LocalFileScoreSource(path).fetch(limit=1024)
+    source = LocalFileScoreSource(path)
+    assert source.origin is ScoreOrigin.LOCAL_FILE
+    assert source.link is None
+    fetched = await source.fetch(limit=1024)
     assert fetched == ScoreContent(original_name="Ave Maria.pdf", content=score_samples.pdf())
 
 
