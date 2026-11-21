@@ -4,7 +4,9 @@
 """Tests of the settings loader."""
 
 import pytest
+from pydantic_settings import SettingsError
 
+from my_beautiful_choir.configuration import loader
 from my_beautiful_choir.configuration.errors import ConfigurationError
 from my_beautiful_choir.configuration.loader import load_settings
 from my_beautiful_choir.configuration.mode import Mode
@@ -81,6 +83,24 @@ def test_every_invalid_value_is_reported(monkeypatch: pytest.MonkeyPatch) -> Non
     with pytest.raises(ConfigurationError) as raised:
         load_settings([])
     assert {issue.key for issue in raised.value.issues} == {"MBC_WEB__PORT", "MBC_LOG_LEVEL"}
+
+
+def test_unparsable_group_of_keys(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MBC_WEB", "foo")
+    with pytest.raises(ConfigurationError) as raised:
+        load_settings([])
+    assert [issue.key for issue in raised.value.issues] == ["MBC_WEB"]
+    assert raised.value.exit_code == 2
+
+
+def test_unparsable_value_of_unknown_field(monkeypatch: pytest.MonkeyPatch) -> None:
+    def failing_settings(**_: object) -> None:
+        raise SettingsError("unexpected source failure")
+
+    monkeypatch.setattr(loader, "Settings", failing_settings)
+    with pytest.raises(ConfigurationError) as raised:
+        load_settings([])
+    assert [issue.key for issue in raised.value.issues] == ["environment"]
 
 
 def test_invalid_command_line() -> None:

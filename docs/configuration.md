@@ -34,4 +34,5 @@ invalid key with the expected value on stderr and exits with code 2 (see
 | `MBC_WEB__PORT` | integer from 1 to 65535 | `9000` | no | Web mode: port to listen on. |
 | `MBC_WEB__ALLOWED_HOSTS` | comma-separated list of `host:port` | empty | no | Web mode: `Host` header values accepted, as a protection against DNS rebinding. Empty means the local host only. Required when listening on `0.0.0.0`. |
 
-Keys starting with `MBC_WEB__` are ignored in personal mode.
+Keys starting with `MBC_WEB__` are ignored in personal mode. Set them one
+by one: a `MBC_WEB` variable is invalid.

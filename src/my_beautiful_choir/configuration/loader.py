@@ -8,16 +8,20 @@ command line or the environment.
 """
 
 import argparse
+import re
 from collections.abc import Sequence
 from typing import Any, NoReturn
 
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
+from pydantic_settings import SettingsError
 
 from my_beautiful_choir import APPLICATION_NAME, __version__
 from my_beautiful_choir.configuration.errors import ConfigurationError, ConfigurationIssue
 from my_beautiful_choir.configuration.mode import Mode
 from my_beautiful_choir.configuration.settings import ENV_NESTED_DELIMITER, ENV_PREFIX, Settings
+
+_UNPARSABLE_FIELD = re.compile(r'field "(\w+)"')
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -54,6 +58,17 @@ def _issue_from(error: ErrorDetails) -> ConfigurationIssue:
     return ConfigurationIssue(key=key, message=message)
 
 
+def _issue_from_unparsable(error: SettingsError) -> ConfigurationIssue:
+    """Issue for a variable whose value cannot be parsed (a group of keys set as one value)."""
+    field = _UNPARSABLE_FIELD.search(str(error))
+    key = _environment_key((field.group(1),)) if field else "environment"
+    return ConfigurationIssue(
+        key=key,
+        message="cannot be parsed; set its individual keys instead "
+        "(see the configuration reference)",
+    )
+
+
 def load_settings(argv: Sequence[str]) -> Settings:
     """Parse the command line, read the environment and return the validated settings.
 
@@ -71,3 +86,5 @@ def load_settings(argv: Sequence[str]) -> Settings:
     except ValidationError as error:
         issues = tuple(_issue_from(detail) for detail in error.errors())
         raise ConfigurationError(issues) from error
+    except SettingsError as error:
+        raise ConfigurationError((_issue_from_unparsable(error),)) from error
