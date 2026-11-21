@@ -15,6 +15,15 @@ from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
+from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
+from my_beautiful_choir.scores.formats.signatures.music_xml_signature import MusicXmlSignature
+from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
+from my_beautiful_choir.scores.formats.signatures.zip.compressed_music_xml_signature import (
+    CompressedMusicXmlSignature,
+)
+from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature import (
+    MuseScoreSignature,
+)
 from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
@@ -51,6 +60,17 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     )
     unit_of_work = database.provided.unit_of_work
     file_storage = providers.Singleton(LocalFileStorage.in_directory, data_dir=data_dir)
+
+    # MuseScore files also hold a MusicXML container: they are recognized first.
+    score_format_detector = providers.Singleton(
+        ScoreFormatDetector,
+        signatures=providers.List(
+            providers.Singleton(PdfSignature),
+            providers.Singleton(MuseScoreSignature),
+            providers.Singleton(CompressedMusicXmlSignature),
+            providers.Singleton(MusicXmlSignature),
+        ),
+    )
 
     clock = providers.Singleton(SystemClock)
     authorization = providers.Singleton(LocalUserAuthorization)

@@ -5,6 +5,7 @@
 
 from pathlib import Path
 
+import pytest
 from dependency_injector import providers
 
 from my_beautiful_choir import __version__
@@ -18,10 +19,12 @@ from my_beautiful_choir.monitoring.prometheus.prometheus_metrics import Promethe
 from my_beautiful_choir.monitoring.server.server_health_check import ServerHealthCheck
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
+from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.transport.http.http_transport import HttpTransport
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
+from tests import score_samples
 
 
 def test_personal_mode_assembly() -> None:
@@ -83,6 +86,22 @@ def test_personal_mode_stores_files_in_its_data_directory(tmp_path: Path) -> Non
     assert isinstance(file_storage, LocalFileStorage)
     assert file_storage.root == tmp_path / "files"
     assert container.mode.file_storage() is file_storage
+
+
+@pytest.mark.parametrize(
+    ("content", "score_format"),
+    [
+        (score_samples.pdf(), ScoreFormat.PDF),
+        (score_samples.musicxml(), ScoreFormat.MUSICXML),
+        (score_samples.compressed_musicxml(), ScoreFormat.COMPRESSED_MUSICXML),
+        (score_samples.musescore(), ScoreFormat.MUSESCORE),
+    ],
+)
+def test_personal_mode_recognizes_every_score_format(
+    content: bytes, score_format: ScoreFormat
+) -> None:
+    detector = create_container(Settings(mode=Mode.PERSONAL)).mode.score_format_detector()
+    assert detector.detect(content) is score_format
 
 
 def test_web_mode_has_no_startup_step() -> None:

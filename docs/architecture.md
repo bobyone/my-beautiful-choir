@@ -70,12 +70,16 @@ code and the process exit code.
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
+| `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
+| `ScoreFormatDetector` | `scores.formats` | `detect(content) -> ScoreFormat`: tries its signatures in order and gives the format of the first one that matches; raises `UnsupportedScoreFormatError`, listing the accepted formats. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
+`ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
+`display_name` and `extension`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
 (`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
@@ -96,7 +100,7 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `score_format_detector` (the four signatures, MuseScore before compressed MusicXML), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
 | `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
@@ -220,6 +224,22 @@ uses `LIKE` on them with `%` and `_` escaped.
 Text tools: `add_work(choir?, title, composer?, arranger?, voicing?,
 sung_languages?, notes?)` and `edit_work(work_id, ...)`. Works are named by
 their id. The structured content describes the work (`work_data`).
+
+### Score format signatures (`scores.formats.signatures`)
+
+No parameter. The detector of personal mode tries them in this order:
+
+| Signature | Format | Recognized when |
+|---|---|---|
+| `PdfSignature` | `pdf` | `%PDF-` appears within the first 1024 bytes. |
+| `zip.MuseScoreSignature` | `mscz` | Zip archive with an entry ending in `.mscx` (any case). |
+| `zip.CompressedMusicXmlSignature` | `mxl` | Zip archive with `META-INF/container.xml`, an entry ending in `.musicxml` or `.xml` outside `META-INF/`, and no `.mscx` entry. MuseScore files also hold a container: the `.mscx` entry tells them apart. |
+| `MusicXmlSignature` | `musicxml` | Within the first 16 KiB, read as UTF-8 (or UTF-16 after a byte order mark), the root element, after the XML declaration, processing instructions, comments and document type, is `score-partwise` or `score-timewise`. |
+
+Limits: a MusicXML file whose prolog exceeds 16 KiB, or in UTF-16 without
+byte order mark, is not recognized. A zip signature only reads the index of
+the archive (`zipfile.ZipFile.namelist`): no zip bomb; the MusicXML
+signature never parses XML: no external entity.
 
 ### `ShowAboutTool` (`tools.view_tool.about`)
 
