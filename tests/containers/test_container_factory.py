@@ -3,6 +3,8 @@
 
 """Tests of the dependency assembly of each mode."""
 
+from pathlib import Path
+
 from dependency_injector import providers
 
 from my_beautiful_choir import __version__
@@ -14,6 +16,8 @@ from my_beautiful_choir.containers.container_factory import create_container
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.monitoring.prometheus.prometheus_metrics import PrometheusMetrics
 from my_beautiful_choir.monitoring.server.server_health_check import ServerHealthCheck
+from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
+from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.transport.http.http_transport import HttpTransport
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
@@ -60,3 +64,17 @@ def test_overrides_stay_within_their_container() -> None:
     overridden.mode.transport.override(providers.Object("fake"))
     assert overridden.mode.transport() == "fake"
     assert isinstance(create_container(Settings()).mode.transport(), StdioTransport)
+
+
+def test_personal_mode_prepares_its_data_store(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    [step] = container.mode.startup_steps()
+    assert isinstance(step, PrepareDataStore)
+    database = container.mode.database()
+    assert isinstance(database, SqlDatabase)
+    assert database.engine.url.database == str(tmp_path / "my-beautiful-choir.sqlite3")
+    assert container.mode.database() is database
+
+
+def test_web_mode_has_no_startup_step() -> None:
+    assert list(create_container(Settings(mode=Mode.WEB)).mode.startup_steps()) == []

@@ -65,6 +65,8 @@ code and the process exit code.
 | `ConfirmationRequester` | `confirmation` | `async ask(question) -> ConfirmationOutcome` (`confirmed`, `refused` or `unavailable` when the user cannot be asked); never raises because the user cannot be asked. |
 | `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
 | `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
+| `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
+| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories. Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
@@ -81,7 +83,7 @@ a tool can use during one call), `MetricsExport` (`monitoring`).
 Exit codes: 0 normal stop (including Ctrl+C), 1 unexpected error
 (`MBC-UNEXPECTED`), 2 invalid configuration or usage (`MBC-CONFIG`), 3
 unavailable resource (`MBC-PORT`), 4 incomplete installation
-(`MBC-INSTALL`). Installed as the `my-beautiful-choir` command, and run by
+(`MBC-INSTALL`), 5 unusable data store (`MBC-DATA`). Installed as the `my-beautiful-choir` command, and run by
 `python -m my_beautiful_choir`.
 
 ### Containers (`containers`)
@@ -89,8 +91,8 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools`, `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`) | `settings` |
-| `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`) | `settings` |
+| `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
 Tests replace a provider with `override()`, for instance
@@ -99,8 +101,41 @@ Tests replace a provider with `override()`, for instance
 ### `Application` (`application`)
 
 `run()` builds the MCP server (failing at startup if a view is missing),
-then serves it with the transport until it stops. Depends on
-`ApplicationInfo`, `McpServerBuilder` and `Transport`.
+runs the startup steps in order, then serves with the transport until it
+stops. Depends on `ApplicationInfo`, `McpServerBuilder`, `Transport` and a
+sequence of `StartupStep` (none by default).
+
+### `SqlDatabase` (`persistence.sql`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `url` | SQLAlchemy `URL` | Database to reach with an async driver. `SqlDatabase.in_directory(data_dir)` gives the SQLite file `my-beautiful-choir.sqlite3` of personal mode (`aiosqlite`). |
+
+- `unit_of_work()` returns a `SqlUnitOfWork`: one connection and one
+  transaction, shared by the repositories; `commit()` commits and begins a
+  new transaction.
+- `migrate(revision="head")`, `downgrade(revision)` and
+  `current_revision()` run the Alembic migrations of
+  `persistence/sql/migrations/` on the database; there is no `alembic.ini`.
+- No connection pool: no connection, hence no `aiosqlite` thread, outlives
+  its unit of work. SQLite enforces foreign keys (`PRAGMA foreign_keys=ON`).
+- Schema (`tables.py`): `choirs`, `works` and `scores`, with UUID keys,
+  dates in UTC (`UtcDateTime`, which refuses naive dates and restores the
+  timezone that SQLite drops) and a partial unique index allowing a single
+  default choir. Every change of the schema comes with a migration; a test
+  checks that the migrations produce exactly the schema of `tables.py`.
+
+### `PrepareDataStore` (`persistence.sql`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `data_dir` | `Path` | Data directory (`MBC_DATA_DIR`). |
+| `database` | `SqlDatabase` | Database to migrate. |
+
+Startup step of personal mode: creates the data directory, checks that it
+can be written, then migrates the database. Raises `DataStoreError`
+(`MBC-DATA`, exit code 5) when the directory cannot be used or the
+migration fails.
 
 ### `load_settings(argv)` (`configuration.loader`)
 

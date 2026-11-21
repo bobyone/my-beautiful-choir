@@ -3,10 +3,13 @@
 
 """Tests of the settings loader."""
 
+from pathlib import Path
+
 import pytest
 from pydantic_settings import SettingsError
 
 from my_beautiful_choir.configuration import loader
+from my_beautiful_choir.configuration.data_dir import default_data_dir
 from my_beautiful_choir.configuration.errors import ConfigurationError
 from my_beautiful_choir.configuration.loader import load_settings
 from my_beautiful_choir.configuration.mode import Mode
@@ -20,6 +23,7 @@ def _clean_environment(monkeypatch: pytest.MonkeyPatch) -> None:
         "MBC_WEB__HOST",
         "MBC_WEB__PORT",
         "MBC_WEB__ALLOWED_HOSTS",
+        "MBC_DATA_DIR",
     ):
         monkeypatch.delenv(key, raising=False)
 
@@ -31,6 +35,8 @@ def test_defaults() -> None:
     assert settings.web.host == "127.0.0.1"
     assert settings.web.port == 9000
     assert settings.web.allowed_hosts == ()
+    assert settings.data_dir == default_data_dir()
+    assert settings.data_dir.name == "my-beautiful-choir"
 
 
 def test_environment_values(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -38,6 +44,7 @@ def test_environment_values(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MBC_LOG_LEVEL", "DEBUG")
     monkeypatch.setenv("MBC_WEB__HOST", "0.0.0.0")  # noqa: S104
     monkeypatch.setenv("MBC_WEB__PORT", "8080")
+    monkeypatch.setenv("MBC_DATA_DIR", "choir-data")
     monkeypatch.setenv("MBC_WEB__ALLOWED_HOSTS", "localhost:9000, choir.example.org ,")
     settings = load_settings([])
     assert settings.mode is Mode.WEB
@@ -45,6 +52,7 @@ def test_environment_values(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.web.host == "0.0.0.0"  # noqa: S104
     assert settings.web.port == 8080
     assert settings.web.allowed_hosts == ("localhost:9000", "choir.example.org")
+    assert settings.data_dir == Path("choir-data")
 
 
 def test_command_line_mode_takes_precedence(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -116,3 +124,11 @@ def test_version_option(capsys: pytest.CaptureFixture[str]) -> None:
         load_settings(["--version"])
     assert raised.value.code == 0
     assert capsys.readouterr().out.startswith("my-beautiful-choir ")
+
+
+def test_empty_variables_take_the_default_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MBC_DATA_DIR", "")
+    monkeypatch.setenv("MBC_WEB__PORT", "")
+    settings = load_settings([])
+    assert settings.data_dir == default_data_dir()
+    assert settings.web.port == 9000

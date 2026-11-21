@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 
 from my_beautiful_choir.views.packaged.packaged_view import packaged_views_directory
-from tests.integration.stdio_session import TEST_ENVIRONMENT, TIMEOUT_SECONDS, StdioSession
+from tests.integration.stdio_session import TIMEOUT_SECONDS, StdioSession, launch_environment
 
 LAUNCHER = Path(__file__).with_name("personal_mode_launcher.py")
 ABOUT_URI = "ui://my-beautiful-choir/about.html"
@@ -35,7 +35,7 @@ def _exchange_show_about(session: StdioSession) -> dict[str, Any]:
 def launched(tmp_path: Path) -> Iterator[StdioSession]:
     """The real entry point, with a stub view."""
     (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
-    session = StdioSession([sys.executable, str(LAUNCHER), str(tmp_path)])
+    session = StdioSession([sys.executable, str(LAUNCHER), str(tmp_path)], tmp_path / "data")
     yield session
     session.kill()
 
@@ -60,7 +60,7 @@ def test_missing_view_exits_with_4_without_writing_to_stdout(tmp_path: Path) -> 
         text=True,
         encoding="utf-8",
         timeout=TIMEOUT_SECONDS,
-        env=TEST_ENVIRONMENT,
+        env=launch_environment(tmp_path / "data"),
         check=False,
     )
     assert completed.returncode == 4
@@ -72,8 +72,8 @@ def test_missing_view_exits_with_4_without_writing_to_stdout(tmp_path: Path) -> 
     not packaged_views_directory().joinpath("about.html").is_file(),
     reason="the user interface is not built (uv run nox -s ui)",
 )
-def test_module_serves_the_built_view() -> None:
-    session = StdioSession([sys.executable, "-m", "my_beautiful_choir"])
+def test_module_serves_the_built_view(tmp_path: Path) -> None:
+    session = StdioSession([sys.executable, "-m", "my_beautiful_choir"], tmp_path / "data")
     try:
         resource = _exchange_show_about(session)
         [contents] = resource["contents"]

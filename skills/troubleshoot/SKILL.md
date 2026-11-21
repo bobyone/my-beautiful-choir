@@ -1,6 +1,6 @@
 ---
 name: troubleshoot
-description: Use when my-beautiful-choir does not start, does not appear in the MCP client, is disconnected right after starting (for instance with "os error 3" in the client logs), shows an error, or when someone asks what an error code such as MBC-CONFIG, MBC-PORT, MBC-INSTALL or MBC-UNEXPECTED means, or where to find its logs.
+description: Use when my-beautiful-choir does not start, does not appear in the MCP client, is disconnected right after starting (for instance with "os error 3" in the client logs), shows an error, or when someone asks what an error code such as MBC-CONFIG, MBC-PORT, MBC-INSTALL, MBC-DATA or MBC-UNEXPECTED means, or where to find its logs.
 ---
 
 <!--
@@ -39,6 +39,7 @@ values of `MBC_` keys if needed, and remind the user not to paste secrets.
 | `MBC-CONFIG` | 2 | Correct each key listed in the message; valid values are in `docs/configuration.md`. |
 | `MBC-PORT` | 3 | Another program uses the web mode port: stop it, or set `MBC_WEB__PORT` to a free port. |
 | `MBC-INSTALL` | 4 | A view is missing: from the clone, run `uv run nox -s ui`, then restart. |
+| `MBC-DATA` | 5 | The data directory cannot be created or written, or the migration failed: check the directory named in the message or set `MBC_DATA_DIR` to another one; after a failed migration, restore the last backup and use the `report-issue` skill. |
 | `MBC-UNEXPECTED` | 1 | A bug: get the `exc_info` field of the `startup_failed` log record, then use the `report-issue` skill. |
 
 ## 3. Messages without an error code

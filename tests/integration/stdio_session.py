@@ -9,18 +9,23 @@ import queue
 import subprocess
 import threading
 from collections.abc import Sequence
+from pathlib import Path
 from typing import IO, Any
 
 from mcp.types import LATEST_PROTOCOL_VERSION
 
 TIMEOUT_SECONDS = 30
-TEST_ENVIRONMENT = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+
+
+def launch_environment(data_dir: Path) -> dict[str, str]:
+    """Environment of a launched process: no bytecode, data in ``data_dir`` (never the user's)."""
+    return {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "MBC_DATA_DIR": str(data_dir)}
 
 
 class StdioSession:
     """Talks JSON-RPC to the process, one message at a time."""
 
-    def __init__(self, command: Sequence[str]) -> None:
+    def __init__(self, command: Sequence[str], data_dir: Path) -> None:
         self.process = subprocess.Popen(  # noqa: S603
             list(command),
             stdin=subprocess.PIPE,
@@ -28,7 +33,7 @@ class StdioSession:
             stderr=subprocess.PIPE,
             text=True,
             encoding="utf-8",
-            env=TEST_ENVIRONMENT,
+            env=launch_environment(data_dir),
         )
         self.stdout_lines: queue.Queue[str] = queue.Queue()
         threading.Thread(target=self._pump, args=(self.process.stdout,), daemon=True).start()

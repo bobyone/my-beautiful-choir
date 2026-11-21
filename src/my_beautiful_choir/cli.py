@@ -50,7 +50,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run my-beautiful-choir and return the process exit code.
 
     Exit codes: 0 normal stop, 1 unexpected error, 2 invalid configuration or
-    usage, 3 unavailable resource, 4 incomplete installation.
+    usage, 3 unavailable resource, 4 incomplete installation, 5 unusable data store.
     """
     configure_logging("INFO")
     try:

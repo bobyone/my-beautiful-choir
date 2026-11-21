@@ -24,3 +24,4 @@ class WebModeContainer(containers.DeclarativeContainer):
         metrics=metrics,
         health_check=health_check,
     )
+    startup_steps = providers.List()

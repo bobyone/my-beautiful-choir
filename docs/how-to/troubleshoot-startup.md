@@ -41,6 +41,7 @@ started.
 | `MBC-CONFIG` | 2 | An option or an `MBC_` environment variable is invalid. Every invalid key is listed. | Correct the listed keys; see the [configuration reference](../configuration.md). |
 | `MBC-PORT` | 3 | Web mode cannot listen on the configured address and port, usually because another program uses the port. | Stop the other program, or set another port with `MBC_WEB__PORT`. |
 | `MBC-INSTALL` | 4 | A view of the user interface is missing from the installation. | Reinstall my-beautiful-choir. From a clone of the repository, build the user interface first: `uv run nox -s ui`. |
+| `MBC-DATA` | 5 | Personal mode cannot use its data directory: it cannot be created or written, or the database migration failed. | Check that the directory named in the message can be created and written by your user, or choose another one with `MBC_DATA_DIR` (see the [configuration reference](../configuration.md)). If the migration failed, restore your last backup, then report the problem. |
 | `MBC-UNEXPECTED` | 1 | An unexpected error, most likely a bug. | Read the `exc_info` field of the `startup_failed` log record, then [report the problem](https://github.com/bobyone/my-beautiful-choir/issues/new/choose), without secrets or personal data. |
 
 ## 3. Messages without an error code
