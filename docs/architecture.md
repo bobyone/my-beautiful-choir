@@ -66,12 +66,14 @@ code and the process exit code.
 | `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
 | `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
 | `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
-| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories. Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
+| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
+| `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
-Value objects: `Settings` and `WebSettings` (`configuration`, immutable),
+Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
+`Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
 (`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
 a tool can use during one call), `MetricsExport` (`monitoring`).
@@ -90,9 +92,9 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 
 | Container | Provides | Depends on |
 |---|---|---|
-| `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools`, `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`) | `settings` |
-| `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none) | `settings` |
+| `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `mode_tools` (the choir tools, metered) | `settings` |
+| `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
 Tests replace a provider with `override()`, for instance
@@ -143,6 +145,38 @@ Parses the command line (`--mode`, `--version`, `--help`), reads the `MBC_`
 environment variables and returns validated, immutable `Settings`. Raises
 `ConfigurationError` (`MBC-CONFIG`, exit code 2) listing every invalid key.
 Only the entry point calls it. See the [configuration reference](configuration.md).
+
+### `ChoirService` (`choirs`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `unit_of_work` | `UnitOfWorkFactory` | One unit of work per operation. |
+| `clock` | `Clock` | Creation dates. |
+| `authorization` | `Authorization` | `consult_repertoire` to list, `manage_choirs` to change. |
+
+- `list_choirs()`: every choir, the oldest first.
+- `create(name)`: the name is trimmed and normalized (Unicode NFC), from 1 to
+  100 characters (`InvalidChoirNameError`), unique ignoring case
+  (`ChoirNameTakenError`); the first choir becomes the default choir.
+- `rename(choir, new_name)`: same rules; only the case may change.
+- `set_default(choir)`: the previous default choir becomes ordinary.
+- `find_choir(choirs, name)`: the choir named `name`
+  (`ChoirNotFoundError`), or the default choir when `name` is None
+  (`NoChoirError` when there is no choir). Used by every operation taking
+  an optional choir.
+
+### `SqlChoirRepository` (`choirs.sql`)
+
+Table `choirs`; names are compared on `name_key` (trimmed, NFC, case-folded,
+unique); a partial unique index allows a single default choir, so
+`make_default` clears the previous one first.
+
+### Choir tools (`tools.choirs`)
+
+Text tools, without view: `list_choirs` (no argument), `create_choir(name)`,
+`rename_choir(choir, new_name)`, `set_default_choir(choir)`. Choirs are
+named by their name, ignoring case. The structured content describes the
+choirs (`name`, `is_default`).
 
 ### `ShowAboutTool` (`tools.view_tool.about`)
 

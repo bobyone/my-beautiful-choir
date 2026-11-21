@@ -8,6 +8,7 @@ from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncTransaction
 
+from my_beautiful_choir.choirs.sql.sql_choir_repository import SqlChoirRepository
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork
 
 
@@ -29,6 +30,11 @@ class SqlUnitOfWork(UnitOfWork):
         if self._connection is None:
             raise RuntimeError("The unit of work is not started")
         return self._connection
+
+    @property
+    def choirs(self) -> SqlChoirRepository:
+        """Choirs, in the transaction of this unit of work."""
+        return SqlChoirRepository(self.connection)
 
     async def __aenter__(self) -> Self:
         """Open a connection and begin a transaction."""

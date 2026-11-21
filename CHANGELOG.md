@@ -32,3 +32,9 @@ and this project adheres to
   - startup error messages with stable error codes and exit codes;
   - container image and Compose file for web mode.
 - Plugin skills: install, troubleshoot, privacy, report an issue (#1).
+- Personal mode keeps its data in a SQLite database in the user data
+  directory, set with `MBC_DATA_DIR`; an unusable directory or a failed
+  migration stops the startup with `MBC-DATA` (exit code 5) (#7).
+- Choirs in personal mode: create, rename, list, and choose the default
+  choir (#7).
+- Plugin skill: manage choirs (#7).

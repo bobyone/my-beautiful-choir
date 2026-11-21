@@ -25,3 +25,5 @@ class WebModeContainer(containers.DeclarativeContainer):
         health_check=health_check,
     )
     startup_steps = providers.List()
+    # The repertoire needs accounts: its tools are not offered in web mode yet.
+    mode_tools = providers.List()

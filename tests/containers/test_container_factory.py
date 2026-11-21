@@ -78,3 +78,21 @@ def test_personal_mode_prepares_its_data_store(tmp_path: Path) -> None:
 
 def test_web_mode_has_no_startup_step() -> None:
     assert list(create_container(Settings(mode=Mode.WEB)).mode.startup_steps()) == []
+
+
+def test_personal_mode_offers_the_choir_tools(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    names = [tool.name for tool in container.tools()]
+    assert names == [
+        "show_about",
+        "list_choirs",
+        "create_choir",
+        "rename_choir",
+        "set_default_choir",
+    ]
+    assert all(isinstance(tool, MeteredTool) for tool in container.tools())
+
+
+def test_web_mode_offers_no_repertoire_tool() -> None:
+    container = create_container(Settings(mode=Mode.WEB))
+    assert [tool.name for tool in container.tools()] == ["show_about"]

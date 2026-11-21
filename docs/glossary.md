@@ -21,7 +21,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Choir | Group of people singing together; the unit whose data is isolated from other choirs. | `Choir` | | choir | chorale |
 | Chorister | Member role allowing to consult and download the choir's repertoire and scores. | `Role.CHORISTER` | | chorister | choriste |
 | Composer | Author of the music of a work. | `Work.composer` | | composer | compositeur |
-| Default choir | Choir used when a request names none. | `default_choir` | | default choir | chorale par défaut |
+| Default choir | Choir used when a request names none. | `Choir.is_default` | | default choir | chorale par défaut |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |

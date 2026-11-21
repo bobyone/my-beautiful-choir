@@ -22,9 +22,8 @@ ABOUT_URI = "ui://my-beautiful-choir/about.html"
 def _exchange_show_about(session: StdioSession) -> dict[str, Any]:
     """Handshake, list the tools, call show_about; return its result."""
     assert session.initialize()["serverInfo"]["name"] == "my-beautiful-choir"
-    [tool] = session.request(2, "tools/list")["tools"]
-    assert tool["name"] == "show_about"
-    assert tool["_meta"]["ui"]["resourceUri"] == ABOUT_URI
+    tools = {tool["name"]: tool for tool in session.request(2, "tools/list")["tools"]}
+    assert tools["show_about"]["_meta"]["ui"]["resourceUri"] == ABOUT_URI
     call = session.request(3, "tools/call", {"name": "show_about", "arguments": {}})
     assert call["structuredContent"]["mode"] == "personal"
     assert call["content"][0]["text"].endswith(", personal mode.")
@@ -50,6 +49,33 @@ def test_personal_mode_serves_show_about_over_stdio(launched: StdioSession) -> N
     # logs go to stderr, as JSON
     messages = [json.loads(line)["message"] for line in stderr.splitlines() if line.startswith("{")]
     assert "Starting my-beautiful-choir" in messages
+    assert "Data store ready" in messages
+
+
+def _call(session: StdioSession, request_id: int, tool: str, **arguments: object) -> str:
+    result = session.request(request_id, "tools/call", {"name": tool, "arguments": arguments})
+    assert not result.get("isError"), result
+    return str(result["content"][0]["text"])
+
+
+def test_choirs_are_kept_in_the_data_directory(tmp_path: Path) -> None:
+    (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
+    command = [sys.executable, str(LAUNCHER), str(tmp_path)]
+    first = StdioSession(command, tmp_path / "data")
+    try:
+        first.initialize()
+        assert _call(first, 2, "create_choir", name="Chœur de Lyon").endswith("default choir.")
+        assert first.close()[0] == 0
+    finally:
+        first.kill()
+    second = StdioSession(command, tmp_path / "data")
+    try:
+        second.initialize()
+        assert _call(second, 2, "list_choirs") == "1 choir(s): Chœur de Lyon (default)."
+        assert second.close()[0] == 0
+    finally:
+        second.kill()
+    assert (tmp_path / "data" / "my-beautiful-choir.sqlite3").is_file()
 
 
 def test_missing_view_exits_with_4_without_writing_to_stdout(tmp_path: Path) -> None:

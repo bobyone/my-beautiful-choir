@@ -8,6 +8,8 @@ from collections.abc import Callable
 from types import TracebackType
 from typing import Self
 
+from my_beautiful_choir.choirs.choir_repository import ChoirRepository
+
 
 class UnitOfWork(ABC):
     """One atomic operation on the data store, giving access to the repositories.
@@ -29,6 +31,11 @@ class UnitOfWork(ABC):
         traceback: TracebackType | None,
     ) -> None:
         """End the operation, discarding uncommitted changes."""
+
+    @property
+    @abstractmethod
+    def choirs(self) -> ChoirRepository:
+        """Repository of the choirs."""
 
     @abstractmethod
     async def commit(self) -> None:

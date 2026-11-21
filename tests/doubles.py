@@ -120,6 +120,7 @@ class FakeClock(Clock):
     """Clock at a fixed time, moved forward by the tests."""
 
     def __init__(self, start: datetime = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)) -> None:
+        self.start = start
         self.current = start
 
     def now(self) -> datetime:
