@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+version = 1
+
+# Files that cannot carry an SPDX header (generated, empty or binary files).
+[[annotations]]
+path = [
+    "uv.lock",
+    "**/package-lock.json",
+    "**/py.typed",
+    "LICENSE",
+    ".claude/settings.json",
+    ".claude-plugin/*.json",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 bobyone"
+SPDX-License-Identifier = "GPL-2.0-or-later"
