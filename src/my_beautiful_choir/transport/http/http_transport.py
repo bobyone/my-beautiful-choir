@@ -101,6 +101,7 @@ class HttpTransport(Transport):
             PortUnavailableError: if the address cannot be listened on.
         """
         host, port = self._settings.host, self._settings.port
+        listener: socket.socket | None = None
         try:
             address = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)[0]
             listener = socket.socket(address[0], socket.SOCK_STREAM)
@@ -109,6 +110,8 @@ class HttpTransport(Transport):
                 listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             listener.bind(address[4])
         except OSError as error:
+            if listener is not None:
+                listener.close()
             raise PortUnavailableError(host, port, error.strerror or str(error)) from error
         listener.set_inheritable(True)
         return listener
