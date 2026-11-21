@@ -43,6 +43,16 @@ started.
 | `MBC-INSTALL` | 4 | A view of the user interface is missing from the installation. | Reinstall my-beautiful-choir. From a clone of the repository, build the user interface first: `uv run nox -s ui`. |
 | `MBC-UNEXPECTED` | 1 | An unexpected error, most likely a bug. | Read the `exc_info` field of the `startup_failed` log record, then [report the problem](https://github.com/bobyone/my-beautiful-choir/issues/new/choose), without secrets or personal data. |
 
-## 3. Get more details
+## 3. Messages without an error code
+
+Some failures happen before my-beautiful-choir starts, in the command that
+launches it. Their message has no `MBC-` code.
+
+| Message | Cause | Fix |
+|---|---|---|
+| `error: The system cannot find the path specified. (os error 3)` (or its translation), or `No such file or directory (os error 2)` | The `--directory` path given to `uv run` in the MCP client configuration does not exist, for instance a placeholder left from an example. | Set the absolute path of the clone of the repository, then restart the client completely. |
+| `'uv' is not recognized`, `spawn uv ENOENT` or `command not found: uv` | `uv` is not installed, or not on the `PATH` seen by the MCP client. | Install uv, or set the absolute path of the `uv` executable as `command`. |
+
+## 4. Get more details
 
 Set `MBC_LOG_LEVEL=DEBUG` to log more details, then restart.
