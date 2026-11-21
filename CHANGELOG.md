@@ -19,3 +19,16 @@ and this project adheres to
 - Repository foundation: editor and Git configuration, Python project with
   uv, nox sessions shared by the pre-commit hook and CI, REUSE compliance,
   community files, Claude Code plugin skeleton and settings (#1).
+- Application skeleton (#1):
+  - personal mode over stdio and web mode over Streamable HTTP, selected
+    with `--mode` or `MBC_MODE`;
+  - configuration from `MBC_` environment variables, validated at startup;
+  - `show_about` tool with its "About" MCP Apps view, translated into the
+    official languages of European states (machine translations to be
+    reviewed);
+  - web mode health check (`/healthz`), Prometheus metrics (`/metrics`),
+    JSON logs with correlation ids and without client IP addresses, DNS
+    rebinding protection;
+  - startup error messages with stable error codes and exit codes;
+  - container image and Compose file for web mode.
+- Plugin skills: install, troubleshoot, privacy, report an issue (#1).

@@ -21,6 +21,20 @@ computer; the project receives nothing. The user is their own controller.
 
 ## Web mode
 
+### 0. Technical logs and metrics (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Operate the service: diagnose failures, measure load and errors. |
+| Legal basis | Legitimate interest of the controller in running a secure and available service — Art. 6(1)(f) GDPR. |
+| Data subjects | People using an MCP client connected to the instance. |
+| Data categories | None identifying a person: HTTP method, route, status code, duration, random correlation id. **Client IP addresses are not logged** (the uvicorn access log is disabled). Metrics are aggregated counters without any identifier. |
+| Recipients | The instance operator. |
+| Processors | Hosting provider of the instance, chosen by the controller. |
+| Transfers outside the EU | None by the software. |
+| Retention | Logs are written to stderr; their retention is set by the controller's log collection. |
+| Security measures | No personal data in logs by design; no secret is ever logged. |
+
 The processing below is planned by the design validated in
 [issue #1](https://github.com/bobyone/my-beautiful-choir/issues/1); it is
 detailed when implemented.

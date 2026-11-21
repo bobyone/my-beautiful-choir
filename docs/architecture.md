@@ -37,7 +37,8 @@ flowchart LR
   `DependenciesContainer` named `mode`, either `PersonalModeContainer` or
   `WebModeContainer`, which provide `metrics` and `transport`. Singletons
   are scoped to the container.
-- **Business core**: repertoire and scores; depends only on abstractions.
+- **Business core**: tools and views (for now, `show_about`); repertoire and
+  scores come next. It depends only on abstractions.
 - **Implementations**: one set per mode, for identity, authorization
   ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md),
   [ADR 0004](decisions/0004-built-in-oauth-authorization-server.md)) and
