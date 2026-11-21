@@ -1,0 +1,165 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+"""Single definition of the project checks, shared by the pre-commit hook and CI.
+
+Every session runs its tools through ``uv run`` in the project environment, so
+that local runs and CI runs use exactly the locked versions.
+"""
+
+import re
+import subprocess
+from pathlib import Path
+
+import nox
+
+nox.options.default_venv_backend = "none"
+nox.options.sessions = ["check"]
+
+ALLOWED_LICENSES = ";".join(
+    [
+        "Apache",
+        "BSD",
+        "ISC",
+        "LGPL",
+        "MIT",
+        "MPL",
+        "PSF",
+        "Python Software Foundation",
+        "GPL-2.0-or-later",
+        "GPL-3.0",
+        "Unlicense",
+    ]
+)
+
+SIGNED_OFF_BY = re.compile(r"^Signed-off-by: .+ <.+>$", re.MULTILINE)
+
+
+def _uv_run(session: nox.Session, *args: str) -> None:
+    session.run("uv", "run", "--frozen", *args, external=True)
+
+
+@nox.session
+def lint(session: nox.Session) -> None:
+    """Check style and formatting without changing files."""
+    _uv_run(session, "ruff", "check", ".")
+    _uv_run(session, "ruff", "format", "--check", ".")
+
+
+@nox.session(name="format")
+def format_(session: nox.Session) -> None:
+    """Format files and apply automatic lint fixes."""
+    _uv_run(session, "ruff", "format", ".")
+    _uv_run(session, "ruff", "check", "--fix", ".")
+
+
+@nox.session
+def typecheck(session: nox.Session) -> None:
+    """Check static types."""
+    _uv_run(session, "mypy")
+
+
+@nox.session
+def tests(session: nox.Session) -> None:
+    """Run the tests and enforce the coverage threshold."""
+    _uv_run(session, "pytest", "--cov", "--cov-report=term", "--cov-report=xml", *session.posargs)
+
+
+@nox.session
+def reuse(session: nox.Session) -> None:
+    """Check REUSE compliance (licence and copyright of every file)."""
+    _uv_run(session, "reuse", "lint")
+
+
+@nox.session
+def audit(session: nox.Session) -> None:
+    """Audit locked dependencies for known vulnerabilities."""
+    requirements = session.run(
+        "uv",
+        "export",
+        "--frozen",
+        "--format",
+        "requirements-txt",
+        "--no-emit-project",
+        external=True,
+        silent=True,
+    )
+    if not isinstance(requirements, str):
+        session.error("Could not export the locked requirements.")
+    path = Path(session.create_tmp()) / "requirements.txt"
+    path.write_text(requirements, encoding="utf-8")
+    _uv_run(session, "pip-audit", "--strict", "--disable-pip", "--requirement", str(path))
+
+
+@nox.session
+def licenses(session: nox.Session) -> None:
+    """Check that runtime dependencies have licences compatible with GPL-2.0-or-later."""
+    session.run(
+        "uv",
+        "run",
+        "--frozen",
+        "--isolated",
+        "--no-dev",
+        "--with",
+        "pip-licenses",
+        "pip-licenses",
+        "--partial-match",
+        f"--allow-only={ALLOWED_LICENSES}",
+        "--ignore-packages",
+        "my-beautiful-choir",
+        "pip-licenses",
+        "prettytable",
+        "wcwidth",
+        external=True,
+    )
+
+
+@nox.session
+def dco(session: nox.Session) -> None:
+    """Check that every commit of a range carries a Signed-off-by line.
+
+    Usage: ``nox -s dco -- <base>..<head>``.
+    """
+    if not session.posargs:
+        session.error("Give the commit range to check, e.g. nox -s dco -- origin/main..HEAD")
+    revision_range = session.posargs[0]
+    commits = subprocess.run(
+        ["git", "rev-list", "--no-merges", revision_range],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.split()
+    unsigned = []
+    for commit in commits:
+        message = subprocess.run(
+            ["git", "log", "-1", "--format=%B", commit],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        if not SIGNED_OFF_BY.search(message):
+            unsigned.append(commit)
+    if unsigned:
+        session.error(f"Commits without a Signed-off-by line: {', '.join(unsigned)}")
+    session.log(f"{len(commits)} commit(s) checked, all signed off.")
+
+
+@nox.session
+def sign_off(session: nox.Session) -> None:
+    """Check that a commit message file carries a Signed-off-by line (commit-msg hook)."""
+    if not session.posargs:
+        session.error("Give the commit message file to check.")
+    message = Path(session.posargs[0]).read_text(encoding="utf-8")
+    if not SIGNED_OFF_BY.search(message):
+        session.error("The commit message must carry a Signed-off-by line: use git commit -s.")
+
+
+@nox.session
+def check(session: nox.Session) -> None:
+    """Checks run by the pre-commit hook: lint, types, tests, REUSE."""
+    lint(session)
+    typecheck(session)
+    tests(session)
+    reuse(session)

@@ -1,0 +1,75 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+[project]
+name = "my-beautiful-choir"
+version = "0.1.0.dev0"
+description = "A choir management application inside your AI system, delivered as an MCP app."
+readme = "README.md"
+license = "GPL-2.0-or-later"
+license-files = ["LICENSES/*.txt"]
+authors = [{ name = "bobyone" }]
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/bobyone/my-beautiful-choir"
+Issues = "https://github.com/bobyone/my-beautiful-choir/issues"
+Changelog = "https://github.com/bobyone/my-beautiful-choir/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "nox",
+    "pip-audit",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "reuse",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_beautiful_choir"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "N", "S", "SIM", "RUF", "ANN", "PT", "LOG", "G"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"noxfile.py" = ["S603", "S607"]
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+files = ["src", "tests", "noxfile.py", ".claude/hooks"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--import-mode=importlib"]
+
+[tool.coverage.run]
+source = ["my_beautiful_choir"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
