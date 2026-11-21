@@ -18,6 +18,7 @@ from my_beautiful_choir.monitoring.prometheus.prometheus_metrics import Promethe
 from my_beautiful_choir.monitoring.server.server_health_check import ServerHealthCheck
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
+from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.transport.http.http_transport import HttpTransport
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
@@ -74,6 +75,14 @@ def test_personal_mode_prepares_its_data_store(tmp_path: Path) -> None:
     assert isinstance(database, SqlDatabase)
     assert database.engine.url.database == str(tmp_path / "my-beautiful-choir.sqlite3")
     assert container.mode.database() is database
+
+
+def test_personal_mode_stores_files_in_its_data_directory(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    file_storage = container.mode.file_storage()
+    assert isinstance(file_storage, LocalFileStorage)
+    assert file_storage.root == tmp_path / "files"
+    assert container.mode.file_storage() is file_storage
 
 
 def test_web_mode_has_no_startup_step() -> None:

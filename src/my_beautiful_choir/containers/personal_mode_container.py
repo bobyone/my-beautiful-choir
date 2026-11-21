@@ -15,6 +15,7 @@ from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
+from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
 from my_beautiful_choir.tools.choirs.rename_choir_tool import RenameChoirTool
@@ -49,6 +50,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         providers.Singleton(PrepareDataStore, data_dir=data_dir, database=database)
     )
     unit_of_work = database.provided.unit_of_work
+    file_storage = providers.Singleton(LocalFileStorage.in_directory, data_dir=data_dir)
 
     clock = providers.Singleton(SystemClock)
     authorization = providers.Singleton(LocalUserAuthorization)

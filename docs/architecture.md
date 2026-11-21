@@ -69,6 +69,7 @@ code and the process exit code.
 | `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
+| `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
 | `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
@@ -95,7 +96,7 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `mode_tools` (the choir and work tools, metered) | `settings` |
 | `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
@@ -140,6 +141,19 @@ Startup step of personal mode: creates the data directory, checks that it
 can be written, then migrates the database. Raises `DataStoreError`
 (`MBC-DATA`, exit code 5) when the directory cannot be used or the
 migration fails.
+
+### `LocalFileStorage` (`storage.file_system`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `root` | `Path` | Directory holding the stored files. `LocalFileStorage.in_directory(data_dir)` gives the `files` subdirectory of the data directory, in personal mode. |
+
+Each key is a file under `root`; its segments are subdirectories, created
+when needed. Writing goes through a temporary file in the same directory,
+then a rename, so that a stored file is never left half written. File
+system calls run in a worker thread. An `OSError` becomes a `StorageError`
+naming the key. Limits: the whole content is held in memory (scores are at
+most 50 MB); no locking between processes.
 
 ### `load_settings(argv)` (`configuration.loader`)
 
