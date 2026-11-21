@@ -18,12 +18,21 @@ updates:
     groups:
       ui-development:
         dependency-type: development
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet.
+      - dependency-name: typescript
+        versions: [">=7"]
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
     commit-message:
       prefix: deps
+    ignore:
+      # The image runs a Python version tested by CI (ADR 0006): moving to a newer
+      # version is a separate decision. Digest updates of the current tag are kept.
+      - dependency-name: python
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
