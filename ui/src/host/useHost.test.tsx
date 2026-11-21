@@ -61,6 +61,15 @@ describe("useHost", () => {
     expect(result.current.hostContext).toEqual({ locale: "de-DE", theme: "light" });
   });
 
+  it("keeps the initial context fields that a change does not carry", () => {
+    host.initialContext = { locale: "fr-FR", theme: "light" };
+    const { result } = renderHook(() => useHost("view", "1.0.0"));
+    act(() => {
+      host.changeHostContext({ theme: "dark" });
+    });
+    expect(result.current.hostContext).toEqual({ locale: "fr-FR", theme: "dark" });
+  });
+
   it("reports a failed connection", () => {
     host.connected = false;
     host.error = new Error("timeout");

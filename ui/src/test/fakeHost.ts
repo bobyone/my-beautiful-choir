@@ -43,7 +43,9 @@ export class FakeHost {
     this.emit("toolresult", result);
   }
 
+  /** Like the SDK, merges the changes into the context before notifying the view. */
   changeHostContext(changes: McpUiHostContext): void {
+    this.initialContext = { ...this.initialContext, ...changes };
     this.emit("hostcontextchanged", changes);
   }
 

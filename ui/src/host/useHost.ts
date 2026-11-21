@@ -33,8 +33,10 @@ export function useHost(viewName: string, version: string): HostState {
       created.addEventListener("toolresult", (result) => {
         setToolResult(result);
       });
-      created.addEventListener("hostcontextchanged", (changes) => {
-        setHostContext((previous) => ({ ...previous, ...changes }));
+      // A change carries only the modified fields; the SDK merges it into the
+      // full context before notifying.
+      created.addEventListener("hostcontextchanged", () => {
+        setHostContext(created.getHostContext());
       });
     },
   });
