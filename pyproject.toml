@@ -1,0 +1,101 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+[project]
+name = "my-beautiful-choir"
+version = "0.1.0.dev0"
+description = "A choir management application inside your AI system, delivered as an MCP app."
+readme = "README.md"
+license = "GPL-2.0-or-later"
+license-files = ["LICENSES/*.txt"]
+authors = [{ name = "bobyone" }]
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Typing :: Typed",
+]
+dependencies = [
+    "asgi-correlation-id>=5.0.1",
+    "dependency-injector>=4.49.1",
+    "mcp>=2.3.0,<3",
+    "prometheus-client>=0.26.0",
+    "pydantic-settings>=2.16.3",
+    "python-json-logger>=4.2.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+my-beautiful-choir = "my_beautiful_choir.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bobyone/my-beautiful-choir"
+Issues = "https://github.com/bobyone/my-beautiful-choir/issues"
+Changelog = "https://github.com/bobyone/my-beautiful-choir/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy",
+    "nox",
+    "pip-audit",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "reuse",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+# Built views are ignored by Git but must be packaged: build them first (nox -s ui).
+artifacts = ["src/my_beautiful_choir/views/static/*.html", "src/my_beautiful_choir/views/static/*.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_beautiful_choir"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["ui/node_modules", "ui/dist", "ui/coverage"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "N", "S", "SIM", "RUF", "ANN", "PT", "LOG", "G"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["my_beautiful_choir", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"noxfile.py" = ["S603", "S607"]
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+files = ["src", "tests", "noxfile.py", ".claude/hooks"]
+mypy_path = ["src", "."]
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--import-mode=importlib"]
+
+[tool.coverage.run]
+source = ["my_beautiful_choir"]
+branch = true
+# Two-line module, checked by tests/integration/test_module_entry_point.py in a subprocess.
+omit = ["*/my_beautiful_choir/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true

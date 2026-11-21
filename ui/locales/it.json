@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Impossibile visualizzare le informazioni. Chiedi all’assistente di mostrarle di nuovo.",
+    "loading": "Caricamento delle informazioni…",
+    "title": "Informazioni su {name}",
+    "version": "Versione"
+  },
+  "connection": {
+    "error": "Questa vista non è riuscita a connettersi all’assistente. Chiudila e riprova."
+  },
+  "glossary": {
+    "mode": "Modalità",
+    "personalMode": "Modalità personale",
+    "webMode": "Modalità web"
+  }
+}

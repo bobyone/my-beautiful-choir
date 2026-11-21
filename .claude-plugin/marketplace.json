@@ -1,0 +1,14 @@
+{
+  "name": "my-beautiful-choir",
+  "owner": {
+    "name": "bobyone",
+    "url": "https://github.com/bobyone"
+  },
+  "plugins": [
+    {
+      "name": "my-beautiful-choir",
+      "source": "./",
+      "description": "Skills to install, use, administer, troubleshoot and contribute to my-beautiful-choir."
+    }
+  ]
+}

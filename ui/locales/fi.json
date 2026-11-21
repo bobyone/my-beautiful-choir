@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Tietoja ei voitu näyttää. Pyydä avustajaa näyttämään ne uudelleen.",
+    "loading": "Ladataan tietoja…",
+    "title": "Tietoja: {name}",
+    "version": "Versio"
+  },
+  "connection": {
+    "error": "Tämä näkymä ei saanut yhteyttä avustajaan. Sulje se ja yritä uudelleen."
+  },
+  "glossary": {
+    "mode": "Tila",
+    "personalMode": "Henkilökohtainen tila",
+    "webMode": "Verkkotila"
+  }
+}

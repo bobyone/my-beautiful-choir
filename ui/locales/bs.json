@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informacije nije moguće prikazati. Zamolite asistenta da ih ponovo prikaže.",
+    "loading": "Učitavanje informacija…",
+    "title": "O aplikaciji {name}",
+    "version": "Verzija"
+  },
+  "connection": {
+    "error": "Ovaj prikaz se nije mogao povezati s asistentom. Zatvorite ga i pokušajte ponovo."
+  },
+  "glossary": {
+    "mode": "Način rada",
+    "personalMode": "Lični način rada",
+    "webMode": "Web način rada"
+  }
+}

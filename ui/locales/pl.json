@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Nie udało się wyświetlić informacji. Poproś asystenta o ponowne ich wyświetlenie.",
+    "loading": "Wczytywanie informacji…",
+    "title": "Informacje o {name}",
+    "version": "Wersja"
+  },
+  "connection": {
+    "error": "Ten widok nie mógł połączyć się z asystentem. Zamknij go i spróbuj ponownie."
+  },
+  "glossary": {
+    "mode": "Tryb",
+    "personalMode": "Tryb osobisty",
+    "webMode": "Tryb webowy"
+  }
+}

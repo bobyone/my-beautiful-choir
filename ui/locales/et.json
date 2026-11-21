@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Teavet ei õnnestunud kuvada. Paluge assistendil seda uuesti näidata.",
+    "loading": "Teabe laadimine…",
+    "title": "Teave: {name}",
+    "version": "Versioon"
+  },
+  "connection": {
+    "error": "See vaade ei saanud assistendiga ühendust. Sulgege see ja proovige uuesti."
+  },
+  "glossary": {
+    "mode": "Režiim",
+    "personalMode": "Isiklik režiim",
+    "webMode": "Veebirežiim"
+  }
+}

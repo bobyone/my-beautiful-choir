@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "No s’ha pogut mostrar la informació. Demaneu a l’assistent que la torni a mostrar.",
+    "loading": "S’està carregant la informació…",
+    "title": "Quant a {name}",
+    "version": "Versió"
+  },
+  "connection": {
+    "error": "Aquesta vista no s’ha pogut connectar amb l’assistent. Tanqueu-la i torneu-ho a provar."
+  },
+  "glossary": {
+    "mode": "Mode",
+    "personalMode": "Mode personal",
+    "webMode": "Mode web"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informāciju neizdevās parādīt. Lūdziet asistentam to parādīt vēlreiz.",
+    "loading": "Notiek informācijas ielāde…",
+    "title": "Par {name}",
+    "version": "Versija"
+  },
+  "connection": {
+    "error": "Šis skats nevarēja izveidot savienojumu ar asistentu. Aizveriet to un mēģiniet vēlreiz."
+  },
+  "glossary": {
+    "mode": "Režīms",
+    "personalMode": "Personīgais režīms",
+    "webMode": "Tīmekļa režīms"
+  }
+}

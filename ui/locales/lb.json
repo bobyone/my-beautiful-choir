@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "D’Informatioune konnten net ugewise ginn. Frot den Assistent, se nach eng Kéier unzeweisen.",
+    "loading": "D’Informatioune ginn gelueden…",
+    "title": "Iwwer {name}",
+    "version": "Versioun"
+  },
+  "connection": {
+    "error": "Dës Usiicht konnt sech net mam Assistent verbannen. Maacht se zou a probéiert nach eng Kéier."
+  },
+  "glossary": {
+    "mode": "Modus",
+    "personalMode": "Perséinleche Modus",
+    "webMode": "Webmodus"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Les informations n’ont pas pu être affichées. Demandez à l’assistant de les afficher à nouveau.",
+    "loading": "Chargement des informations…",
+    "title": "À propos de {name}",
+    "version": "Version"
+  },
+  "connection": {
+    "error": "Cette vue n’a pas pu se connecter à l’assistant. Fermez-la, puis réessayez."
+  },
+  "glossary": {
+    "mode": "Mode",
+    "personalMode": "Mode perso",
+    "webMode": "Mode web"
+  }
+}

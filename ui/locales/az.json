@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Məlumatı göstərmək mümkün olmadı. Köməkçidən onu yenidən göstərməsini xahiş edin.",
+    "loading": "Məlumat yüklənir…",
+    "title": "{name} haqqında",
+    "version": "Versiya"
+  },
+  "connection": {
+    "error": "Bu görünüş köməkçiyə qoşula bilmədi. Onu bağlayın və yenidən cəhd edin."
+  },
+  "glossary": {
+    "mode": "Rejim",
+    "personalMode": "Şəxsi rejim",
+    "webMode": "Veb rejimi"
+  }
+}

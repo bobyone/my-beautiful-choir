@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "L-informazzjoni ma setgħetx tintwera. Itlob lill-assistent biex jurihielek mill-ġdid.",
+    "loading": "Qed tillowdja l-informazzjoni…",
+    "title": "Dwar {name}",
+    "version": "Verżjoni"
+  },
+  "connection": {
+    "error": "Din il-veduta ma setgħetx tikkonnettja mal-assistent. Agħlaqha u erġa’ pprova."
+  },
+  "glossary": {
+    "mode": "Modalità",
+    "personalMode": "Modalità personali",
+    "webMode": "Modalità web"
+  }
+}

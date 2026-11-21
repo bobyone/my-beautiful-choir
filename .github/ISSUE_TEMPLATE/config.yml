@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability
+    url: https://github.com/bobyone/my-beautiful-choir/security/advisories/new
+    about: Report security issues privately, never in a public issue.

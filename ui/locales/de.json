@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Die Informationen konnten nicht angezeigt werden. Bitten Sie den Assistenten, sie erneut anzuzeigen.",
+    "loading": "Informationen werden geladen…",
+    "title": "Über {name}",
+    "version": "Version"
+  },
+  "connection": {
+    "error": "Diese Ansicht konnte keine Verbindung zum Assistenten herstellen. Schließen Sie sie und versuchen Sie es erneut."
+  },
+  "glossary": {
+    "mode": "Modus",
+    "personalMode": "Persönlicher Modus",
+    "webMode": "Webmodus"
+  }
+}

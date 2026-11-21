@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Las infurmaziuns n’han betg pudì vegnir mussadas. Dumandai l’assistent da las mussar anc ina giada.",
+    "loading": "Las infurmaziuns vegnan chargiadas…",
+    "title": "Davart {name}",
+    "version": "Versiun"
+  },
+  "connection": {
+    "error": "Questa vista n’ha betg pudì sa colliar cun l’assistent. Serrai ella e reempruvai."
+  },
+  "glossary": {
+    "mode": "Modus",
+    "personalMode": "Modus persunal",
+    "webMode": "Modus web"
+  }
+}

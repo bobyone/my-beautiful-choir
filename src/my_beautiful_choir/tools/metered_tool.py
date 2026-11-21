@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+"""Decorator recording the metrics of a tool."""
+
+import time
+
+from pydantic import BaseModel
+
+from my_beautiful_choir.monitoring.metrics import Metrics
+from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_result import ToolResult
+from my_beautiful_choir.views.view import View
+
+
+class MeteredTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
+    """Wraps a tool and records the duration and outcome of each of its calls."""
+
+    def __init__(self, inner: Tool[ArgumentsT], metrics: Metrics) -> None:
+        self._inner = inner
+        self._metrics = metrics
+
+    @property
+    def name(self) -> str:
+        """Name of the wrapped tool."""
+        return self._inner.name
+
+    @property
+    def description(self) -> str:
+        """Description of the wrapped tool."""
+        return self._inner.description
+
+    @property
+    def arguments_model(self) -> type[ArgumentsT]:
+        """Arguments model of the wrapped tool."""
+        return self._inner.arguments_model
+
+    @property
+    def view(self) -> View | None:
+        """View of the wrapped tool."""
+        return self._inner.view
+
+    async def execute(self, arguments: ArgumentsT) -> ToolResult:
+        """Run the wrapped tool and record the call, whatever its outcome."""
+        start = time.perf_counter()
+        failed = True
+        try:
+            result = await self._inner.execute(arguments)
+            failed = False
+            return result
+        finally:
+            self._metrics.record_tool_call(self.name, time.perf_counter() - start, failed)
