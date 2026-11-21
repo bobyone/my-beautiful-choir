@@ -179,6 +179,27 @@ Routes: `/mcp` (Streamable HTTP, stateful sessions in memory), `/healthz`
 - **Limit**: no authentication yet; web mode must not be exposed publicly
   until OAuth is implemented.
 
+### User interface (`ui/`)
+
+Each view is a React application built by Vite into one self-contained HTML
+file (`vite-plugin-singlefile`): MCP hosts render it in a sandboxed iframe
+that forbids remote resources. Views are copied into
+`my_beautiful_choir/views/static/` and served by `PackagedView`.
+
+| Module | Role |
+|---|---|
+| `src/host/useHost.ts` | Connects the view to the host (`useApp`), keeps the tool result and the host context (merged with its changes), applies the host styles (`useHostStyles`). |
+| `src/i18n/catalogues.ts` | Loads every catalogue of `ui/locales/` and the fallbacks of `ui/i18n/fallbacks.json`. |
+| `src/i18n/resolveLanguage.ts` | Chooses the catalogue for the host locale: full tag, language and script, language, each with its fallback; English otherwise. |
+| `src/i18n/i18n.ts` | Creates the i18next instance with ICU messages and English as fallback. |
+| `src/theme/applyTheme.ts` | Applies the host theme to Bootstrap (`data-bs-theme`), light by default. |
+| `src/views/about/` | The "About" view: `AboutApp` (host, language, theme), `AboutView` (loading, error, connection error, information), `parseAboutInfo` (validates the `show_about` structured content). |
+
+Every user-facing text goes through a translation key; labels of glossary
+terms use the `glossary.*` keys. See
+[how to add a language](how-to/add-a-language.md) and
+[how to build the user interface](how-to/build-the-ui.md).
+
 ### `NullMetrics` (`monitoring`)
 
 Null Object used in personal mode: records nothing, exports an empty body.

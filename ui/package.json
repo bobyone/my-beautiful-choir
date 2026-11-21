@@ -1,0 +1,49 @@
+{
+  "name": "my-beautiful-choir-ui",
+  "private": true,
+  "version": "0.1.0-dev.0",
+  "description": "MCP Apps views of my-beautiful-choir.",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write . && eslint --fix .",
+    "test": "vitest run --coverage",
+    "check-locales": "node scripts/check-locales.mjs && i18next-cli extract --ci --dry-run --quiet",
+    "licenses": "node scripts/check-licenses.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^2.0.4",
+    "bootstrap": "^5.3.9",
+    "i18next": "^27.2.2",
+    "i18next-icu": "^2.7.1",
+    "intl-messageformat": "^12.2.0",
+    "react": "^19.3.1",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^18.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "@vitest/coverage-v8": "^5.1.1",
+    "axe-core": "^4.14.1",
+    "eslint": "^10.15.0",
+    "i18next-cli": "^1.93.1",
+    "jsdom": "^31.0.1",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.73.0",
+    "vite": "^8.3.8",
+    "vite-plugin-singlefile": "^2.3.4",
+    "vitest": "^5.1.1"
+  }
+}

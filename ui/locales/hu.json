@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Az információkat nem sikerült megjeleníteni. Kérje meg az asszisztenst, hogy jelenítse meg őket újra.",
+    "loading": "Információk betöltése…",
+    "title": "A(z) {name} névjegye",
+    "version": "Verzió"
+  },
+  "connection": {
+    "error": "Ez a nézet nem tudott csatlakozni az asszisztenshez. Zárja be, majd próbálja újra."
+  },
+  "glossary": {
+    "mode": "Mód",
+    "personalMode": "Személyes mód",
+    "webMode": "Webes mód"
+  }
+}

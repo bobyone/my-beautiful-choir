@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Oplysningerne kunne ikke vises. Bed assistenten om at vise dem igen.",
+    "loading": "Indlæser oplysningerne…",
+    "title": "Om {name}",
+    "version": "Version"
+  },
+  "connection": {
+    "error": "Denne visning kunne ikke oprette forbindelse til assistenten. Luk den, og prøv igen."
+  },
+  "glossary": {
+    "mode": "Tilstand",
+    "personalMode": "Personlig tilstand",
+    "webMode": "Webtilstand"
+  }
+}

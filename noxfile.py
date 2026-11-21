@@ -8,6 +8,7 @@ that local runs and CI runs use exactly the locked versions.
 """
 
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -33,6 +34,11 @@ ALLOWED_LICENSES = ";".join(
 )
 
 SIGNED_OFF_BY = re.compile(r"^Signed-off-by: .+ <.+>$", re.MULTILINE)
+
+PROJECT_DIRECTORY = Path(__file__).parent
+UI_DIRECTORY = PROJECT_DIRECTORY / "ui"
+VIEWS_PACKAGE = PROJECT_DIRECTORY / "src" / "my_beautiful_choir" / "views" / "static"
+THIRD_PARTY_NOTICES = "THIRD-PARTY-LICENSES.md"
 
 
 def _uv_run(session: nox.Session, *args: str) -> None:
@@ -158,10 +164,62 @@ def sign_off(session: nox.Session) -> None:
         session.error("The commit message must carry a Signed-off-by line: use git commit -s.")
 
 
+def _npm(session: nox.Session, *args: str) -> None:
+    session.run("npm", *args, external=True)
+
+
+def _install_ui_dependencies(session: nox.Session, force: bool) -> None:
+    """Install the locked UI dependencies (always in CI, once locally)."""
+    if force or not (UI_DIRECTORY / "node_modules").is_dir():
+        _npm(session, "ci", "--no-fund", "--no-audit")
+
+
+@nox.session
+def ui(session: nox.Session) -> None:
+    """Build the views and copy them, with their licence notices, into the Python package.
+
+    Pass ``-- --fresh`` to reinstall the UI dependencies first.
+    """
+    with session.chdir(UI_DIRECTORY):
+        _install_ui_dependencies(session, force="--fresh" in session.posargs)
+        _npm(session, "run", "build")
+    VIEWS_PACKAGE.mkdir(parents=True, exist_ok=True)
+    for built in sorted((UI_DIRECTORY / "dist" / "views").glob("*.html")):
+        shutil.copyfile(built, VIEWS_PACKAGE / built.name)
+        session.log(f"Copied {built.name} into {VIEWS_PACKAGE}")
+    shutil.copyfile(
+        UI_DIRECTORY / "dist" / ".vite" / "license.md", VIEWS_PACKAGE / THIRD_PARTY_NOTICES
+    )
+
+
+@nox.session
+def ui_check(session: nox.Session) -> None:
+    """Check the UI: lint and format, types, tests with coverage, catalogues.
+
+    Pass ``-- --fresh`` to reinstall the UI dependencies first.
+    """
+    with session.chdir(UI_DIRECTORY):
+        _install_ui_dependencies(session, force="--fresh" in session.posargs)
+        _npm(session, "run", "lint")
+        _npm(session, "run", "typecheck")
+        _npm(session, "run", "test")
+        _npm(session, "run", "check-locales")
+
+
+@nox.session
+def ui_audit(session: nox.Session) -> None:
+    """Audit the UI dependencies and check the licences of the bundled ones."""
+    with session.chdir(UI_DIRECTORY):
+        _install_ui_dependencies(session, force="--fresh" in session.posargs)
+        _npm(session, "audit")
+        _npm(session, "run", "licenses")
+
+
 @nox.session
 def check(session: nox.Session) -> None:
-    """Checks run by the pre-commit hook: lint, types, tests, REUSE."""
+    """Checks run by the pre-commit hook: lint, types, tests, REUSE, user interface."""
     lint(session)
     typecheck(session)
     tests(session)
     reuse(session)
+    ui_check(session)

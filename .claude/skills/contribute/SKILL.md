@@ -33,7 +33,10 @@ commands to run.
 ```sh
 uv sync
 uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
+uv run nox -s ui
 ```
+
+Node.js (LTS) must be on the PATH for the user interface sessions.
 
 ## 4. Branch
 
@@ -60,7 +63,7 @@ Never bypass the hooks. If a check fails, fix it.
 
 ## 7. Pull request
 
-1. Run the CI-only checks: `uv run nox -s audit licenses` and
+1. Run the CI-only checks: `uv run nox -s audit licenses ui_audit` and
    `uv run nox -s dco -- origin/main..HEAD`.
 2. Push the branch to the fork and open the pull request with the template:
 

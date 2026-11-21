@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informasjonen kunne ikkje visast. Be assistenten om å visa han på nytt.",
+    "loading": "Lastar inn informasjonen…",
+    "title": "Om {name}",
+    "version": "Versjon"
+  },
+  "connection": {
+    "error": "Denne visinga kunne ikkje kopla til assistenten. Lukk ho og prøv igjen."
+  },
+  "glossary": {
+    "mode": "Modus",
+    "personalMode": "Personleg modus",
+    "webMode": "Nettmodus"
+  }
+}

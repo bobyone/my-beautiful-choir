@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informace se nepodařilo zobrazit. Požádejte asistenta, aby je zobrazil znovu.",
+    "loading": "Načítání informací…",
+    "title": "O aplikaci {name}",
+    "version": "Verze"
+  },
+  "connection": {
+    "error": "Toto zobrazení se nemohlo připojit k asistentovi. Zavřete ho a zkuste to znovu."
+  },
+  "glossary": {
+    "mode": "Režim",
+    "personalMode": "Osobní režim",
+    "webMode": "Webový režim"
+  }
+}

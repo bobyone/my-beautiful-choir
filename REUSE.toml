@@ -12,6 +12,11 @@ path = [
     "LICENSE",
     ".claude/settings.json",
     ".claude-plugin/*.json",
+    "ui/package.json",
+    "ui/tsconfig.json",
+    "ui/.prettierrc.json",
+    "ui/i18n/*.json",
+    "ui/locales/*.json",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bobyone"

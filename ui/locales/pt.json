@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Não foi possível apresentar as informações. Peça ao assistente para as mostrar novamente.",
+    "loading": "A carregar as informações…",
+    "title": "Sobre o {name}",
+    "version": "Versão"
+  },
+  "connection": {
+    "error": "Esta vista não conseguiu ligar-se ao assistente. Feche-a e tente novamente."
+  },
+  "glossary": {
+    "mode": "Modo",
+    "personalMode": "Modo pessoal",
+    "webMode": "Modo web"
+  }
+}

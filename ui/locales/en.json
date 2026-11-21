@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "The information could not be displayed. Ask the assistant to show it again.",
+    "loading": "Loading the information…",
+    "title": "About {name}",
+    "version": "Version"
+  },
+  "connection": {
+    "error": "This view could not connect to the assistant. Close it, then try again."
+  },
+  "glossary": {
+    "mode": "Mode",
+    "personalMode": "Personal mode",
+    "webMode": "Web mode"
+  }
+}

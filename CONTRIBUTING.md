@@ -42,8 +42,8 @@ Each architecture decision becomes an ADR in
 ## 3. Set up the development environment
 
 Prerequisites: [Git](https://git-scm.com/), [uv](https://docs.astral.sh/uv/)
-(it installs the right Python version), and Node.js (LTS) for the user
-interface.
+(it installs the right Python version), and [Node.js](https://nodejs.org/)
+(LTS, on the PATH) to build and check the user interface.
 
 ```sh
 # Fork the repository on GitHub, then:
@@ -51,7 +51,11 @@ git clone https://github.com/<your-account>/my-beautiful-choir.git
 cd my-beautiful-choir
 uv sync
 uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
+uv run nox -s ui
 ```
+
+To fix a translation or add a language, follow
+[the dedicated how-to](docs/how-to/add-a-language.md).
 
 ## 4. Run the tests and checks
 
@@ -60,7 +64,10 @@ and used by the pre-commit hook and CI alike:
 
 | Command | What it does |
 |---|---|
-| `uv run nox` | default checks: lint, types, tests with coverage, REUSE |
+| `uv run nox` | default checks: lint, types, tests with coverage, REUSE, user interface |
+| `uv run nox -s ui` | builds the views into the Python package (needed to run the application) |
+| `uv run nox -s ui_check` | user interface: lint and format, types, tests with coverage, translation catalogues |
+| `uv run nox -s ui_audit` | user interface: known vulnerabilities, licences of bundled libraries |
 | `uv run nox -s format` | formats the code and applies automatic fixes |
 | `uv run nox -s lint` | style and formatting (ruff) |
 | `uv run nox -s typecheck` | static types (mypy, strict) |

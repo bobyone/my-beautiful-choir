@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Ekki tókst að birta upplýsingarnar. Biddu aðstoðarmanninn að sýna þær aftur.",
+    "loading": "Hleð upplýsingum…",
+    "title": "Um {name}",
+    "version": "Útgáfa"
+  },
+  "connection": {
+    "error": "Þetta yfirlit gat ekki tengst aðstoðarmanninum. Lokaðu því og reyndu aftur."
+  },
+  "glossary": {
+    "mode": "Hamur",
+    "personalMode": "Einkahamur",
+    "webMode": "Vefhamur"
+  }
+}

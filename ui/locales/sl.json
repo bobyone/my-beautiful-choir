@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Podatkov ni bilo mogoče prikazati. Prosite pomočnika, naj jih znova prikaže.",
+    "loading": "Nalaganje podatkov …",
+    "title": "O aplikaciji {name}",
+    "version": "Različica"
+  },
+  "connection": {
+    "error": "Ta pogled se ni mogel povezati s pomočnikom. Zaprite ga in poskusite znova."
+  },
+  "glossary": {
+    "mode": "Način",
+    "personalMode": "Osebni način",
+    "webMode": "Spletni način"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informacioni nuk mund të shfaqej. Kërkojini asistentit ta shfaqë përsëri.",
+    "loading": "Po ngarkohet informacioni…",
+    "title": "Rreth {name}",
+    "version": "Versioni"
+  },
+  "connection": {
+    "error": "Kjo pamje nuk mund të lidhej me asistentin. Mbylleni dhe provoni përsëri."
+  },
+  "glossary": {
+    "mode": "Modaliteti",
+    "personalMode": "Modaliteti personal",
+    "webMode": "Modaliteti ueb"
+  }
+}

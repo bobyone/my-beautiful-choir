@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informationen kunde inte visas. Be assistenten att visa den igen.",
+    "loading": "Läser in informationen…",
+    "title": "Om {name}",
+    "version": "Version"
+  },
+  "connection": {
+    "error": "Den här vyn kunde inte ansluta till assistenten. Stäng den och försök igen."
+  },
+  "glossary": {
+    "mode": "Läge",
+    "personalMode": "Personligt läge",
+    "webMode": "Webbläge"
+  }
+}

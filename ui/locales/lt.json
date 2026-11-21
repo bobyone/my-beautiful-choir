@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informacijos nepavyko parodyti. Paprašykite asistento parodyti ją dar kartą.",
+    "loading": "Įkeliama informacija…",
+    "title": "Apie {name}",
+    "version": "Versija"
+  },
+  "connection": {
+    "error": "Šis rodinys negalėjo prisijungti prie asistento. Uždarykite jį ir bandykite dar kartą."
+  },
+  "glossary": {
+    "mode": "Režimas",
+    "personalMode": "Asmeninis režimas",
+    "webMode": "Žiniatinklio režimas"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Níorbh fhéidir an fhaisnéis a thaispeáint. Iarr ar an gcúntóir í a thaispeáint arís.",
+    "loading": "Ag lódáil na faisnéise…",
+    "title": "Maidir le {name}",
+    "version": "Leagan"
+  },
+  "connection": {
+    "error": "Níorbh fhéidir leis an amharc seo ceangal leis an gcúntóir. Dún é agus bain triail eile as."
+  },
+  "glossary": {
+    "mode": "Mód",
+    "personalMode": "Mód pearsanta",
+    "webMode": "Mód gréasáin"
+  }
+}

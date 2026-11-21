@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Bilgiler görüntülenemedi. Asistandan bunları yeniden göstermesini isteyin.",
+    "loading": "Bilgiler yükleniyor…",
+    "title": "{name} hakkında",
+    "version": "Sürüm"
+  },
+  "connection": {
+    "error": "Bu görünüm asistana bağlanamadı. Kapatıp yeniden deneyin."
+  },
+  "glossary": {
+    "mode": "Mod",
+    "personalMode": "Kişisel mod",
+    "webMode": "Web modu"
+  }
+}

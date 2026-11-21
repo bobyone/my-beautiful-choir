@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "Informațiile nu au putut fi afișate. Cereți asistentului să le afișeze din nou.",
+    "loading": "Se încarcă informațiile…",
+    "title": "Despre {name}",
+    "version": "Versiune"
+  },
+  "connection": {
+    "error": "Această vizualizare nu s-a putut conecta la asistent. Închideți-o și încercați din nou."
+  },
+  "glossary": {
+    "mode": "Mod",
+    "personalMode": "Mod personal",
+    "webMode": "Mod web"
+  }
+}

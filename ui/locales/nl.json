@@ -1,0 +1,16 @@
+{
+  "about": {
+    "error": "De informatie kon niet worden weergegeven. Vraag de assistent om deze opnieuw te tonen.",
+    "loading": "Informatie wordt geladen…",
+    "title": "Over {name}",
+    "version": "Versie"
+  },
+  "connection": {
+    "error": "Deze weergave kon geen verbinding maken met de assistent. Sluit deze en probeer het opnieuw."
+  },
+  "glossary": {
+    "mode": "Modus",
+    "personalMode": "Persoonlijke modus",
+    "webMode": "Webmodus"
+  }
+}
