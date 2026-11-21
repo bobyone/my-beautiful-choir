@@ -16,6 +16,7 @@ concurrency:
 
 env:
   UV_VERSION: "0.13.9"
+  NODE_VERSION: "26.13.0"
 
 jobs:
   checks:
@@ -33,7 +34,14 @@ jobs:
           version: ${{ env.UV_VERSION }}
           python-version: ${{ matrix.python }}
           enable-cache: true
-      - name: Lint, types, tests and REUSE
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Build the views
+        run: uv run --frozen nox -s ui -- --fresh
+      - name: Lint, types, tests, REUSE and user interface
         run: uv run --frozen nox -s check
       - name: Upload coverage report
         if: matrix.os == 'ubuntu-24.04' && matrix.python == '3.13'
@@ -52,10 +60,53 @@ jobs:
           version: ${{ env.UV_VERSION }}
           python-version: "3.13"
           enable-cache: true
-      - name: Audit dependencies
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Audit Python dependencies
         run: uv run --frozen nox -s audit
-      - name: Check dependency licences
+      - name: Check Python dependency licences
         run: uv run --frozen nox -s licenses
+      - name: Audit UI dependencies and check bundled licences
+        run: uv run --frozen nox -s ui_audit -- --fresh
+
+  package:
+    name: Package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: "3.13"
+          enable-cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Build and check the distributions
+        run: uv run --frozen nox -s package
+      - name: Upload the distributions
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: distributions
+          path: dist/
+
+  container:
+    name: Container image
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: "3.13"
+          enable-cache: true
+      - name: Build the image, start it and check its health
+        run: uv run --frozen nox -s docker_check
 
   dco:
     name: DCO sign-off
