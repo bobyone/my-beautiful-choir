@@ -44,10 +44,33 @@ and [Node.js](https://nodejs.org/) (LTS) to build the user interface.
 If it does not start, see
 [how to troubleshoot a startup failure](how-to/troubleshoot-startup.md).
 
-## Web mode
+## Web mode, with Docker Compose
 
-See the next section once the container image is available. Web mode has
-no authentication yet: never expose it publicly.
+> Web mode has no authentication yet: never expose it publicly. The
+> provided `compose.yaml` publishes the port on the local host only.
+
+Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
+
+1. From the clone, optionally copy the example configuration and adjust it
+   (see the [configuration reference](configuration.md)):
+
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Build and start the service:
+
+   ```sh
+   docker compose up --detach --build
+   ```
+
+3. Check that it is ready: `http://localhost:9000/healthz` answers
+   `{"status": "ready"}`.
+
+4. Declare the server in your MCP client, as a Streamable HTTP server at
+   `http://localhost:9000/mcp`.
+
+Read the logs with `docker compose logs`, stop with `docker compose down`.
 
 ## Development setup
 

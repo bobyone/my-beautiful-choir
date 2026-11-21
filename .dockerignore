@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Allow list: only what the image build needs.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSES/
+!src/
+!ui/
+
+# Never in the build context: environment configuration, secrets, build outputs.
+.env
+.env.*
+**/.env
+**/.env.*
+**/__pycache__
+ui/node_modules
+ui/dist
+ui/coverage
+src/my_beautiful_choir/views/static/*.html
+src/my_beautiful_choir/views/static/*.md

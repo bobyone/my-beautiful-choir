@@ -10,6 +10,7 @@ that local runs and CI runs use exactly the locked versions.
 import re
 import shutil
 import subprocess
+import time
 import zipfile
 from pathlib import Path
 
@@ -40,6 +41,8 @@ PROJECT_DIRECTORY = Path(__file__).parent
 UI_DIRECTORY = PROJECT_DIRECTORY / "ui"
 VIEWS_PACKAGE = PROJECT_DIRECTORY / "src" / "my_beautiful_choir" / "views" / "static"
 THIRD_PARTY_NOTICES = "THIRD-PARTY-LICENSES.md"
+DOCKER_CHECK_IMAGE = "my-beautiful-choir:check"
+DOCKER_HEALTH_TIMEOUT_SECONDS = 60
 
 
 def _uv_run(session: nox.Session, *args: str) -> None:
@@ -210,6 +213,45 @@ def package(session: nox.Session) -> None:
     if missing:
         session.error(f"Missing from {wheel.name}: {', '.join(missing)}")
     session.log(f"{wheel.name} contains the views and their licence notices.")
+
+
+@nox.session
+def docker_check(session: nox.Session) -> None:
+    """Build the web mode image, start it and wait until its health check reports healthy."""
+    session.run("docker", "build", "--tag", DOCKER_CHECK_IMAGE, ".", external=True)
+    user = _docker_output(session, "image", "inspect", "--format", "{{.Config.User}}")
+    if user != "10001":
+        session.error(f"The image must run as the non-root user 10001, not {user!r}.")
+    container = _docker_output(session, "run", "--detach")
+    try:
+        deadline = time.monotonic() + DOCKER_HEALTH_TIMEOUT_SECONDS
+        status = "starting"
+        while time.monotonic() < deadline:
+            status = str(
+                session.run(
+                    "docker",
+                    "inspect",
+                    "--format",
+                    "{{.State.Health.Status}}",
+                    container,
+                    external=True,
+                    silent=True,
+                )
+            ).strip()
+            if status != "starting":
+                break
+            time.sleep(1)
+        if status != "healthy":
+            session.run("docker", "logs", container, external=True)
+            session.error(f"The container is {status}, not healthy.")
+        session.log("The container is healthy.")
+    finally:
+        session.run("docker", "rm", "--force", container, external=True, silent=True)
+
+
+def _docker_output(session: nox.Session, *args: str) -> str:
+    output = session.run("docker", *args, DOCKER_CHECK_IMAGE, external=True, silent=True)
+    return str(output).strip()
 
 
 @nox.session

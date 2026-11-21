@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Web mode, for development and small deployments.
+# Configuration: copy .env.example to .env and adjust it (optional).
+# Web mode has no authentication yet: the port is published on the local host only.
+
+name: my-beautiful-choir
+
+services:
+  my-beautiful-choir:
+    build: .
+    image: my-beautiful-choir:local
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MBC_WEB__ALLOWED_HOSTS: ${MBC_WEB__ALLOWED_HOSTS:-localhost:9000}
+    ports:
+      - "127.0.0.1:9000:9000"
+    restart: unless-stopped

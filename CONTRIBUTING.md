@@ -68,6 +68,8 @@ and used by the pre-commit hook and CI alike:
 | `uv run nox -s ui` | builds the views into the Python package (needed to run the application) |
 | `uv run nox -s ui_check` | user interface: lint and format, types, tests with coverage, translation catalogues |
 | `uv run nox -s ui_audit` | user interface: known vulnerabilities, licences of bundled libraries |
+| `uv run nox -s package` | builds the views, the wheel and the sdist, and checks the views are packaged |
+| `uv run nox -s docker_check` | builds the web mode image, starts it and waits for its health check (needs Docker) |
 | `uv run nox -s format` | formats the code and applies automatic fixes |
 | `uv run nox -s lint` | style and formatting (ruff) |
 | `uv run nox -s typecheck` | static types (mypy, strict) |
