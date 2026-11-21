@@ -55,6 +55,7 @@ error code and the process exit code.
 | `View` | `views` | User interface rendered by the client: `uri` (`ui://`), `content()` (self-contained HTML); raises `ViewNotFoundError`. |
 | `Metrics` | `monitoring` | `record_tool_call(tool_name, duration_seconds, failed)`, `record_http_request(method, route, status_code, duration_seconds)`, `export() -> MetricsExport`. |
 | `HealthCheck` | `monitoring` | `status() -> HealthStatus` (`ready` or `unavailable`). |
+| `Transport` | `transport` | `async run(server)`: serves an MCP SDK server until the client disconnects or a stop signal; raises a `StartupError` when it cannot start. |
 
 Value objects: `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
@@ -91,6 +92,60 @@ injected `Metrics`. Exceptions are re-raised unchanged.
 Reads `<name>.html` on first use and keeps it in memory. A missing file
 raises `ViewNotFoundError` (`MBC-INSTALL`, exit code 4): the user interface
 was not built (`uv run nox -s ui`) or the installation is broken.
+
+### `McpServerBuilder` (`mcp`)
+
+Adapter between our tools and views and the MCP SDK (`MCPServer` and its
+`Apps` extension); the only module of the core that imports the SDK.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `application_info` | `ApplicationInfo` | Name and version announced to the client. |
+| `tools` | `Sequence[Tool]` | Tools to publish. |
+
+`build()` returns a new `MCPServer`:
+
+- a tool with a view is registered through MCP Apps (`_meta.ui.resourceUri`),
+  and its view as a `ui://` resource (`text/html;profile=mcp-app`), once
+  per URI; a tool without a view is a plain tool;
+- the function registered for each tool gets a signature generated from the
+  tool's arguments model, so that the SDK publishes the JSON Schema (with
+  field descriptions) and validates the arguments;
+- a `ToolExecutionError` is returned to the model as an error result with
+  its message; any other exception is logged with its stack trace and
+  returned as a generic error, without technical details;
+- a missing view raises `ViewNotFoundError` during the build, hence at
+  startup.
+
+### `StdioTransport` (`transport.stdio`)
+
+Serves MCP on stdin and stdout until stdin is closed. No parameter.
+
+### `HttpTransport` (`transport.http`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `settings` | `WebSettings` | Listening address, port and allowed hosts. |
+| `metrics` | `Metrics` | Receives the HTTP request measures; exported on `/metrics`. |
+| `health_check` | `ServerHealthCheck` | Marked ready once listening, unavailable when stopping. |
+
+Routes: `/mcp` (Streamable HTTP, stateful sessions in memory), `/healthz`
+(200 `{"status": "ready"}`, or 503 `{"status": "unavailable"}`), `/metrics`.
+
+- **DNS rebinding protection** is always on: the `Host` header must be a
+  local host (`127.0.0.1`, `localhost`, `[::1]`, any port) or one of
+  `MBC_WEB__ALLOWED_HOSTS`; otherwise `/mcp` answers 421.
+- **Correlation id**: `X-Request-ID` is reused when it is a valid UUID,
+  generated otherwise, returned in the response and added to every log
+  record of the request.
+- **Request log**: one record per request with method, route, status and
+  duration; never the client address. Unknown paths are grouped under the
+  `other` route.
+- The listening socket is opened before uvicorn starts: an address in use
+  raises `PortUnavailableError` (`MBC-PORT`, exit code 3).
+- `request_stop()` stops the server gracefully, like a stop signal.
+- **Limit**: no authentication yet; web mode must not be exposed publicly
+  until OAuth is implemented.
 
 ### `NullMetrics` (`monitoring`)
 

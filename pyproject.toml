@@ -35,6 +35,7 @@ Changelog = "https://github.com/bobyone/my-beautiful-choir/blob/main/CHANGELOG.m
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy",
     "nox",
     "pip-audit",
