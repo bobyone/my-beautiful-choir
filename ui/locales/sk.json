@@ -22,12 +22,44 @@
     "works": "Skladby"
   },
   "glossary": {
+    "arranger": "Aranžér",
     "choir": "Zbor",
+    "composer": "Skladateľ",
     "deletion": "Odstránenie",
     "mode": "Režim",
+    "notes": "Poznámky",
     "personalMode": "Osobný režim",
+    "repertoire": "Repertoár",
     "score": "Partitúra",
+    "scoreFormat": "Formát",
+    "scoreLabel": "Označenie",
+    "scoreSize": "Veľkosť",
+    "sungLanguage": "Spievaný jazyk",
+    "title": "Názov",
+    "voicing": "Hlasové obsadenie",
     "webMode": "Webový režim",
     "work": "Skladba"
+  },
+  "repertoire": {
+    "noChoirs": "Zatiaľ nie sú žiadne zbory. Požiadajte asistenta, aby jeden vytvoril.",
+    "noWorks": "Nenašli sa žiadne skladby.",
+    "search": "Hľadať"
+  },
+  "view": {
+    "actions": "Akcie",
+    "error": "Informácie sa nepodarilo zobraziť. Požiadajte asistenta, aby ich zobrazil znova.",
+    "loading": "Načítavajú sa informácie…"
+  },
+  "work": {
+    "addScore": "Pridať partitúru",
+    "back": "Späť do repertoáru",
+    "deleteWithScores": "Odstránia sa aj partitúry tejto skladby.",
+    "deleteWork": "Odstrániť skladbu",
+    "noScores": "Zatiaľ nie sú žiadne partitúry.",
+    "opened": "Partitúra bola otvorená.",
+    "openError": "Partitúru nemožno otvoriť. Skontrolujte, či je nainštalovaná vhodná aplikácia.",
+    "openScore": "Otvoriť",
+    "uploaded": "Partitúra bola pridaná.",
+    "uploadError": "Nahrávanie sa nepodarilo. Vyberte podporovanú partitúru do 50 MB a skúste to znova."
   }
 }

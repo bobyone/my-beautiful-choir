@@ -53,6 +53,10 @@ the steps below summarize it.
 4. Ask the user to restart the client, then to ask *"Show me information
    about my-beautiful-choir"*.
 
+To use a custom data directory, set `MBC_DATA_DIR` in the MCP client's
+server environment. The directory contains both the database and stored
+scores. See `docs/configuration.md` and the `backup-and-restore` skill.
+
 ## Web mode
 
 Web mode has no authentication yet: it must not be exposed publicly. Say

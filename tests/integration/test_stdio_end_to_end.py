@@ -6,6 +6,7 @@
 import json
 import subprocess
 import sys
+from base64 import b64encode
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -13,12 +14,13 @@ from typing import Any
 import pytest
 
 from my_beautiful_choir.views.packaged.packaged_view import packaged_views_directory
+from tests import score_samples
 from tests.integration.stdio_session import TIMEOUT_SECONDS, StdioSession, launch_environment
 
 LAUNCHER = Path(__file__).with_name("personal_mode_launcher.py")
 ABOUT_URI = "ui://my-beautiful-choir/about.html"
 DELETION_URI = "ui://my-beautiful-choir/deletion.html"
-VIEWS = ("about.html", "deletion.html")
+VIEWS = ("about.html", "deletion.html", "repertoire.html", "work.html")
 
 
 def _write_stub_views(directory: Path) -> None:
@@ -59,10 +61,16 @@ def test_personal_mode_serves_show_about_over_stdio(launched: StdioSession) -> N
     assert "Data store ready" in messages
 
 
-def _call(session: StdioSession, request_id: int, tool: str, **arguments: object) -> str:
+def _tool_result(
+    session: StdioSession, request_id: int, tool: str, **arguments: object
+) -> dict[str, Any]:
     result = session.request(request_id, "tools/call", {"name": tool, "arguments": arguments})
     assert not result.get("isError"), result
-    return str(result["content"][0]["text"])
+    return result
+
+
+def _call(session: StdioSession, request_id: int, tool: str, **arguments: object) -> str:
+    return str(_tool_result(session, request_id, tool, **arguments)["content"][0]["text"])
 
 
 def test_choirs_are_kept_in_the_data_directory(tmp_path: Path) -> None:
@@ -146,7 +154,49 @@ def test_module_serves_the_built_views_and_confirms_a_deletion(tmp_path: Path) -
         assert confirmed["structuredContent"]["status"] == "deleted"
         assert session.request(11, "tools/call", confirmation)["isError"]
         assert choir not in _call(session, 12, "list_choirs")
+        _exercise_repertoire_views(session, tools)
         exit_code, stderr = session.close()
         assert exit_code == 0, stderr
     finally:
         session.kill()
+
+
+def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> None:
+    repertoire_uri = "ui://my-beautiful-choir/repertoire.html"
+    work_uri = "ui://my-beautiful-choir/work.html"
+    assert tools["show_repertoire"]["_meta"]["ui"]["resourceUri"] == repertoire_uri
+    assert tools["show_work"]["_meta"]["ui"]["resourceUri"] == work_uri
+    for name in ("upload_score", "delete_score_from_view", "delete_work_from_view"):
+        assert tools[name]["_meta"]["ui"] == {"resourceUri": work_uri, "visibility": ["app"]}
+    for index, uri in enumerate((repertoire_uri, work_uri), start=13):
+        [view] = session.request(index, "resources/read", {"uri": uri})["contents"]
+        assert view["mimeType"] == "text/html;profile=mcp-app"
+        assert view["text"].startswith("<!doctype html>")
+        assert "<script" in view["text"]
+        assert "<style" in view["text"]
+
+    _call(session, 15, "create_choir", name="Lyon")
+    added = _tool_result(session, 16, "add_work", title="Étoile", composer="Boulanger")
+    work_id = added["structuredContent"]["work"]["id"]
+    uploaded = _tool_result(
+        session,
+        17,
+        "upload_score",
+        work_id=work_id,
+        file_name="Alto.pdf",
+        content=b64encode(score_samples.pdf()).decode(),
+    )
+    score_id = uploaded["structuredContent"]["score"]["id"]
+    repertoire = _tool_result(session, 18, "show_repertoire", search="etoile")["structuredContent"]
+    assert repertoire["choir"] == "Lyon"
+    [work_row] = repertoire["works"]
+    assert (work_row["id"], work_row["score_count"]) == (work_id, 1)
+    work = _tool_result(session, 19, "show_work", work_id=work_id)["structuredContent"]
+    [score] = work["scores"]
+    assert (score["id"], score["label"], score["format"]) == (score_id, "Alto", "pdf")
+    _tool_result(session, 20, "delete_score_from_view", target_id=score_id)
+    assert (
+        _tool_result(session, 21, "show_work", work_id=work_id)["structuredContent"]["scores"] == []
+    )
+    _tool_result(session, 22, "delete_work_from_view", target_id=work_id)
+    assert _tool_result(session, 23, "show_repertoire")["structuredContent"]["works"] == []

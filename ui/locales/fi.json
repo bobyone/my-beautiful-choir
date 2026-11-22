@@ -22,12 +22,44 @@
     "works": "Teokset"
   },
   "glossary": {
+    "arranger": "Sovittaja",
     "choir": "Kuoro",
+    "composer": "Säveltäjä",
     "deletion": "Poisto",
     "mode": "Tila",
+    "notes": "Muistiinpanot",
     "personalMode": "Henkilökohtainen tila",
+    "repertoire": "Ohjelmisto",
     "score": "Nuotti",
+    "scoreFormat": "Muoto",
+    "scoreLabel": "Nimike",
+    "scoreSize": "Koko",
+    "sungLanguage": "Laulukieli",
+    "title": "Nimi",
+    "voicing": "Äänijako",
     "webMode": "Verkkotila",
     "work": "Teos"
+  },
+  "repertoire": {
+    "noChoirs": "Kuoroja ei vielä ole. Pyydä avustajaa luomaan kuoro.",
+    "noWorks": "Teoksia ei löytynyt.",
+    "search": "Hae"
+  },
+  "view": {
+    "actions": "Toiminnot",
+    "error": "Tietoja ei voitu näyttää. Pyydä avustajaa näyttämään ne uudelleen.",
+    "loading": "Ladataan tietoja…"
+  },
+  "work": {
+    "addScore": "Lisää nuotti",
+    "back": "Takaisin ohjelmistoon",
+    "deleteWithScores": "Myös tämän teoksen nuotit poistetaan.",
+    "deleteWork": "Poista teos",
+    "noScores": "Nuotteja ei vielä ole.",
+    "opened": "Nuotti avattu.",
+    "openError": "Nuottia ei voitu avata. Tarkista, että sopiva sovellus on asennettu.",
+    "openScore": "Avaa",
+    "uploaded": "Nuotti lisätty.",
+    "uploadError": "Lataus epäonnistui. Valitse enintään 50 Mt:n tuettu nuottitiedosto ja yritä uudelleen."
   }
 }

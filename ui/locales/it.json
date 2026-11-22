@@ -22,12 +22,44 @@
     "works": "Opere"
   },
   "glossary": {
+    "arranger": "Arrangiatore",
     "choir": "Coro",
+    "composer": "Compositore",
     "deletion": "Eliminazione",
     "mode": "Modalità",
+    "notes": "Note",
     "personalMode": "Modalità personale",
+    "repertoire": "Repertorio",
     "score": "Partitura",
+    "scoreFormat": "Formato",
+    "scoreLabel": "Etichetta",
+    "scoreSize": "Dimensione",
+    "sungLanguage": "Lingua cantata",
+    "title": "Titolo",
+    "voicing": "Organico vocale",
     "webMode": "Modalità web",
     "work": "Opera"
+  },
+  "repertoire": {
+    "noChoirs": "Non ci sono ancora cori. Chiedi all’assistente di crearne uno.",
+    "noWorks": "Nessuna opera trovata.",
+    "search": "Cerca"
+  },
+  "view": {
+    "actions": "Azioni",
+    "error": "Impossibile visualizzare le informazioni. Chiedi all’assistente di mostrarle di nuovo.",
+    "loading": "Caricamento delle informazioni…"
+  },
+  "work": {
+    "addScore": "Aggiungi una partitura",
+    "back": "Torna al repertorio",
+    "deleteWithScores": "Verranno eliminate anche le partiture di quest’opera.",
+    "deleteWork": "Elimina l’opera",
+    "noScores": "Non ci sono ancora partiture.",
+    "opened": "Partitura aperta.",
+    "openError": "Impossibile aprire la partitura. Verifica che sia installata un’applicazione compatibile.",
+    "openScore": "Apri",
+    "uploaded": "Partitura aggiunta.",
+    "uploadError": "Caricamento non riuscito. Scegli una partitura compatibile di massimo 50 MB e riprova."
   }
 }

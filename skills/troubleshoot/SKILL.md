@@ -59,6 +59,9 @@ starts:
 
 - **The tool works but no view is displayed**: the MCP client may not
   support MCP Apps; the text result is still valid.
+- **A score cannot be opened**: check that an application for the score's
+  format is installed. If the file is missing, use `backup-and-restore`
+  or add the score again.
 - **Web mode answers 421 on `/mcp`**: the `Host` header is not allowed; add
   the public `host:port` to `MBC_WEB__ALLOWED_HOSTS`.
 - **More details are needed**: set `MBC_LOG_LEVEL=DEBUG`, then restart.

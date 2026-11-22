@@ -22,12 +22,44 @@
     "works": "Utwory"
   },
   "glossary": {
+    "arranger": "Aranżer",
     "choir": "Chór",
+    "composer": "Kompozytor",
     "deletion": "Usuwanie",
     "mode": "Tryb",
+    "notes": "Notatki",
     "personalMode": "Tryb osobisty",
+    "repertoire": "Repertuar",
     "score": "Partytura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etykieta",
+    "scoreSize": "Rozmiar",
+    "sungLanguage": "Język śpiewu",
+    "title": "Tytuł",
+    "voicing": "Obsada głosowa",
     "webMode": "Tryb webowy",
     "work": "Utwór"
+  },
+  "repertoire": {
+    "noChoirs": "Nie ma jeszcze chórów. Poproś asystenta o utworzenie chóru.",
+    "noWorks": "Nie znaleziono utworów.",
+    "search": "Szukaj"
+  },
+  "view": {
+    "actions": "Działania",
+    "error": "Nie udało się wyświetlić informacji. Poproś asystenta o ponowne ich wyświetlenie.",
+    "loading": "Wczytywanie informacji…"
+  },
+  "work": {
+    "addScore": "Dodaj partyturę",
+    "back": "Wróć do repertuaru",
+    "deleteWithScores": "Partytury tego utworu także zostaną usunięte.",
+    "deleteWork": "Usuń utwór",
+    "noScores": "Nie ma jeszcze partytur.",
+    "opened": "Otwarto partyturę.",
+    "openError": "Nie udało się otworzyć partytury. Sprawdź, czy zainstalowano zgodną aplikację.",
+    "openScore": "Otwórz",
+    "uploaded": "Dodano partyturę.",
+    "uploadError": "Przesyłanie nie powiodło się. Wybierz obsługiwaną partyturę do 50 MB i spróbuj ponownie."
   }
 }

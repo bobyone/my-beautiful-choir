@@ -22,12 +22,44 @@
     "works": "Teosed"
   },
   "glossary": {
+    "arranger": "Seadja",
     "choir": "Koor",
+    "composer": "Helilooja",
     "deletion": "Kustutamine",
     "mode": "Režiim",
+    "notes": "Märkmed",
     "personalMode": "Isiklik režiim",
+    "repertoire": "Repertuaar",
     "score": "Noodid",
+    "scoreFormat": "Vorming",
+    "scoreLabel": "Silt",
+    "scoreSize": "Suurus",
+    "sungLanguage": "Laulukeel",
+    "title": "Pealkiri",
+    "voicing": "Häälejaotus",
     "webMode": "Veebirežiim",
     "work": "Teos"
+  },
+  "repertoire": {
+    "noChoirs": "Koore veel pole. Palu assistendil üks luua.",
+    "noWorks": "Teoseid ei leitud.",
+    "search": "Otsi"
+  },
+  "view": {
+    "actions": "Toimingud",
+    "error": "Teavet ei õnnestunud kuvada. Paluge assistendil seda uuesti näidata.",
+    "loading": "Teabe laadimine…"
+  },
+  "work": {
+    "addScore": "Lisa noodid",
+    "back": "Tagasi repertuaari",
+    "deleteWithScores": "Selle teose noodid kustutatakse samuti.",
+    "deleteWork": "Kustuta teos",
+    "noScores": "Noote veel pole.",
+    "opened": "Noodid avatud.",
+    "openError": "Noote ei saanud avada. Kontrolli, kas sobiv rakendus on installitud.",
+    "openScore": "Ava",
+    "uploaded": "Noodid lisatud.",
+    "uploadError": "Üleslaadimine ebaõnnestus. Vali toetatud kuni 50 MB noodifail ja proovi uuesti."
   }
 }

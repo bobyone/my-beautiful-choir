@@ -22,12 +22,44 @@
     "works": "Obres"
   },
   "glossary": {
+    "arranger": "Arranjador",
     "choir": "Cor",
+    "composer": "Compositor",
     "deletion": "Supressió",
     "mode": "Mode",
+    "notes": "Notes",
     "personalMode": "Mode personal",
+    "repertoire": "Repertori",
     "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etiqueta",
+    "scoreSize": "Mida",
+    "sungLanguage": "Llengua cantada",
+    "title": "Títol",
+    "voicing": "Distribució vocal",
     "webMode": "Mode web",
     "work": "Obra"
+  },
+  "repertoire": {
+    "noChoirs": "Encara no hi ha cors. Demaneu a l’assistent que en creï un.",
+    "noWorks": "No s’ha trobat cap obra.",
+    "search": "Cerca"
+  },
+  "view": {
+    "actions": "Accions",
+    "error": "No s’ha pogut mostrar la informació. Demaneu a l’assistent que la torni a mostrar.",
+    "loading": "S’està carregant la informació…"
+  },
+  "work": {
+    "addScore": "Afegeix una partitura",
+    "back": "Torna al repertori",
+    "deleteWithScores": "També se suprimiran les partitures d’aquesta obra.",
+    "deleteWork": "Suprimeix l’obra",
+    "noScores": "Encara no hi ha partitures.",
+    "opened": "S’ha obert la partitura.",
+    "openError": "No s’ha pogut obrir la partitura. Comproveu que hi hagi una aplicació compatible instal·lada.",
+    "openScore": "Obre",
+    "uploaded": "S’ha afegit la partitura.",
+    "uploadError": "No s’ha pogut carregar. Trieu una partitura compatible de fins a 50 MB i torneu-ho a provar."
   }
 }

@@ -15,6 +15,9 @@ and this project adheres to
 
 ### Added
 
+- Repertoire and Work views in personal mode with choir switching, title
+  and composer search, and score upload, opening and confirmed deletion (#7).
+
 - Confirmed deletion of choirs, works and scores in personal mode, with a
   localized Deletion view when the MCP host cannot ask directly (#7).
 

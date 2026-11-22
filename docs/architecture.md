@@ -410,6 +410,38 @@ checked by default):
 **Limit:** the question is in English: the server does not know the
 user's language.
 
+### Repertoire and Work views (`tools.view_tool`, `ui/src/views`)
+
+`ShowRepertoireTool(view, repertoire, choirs)` accepts the optional
+`choir` name and optional `search` text. It selects the default choir when
+the name is omitted, returns the chooser's choir names and searches titles
+and composers without accents or case. The repertoire service obtains
+score counts grouped by work for the selected choir in one SQL query
+within the same unit of work. A choir with no matches has an empty work
+list. A new installation has no selected choir and the view explains how
+to create one.
+
+`ShowWorkTool(view, repertoire, scores)` accepts a required UUID
+`work_id`. It returns work attributes and score metadata. The same Work
+panel is used by the standalone Work view and when a user opens a work
+in the Repertoire view. Returning from a work refreshes the repertoire.
+The UI sorts titles with the host language, displays sung languages by
+their localized names and formats the score size with `Intl.NumberFormat`.
+
+`UploadScoreTool(view, service, source_factory)` is app-only. Its
+parameters are a work UUID, a non-empty file name of at most 255
+characters, base64 file content and an optional label. It bounds the
+encoded input to the base64 length of 50 MiB, checks the encoding, then
+passes the bytes to `UploadedScoreSource` and the regular score service.
+The service checks the decoded size and recognizes the format from the
+content. The original name is metadata. The file storage key uses UUIDs.
+
+`DeleteFromWorkViewTool(view, deleter)` is registered for the work and score
+deleters, with one required UUID `target_id`. Both registrations are
+advertised to app hosts with visibility `["app"]`. The Work panel calls them
+only after the user confirms in its dialog. The deleters still check the
+permissions for the target.
+
 ### `DeleteTool` and `ConfirmDeletionTool` (`tools.view_tool.deletion`)
 
 The deletion tools describe what the user will delete before requesting

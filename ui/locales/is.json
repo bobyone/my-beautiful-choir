@@ -22,12 +22,44 @@
     "works": "Verk"
   },
   "glossary": {
+    "arranger": "Útsetjari",
     "choir": "Kór",
+    "composer": "Tónskáld",
     "deletion": "Eyðing",
     "mode": "Hamur",
+    "notes": "Athugasemdir",
     "personalMode": "Einkahamur",
+    "repertoire": "Efnisskrá",
     "score": "Nótur",
+    "scoreFormat": "Snið",
+    "scoreLabel": "Merki",
+    "scoreSize": "Stærð",
+    "sungLanguage": "Söngmál",
+    "title": "Titill",
+    "voicing": "Raddskipan",
     "webMode": "Vefhamur",
     "work": "Verk"
+  },
+  "repertoire": {
+    "noChoirs": "Engir kórar eru til enn. Biddu aðstoðarmanninn um að stofna einn.",
+    "noWorks": "Engin verk fundust.",
+    "search": "Leita"
+  },
+  "view": {
+    "actions": "Aðgerðir",
+    "error": "Ekki tókst að birta upplýsingarnar. Biddu aðstoðarmanninn að sýna þær aftur.",
+    "loading": "Hleð upplýsingum…"
+  },
+  "work": {
+    "addScore": "Bæta við nótum",
+    "back": "Aftur í efnisskrá",
+    "deleteWithScores": "Nótum verksins verður einnig eytt.",
+    "deleteWork": "Eyða verkinu",
+    "noScores": "Engar nótur enn.",
+    "opened": "Nótur opnaðar.",
+    "openError": "Ekki tókst að opna nóturnar. Athugaðu hvort samhæft forrit sé uppsett.",
+    "openScore": "Opna",
+    "uploaded": "Nótum bætt við.",
+    "uploadError": "Upphleðsla mistókst. Veldu nótur á studdu sniði, allt að 50 MB, og reyndu aftur."
   }
 }

@@ -22,12 +22,44 @@
     "works": "Werke"
   },
   "glossary": {
+    "arranger": "Arrangeur",
     "choir": "Chor",
+    "composer": "Komponist",
     "deletion": "Löschung",
     "mode": "Modus",
+    "notes": "Notizen",
     "personalMode": "Persönlicher Modus",
+    "repertoire": "Repertoire",
     "score": "Partitur",
+    "scoreFormat": "Format",
+    "scoreLabel": "Bezeichnung",
+    "scoreSize": "Größe",
+    "sungLanguage": "Gesangssprache",
+    "title": "Titel",
+    "voicing": "Stimmverteilung",
     "webMode": "Webmodus",
     "work": "Werk"
+  },
+  "repertoire": {
+    "noChoirs": "Es gibt noch keinen Chor. Bitten Sie den Assistenten, einen zu erstellen.",
+    "noWorks": "Keine Werke gefunden.",
+    "search": "Suchen"
+  },
+  "view": {
+    "actions": "Aktionen",
+    "error": "Die Informationen konnten nicht angezeigt werden. Bitten Sie den Assistenten, sie erneut anzuzeigen.",
+    "loading": "Informationen werden geladen…"
+  },
+  "work": {
+    "addScore": "Partitur hinzufügen",
+    "back": "Zurück zum Repertoire",
+    "deleteWithScores": "Die Partituren dieses Werks werden ebenfalls gelöscht.",
+    "deleteWork": "Werk löschen",
+    "noScores": "Noch keine Partituren.",
+    "opened": "Partitur geöffnet.",
+    "openError": "Die Partitur konnte nicht geöffnet werden. Prüfen Sie, ob eine passende Anwendung installiert ist.",
+    "openScore": "Öffnen",
+    "uploaded": "Partitur hinzugefügt.",
+    "uploadError": "Hochladen fehlgeschlagen. Wählen Sie eine unterstützte Partitur bis 50 MB und versuchen Sie es erneut."
   }
 }

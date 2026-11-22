@@ -34,6 +34,7 @@ from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.scores.sources.google_drive.google_drive_score_source import (
     GoogleDriveScoreSource,
 )
+from my_beautiful_choir.scores.sources.uploaded_score_source import UploadedScoreSource
 from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
@@ -54,6 +55,12 @@ from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
 from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import DeleteChoirTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
+from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import ShowRepertoireTool
+from my_beautiful_choir.tools.view_tool.work.delete_from_work_view_tool import (
+    DeleteFromWorkViewTool,
+)
+from my_beautiful_choir.tools.view_tool.work.show_work_tool import ShowWorkTool
+from my_beautiful_choir.tools.view_tool.work.upload_score_tool import UploadScoreTool
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
 from my_beautiful_choir.views.packaged.packaged_view import PackagedView
 
@@ -102,6 +109,10 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     # The directory of the common views, given by create_container.
     views_directory: providers.Dependency[Traversable] = providers.Dependency()
     deletion_view = providers.Singleton(PackagedView, name="deletion", directory=views_directory)
+    repertoire_view = providers.Singleton(
+        PackagedView, name="repertoire", directory=views_directory
+    )
+    work_view = providers.Singleton(PackagedView, name="work", directory=views_directory)
     authorization = providers.Singleton(LocalUserAuthorization)
 
     choir_service = providers.Singleton(
@@ -122,6 +133,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
 
     score_opener = providers.Singleton(SystemScoreOpener.in_temporary_directory)
     google_drive_source = providers.Factory(GoogleDriveScoreSource)
+    uploaded_score_source = providers.Factory(UploadedScoreSource)
 
     score_service = providers.Singleton(
         ScoreService,
@@ -148,6 +160,29 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             source_factory=google_drive_source.provider,
         ),
         _metered(OpenScoreTool, metrics, service=score_service),
+        _metered(
+            ShowRepertoireTool,
+            metrics,
+            view=repertoire_view,
+            repertoire=repertoire_service,
+            choirs=choir_service,
+        ),
+        _metered(
+            ShowWorkTool,
+            metrics,
+            view=work_view,
+            repertoire=repertoire_service,
+            scores=score_service,
+        ),
+        _metered(
+            UploadScoreTool,
+            metrics,
+            view=work_view,
+            service=score_service,
+            source_factory=uploaded_score_source.provider,
+        ),
+        _metered(DeleteFromWorkViewTool, metrics, view=work_view, deleter=repertoire_service),
+        _metered(DeleteFromWorkViewTool, metrics, view=work_view, deleter=score_service),
         _metered(
             DeleteChoirTool,
             metrics,

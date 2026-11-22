@@ -22,12 +22,44 @@
     "works": "Verk"
   },
   "glossary": {
+    "arranger": "Arrangør",
     "choir": "Kor",
+    "composer": "Komponist",
     "deletion": "Sletting",
     "mode": "Modus",
+    "notes": "Merknader",
     "personalMode": "Personleg modus",
+    "repertoire": "Repertoar",
     "score": "Partitur",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etikett",
+    "scoreSize": "Storleik",
+    "sungLanguage": "Songmål",
+    "title": "Tittel",
+    "voicing": "Stemmefordeling",
     "webMode": "Nettmodus",
     "work": "Verk"
+  },
+  "repertoire": {
+    "noChoirs": "Det finst ingen kor enno. Be assistenten opprette eit.",
+    "noWorks": "Ingen verk funne.",
+    "search": "Søk"
+  },
+  "view": {
+    "actions": "Handlingar",
+    "error": "Informasjonen kunne ikkje visast. Be assistenten om å visa han på nytt.",
+    "loading": "Lastar inn informasjonen…"
+  },
+  "work": {
+    "addScore": "Legg til eit partitur",
+    "back": "Tilbake til repertoaret",
+    "deleteWithScores": "Partitura til verket blir òg sletta.",
+    "deleteWork": "Slett verket",
+    "noScores": "Ingen partitur enno.",
+    "opened": "Partitur opna.",
+    "openError": "Partituret kunne ikkje opnast. Kontroller at eit eigna program er installert.",
+    "openScore": "Opne",
+    "uploaded": "Partitur lagt til.",
+    "uploadError": "Opplastinga mislukkast. Vel eit støtta partitur på opptil 50 MB og prøv på nytt."
   }
 }

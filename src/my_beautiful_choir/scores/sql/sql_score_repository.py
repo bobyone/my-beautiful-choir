@@ -7,7 +7,7 @@ import builtins
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Row, delete, insert, select
+from sqlalchemy import Row, delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from my_beautiful_choir.persistence.sql.tables import scores, works
@@ -85,6 +85,16 @@ class SqlScoreRepository(ScoreRepository):
             .order_by(scores.c.added_at, scores.c.label, scores.c.id)
         )
         return [_score(row) for row in rows]
+
+    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
+        """Number of scores per work of the choir, in one query."""
+        rows = await self._connection.execute(
+            select(scores.c.work_id, func.count())
+            .join(works, works.c.id == scores.c.work_id)
+            .where(works.c.choir_id == choir_id)
+            .group_by(scores.c.work_id)
+        )
+        return {work_id: count for work_id, count in rows}
 
     async def delete(self, score_id: UUID) -> None:
         """Delete the score."""

@@ -17,10 +17,10 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Term | Definition | Code | Translation key | Label (en) | Label (fr) |
 |---|---|---|---|---|---|
 | Account | Identity of a person in web mode, used to sign in. | `Account` | | account | compte |
-| Arranger | Author of the arrangement of a work. | `Work.arranger` | | arranger | arrangeur |
+| Arranger | Author of the arrangement of a work. | `Work.arranger` | `glossary.arranger` | Arranger | Arrangeur |
 | Choir | Group of people singing together; the unit whose data is isolated from other choirs. | `Choir` | `glossary.choir` | Choir | Chorale |
 | Chorister | Member role allowing to consult and download the choir's repertoire and scores. | `Role.CHORISTER` | | chorister | choriste |
-| Composer | Author of the music of a work. | `Work.composer` | | composer | compositeur |
+| Composer | Author of the music of a work. | `Work.composer` | `glossary.composer` | Composer | Compositeur |
 | Default choir | Choir used when a request names none. | `Choir.is_default` | | default choir | chorale par défaut |
 | Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
@@ -29,15 +29,20 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
+| Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
-| Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | | repertoire | répertoire |
+| Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | `glossary.repertoire` | Repertoire | Répertoire |
 | Role | Rights of a member within a choir: manager or chorister. | `Role` | | role | rôle |
 | Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | `glossary.score` | Score | Partition |
-| Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | | format | format |
-| Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | | label | libellé |
+| Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | `glossary.scoreFormat` | Format | Format |
+| Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | `glossary.scoreLabel` | Label | Libellé |
 | Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
-| Sung language | Language in which a work is sung. | `Work.sung_languages` | | sung language | langue chantée |
-| Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | | voicing | effectif vocal |
+| Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
+| Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
+| Sung language | Langue chantée |
+| Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |
+| Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |
+| Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
 

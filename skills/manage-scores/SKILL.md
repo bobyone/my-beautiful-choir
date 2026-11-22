@@ -25,6 +25,10 @@ personal mode. A score belongs to a work: find the work's id first (use the
 
 ## Rules to follow
 
+- The user can upload a file with **Add a score** in the Work view. Use
+  `show_work(work_id)` to open that view. The file picker supplies the file
+  to the app-only upload tool.
+
 - Accepted formats: PDF, MusicXML (`.musicxml`), compressed MusicXML
   (`.mxl`) and MuseScore (`.mscz`), up to 50 MB. The format is recognized
   from the content, not from the file name.

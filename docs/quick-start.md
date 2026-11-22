@@ -44,6 +44,17 @@ and [Node.js](https://nodejs.org/) (LTS) to build the user interface.
 If it does not start, see
 [how to troubleshoot a startup failure](how-to/troubleshoot-startup.md).
 
+### Try the repertoire
+
+Ask the assistant to create your first choir by name, add a work, then
+show the choir's repertoire. Search by title or composer and select a
+work to see its scores. Choose **Add a score** in the Work view to import
+a file. You can also ask the assistant to import a score from an absolute
+local path or a public Google Drive link.
+
+The repertoire database and score files live in the personal data
+directory. See [back up and restore personal data](how-to/back-up-and-restore-personal-data.md).
+
 ## Web mode, with Docker Compose
 
 > Web mode has no authentication yet: never expose it publicly. The

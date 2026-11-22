@@ -22,12 +22,44 @@
     "works": "Works"
   },
   "glossary": {
+    "arranger": "Arranger",
     "choir": "Choir",
+    "composer": "Composer",
     "deletion": "Deletion",
     "mode": "Mode",
+    "notes": "Notes",
     "personalMode": "Personal mode",
+    "repertoire": "Repertoire",
     "score": "Score",
+    "scoreFormat": "Format",
+    "scoreLabel": "Label",
+    "scoreSize": "Size",
+    "sungLanguage": "Sung language",
+    "title": "Title",
+    "voicing": "Voicing",
     "webMode": "Web mode",
     "work": "Work"
+  },
+  "repertoire": {
+    "noChoirs": "No choirs yet. Ask the assistant to create one.",
+    "noWorks": "No works found.",
+    "search": "Search"
+  },
+  "view": {
+    "actions": "Actions",
+    "error": "The information could not be displayed. Ask the assistant to show it again.",
+    "loading": "Loading the information…"
+  },
+  "work": {
+    "addScore": "Add a score",
+    "back": "Back to repertoire",
+    "deleteWithScores": "The scores of this work will also be deleted.",
+    "deleteWork": "Delete the work",
+    "noScores": "No scores yet.",
+    "opened": "Score opened.",
+    "openError": "Could not open the score. Check that an application for its format is installed.",
+    "openScore": "Open",
+    "uploaded": "Score added.",
+    "uploadError": "Upload failed. Choose a supported score up to 50 MB and try again."
   }
 }

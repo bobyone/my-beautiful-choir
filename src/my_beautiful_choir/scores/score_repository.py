@@ -30,6 +30,10 @@ class ScoreRepository(ABC):
         """Scores of the work, the oldest first."""
 
     @abstractmethod
+    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
+        """Number of scores per work of the choir. Omit works without scores."""
+
+    @abstractmethod
     async def delete(self, score_id: UUID) -> None:
         """Delete a score (not its stored content)."""
 

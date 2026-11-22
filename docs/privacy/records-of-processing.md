@@ -16,10 +16,11 @@ processing.
 
 ## Personal mode
 
-Personal mode runs on the user's own computer. All data stays on that
-computer; the project receives nothing. The user is their own controller.
-The only data leaving the computer is the request described below, made
-when the user imports a score from a Google Drive link.
+Personal mode runs on the user's own computer. The project receives no
+application data. The user controls their local data.
+The server stores its data locally. It can contact Google Drive at the
+user's request (P1). The MCP client handles tool calls and view content
+as described in P2.
 
 ### P1. Score import from a public Google Drive link (implemented)
 
@@ -34,6 +35,19 @@ when the user imports a score from a Google Drive link.
 | Transfers outside the EU | Possible: Google may serve the request from servers outside the EU, under its own privacy policy. |
 | Retention | Nothing is kept by the software beyond the imported score, kept until the user deletes it. Google's retention of its request logs is set by Google. |
 | Security measures | HTTPS only; only a closed list of Google Drive domains is contacted, checked again on every redirect; time limit; download stopped beyond 50 MB; the file name sent by Google is never used as a path; nothing is downloaded without a request from the user. |
+
+### P2. Local repertoire and scores (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Manage the user's choirs, works and scores in personal mode. |
+| Legal basis | The user acts for themselves (household use). A choir using the software determines its own lawful basis. |
+| Data subjects | The user and any people named in work metadata or score files. |
+| Data categories | Choir names, work titles, composer, arranger, voicing, sung languages, notes, score metadata and file content. |
+| Recipients | The local server and the selected MCP client. Users should check how their MCP client handles tool calls, results and view content. |
+| Processors and transfers outside the EU | The application stores this data locally. Any separate processing by the MCP client is governed by its own configuration and terms. See P1 for public Google Drive imports. |
+| Retention | The application keeps the records until the user deletes them. A confirmed deletion removes the affected records and score files. The user manages the retention of separately made backups. |
+| Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Score uploads have content and size validation, and destructive actions require confirmation. |
 
 ## Web mode
 

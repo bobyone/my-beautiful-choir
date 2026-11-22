@@ -130,6 +130,13 @@ class InMemoryScoreRepository(ScoreRepository):
             key=lambda s: (s.added_at, s.label, s.id),
         )
 
+    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
+        counts: dict[UUID, int] = {}
+        for score in self._data.scores.values():
+            if self._data.works[score.work_id].choir_id == choir_id:
+                counts[score.work_id] = counts.get(score.work_id, 0) + 1
+        return counts
+
     async def delete(self, score_id: UUID) -> None:
         del self._data.scores[score_id]
 

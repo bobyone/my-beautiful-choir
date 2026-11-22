@@ -90,6 +90,17 @@ class RepertoireService(Deleter):
             self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
             return target, await unit_of_work.works.search(target.id, text)
 
+    async def search_with_score_counts(
+        self, choir: str | None, text: str | None
+    ) -> tuple[Choir, list[Work], dict[UUID, int]]:
+        """Return the matching works and the score totals for their choir."""
+        async with self._unit_of_work() as unit_of_work:
+            target = await find_choir(unit_of_work.choirs, choir)
+            self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
+            works = await unit_of_work.works.search(target.id, text)
+            counts = await unit_of_work.scores.counts_of_choir(target.id)
+            return target, works, counts
+
     @property
     def deletion_target(self) -> DeletionTarget:
         """Works."""

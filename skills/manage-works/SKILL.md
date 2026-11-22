@@ -1,6 +1,6 @@
 ---
 name: manage-works
-description: Use when a my-beautiful-choir user wants to add a work (a piece) to a choir's repertoire, or change its title, composer, arranger, voicing, sung languages or notes, or delete a work, in personal mode.
+description: Use when a my-beautiful-choir user wants to add a work (a piece) to a choir's repertoire, or change its title, composer, arranger, voicing, sung languages or notes, show or search the repertoire, open a work, or delete a work, in personal mode.
 ---
 
 <!--
@@ -18,6 +18,8 @@ personal mode.
 | Task | Tool |
 |---|---|
 | Add a work | `add_work(choir?, title, composer?, arranger?, voicing?, sung_languages?, notes?)` |
+| Search a choir's repertoire | `show_repertoire(choir?, search?)` |
+| Show a work and its scores | `show_work(work_id)` |
 | Change a work | `edit_work(work_id, ...)` |
 | Delete a work and its scores | `delete_work(work_id)` |
 

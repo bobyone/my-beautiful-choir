@@ -22,12 +22,44 @@
     "works": "Művek"
   },
   "glossary": {
+    "arranger": "Hangszerelő",
     "choir": "Kórus",
+    "composer": "Zeneszerző",
     "deletion": "Törlés",
     "mode": "Mód",
+    "notes": "Megjegyzések",
     "personalMode": "Személyes mód",
+    "repertoire": "Repertoár",
     "score": "Kotta",
+    "scoreFormat": "Formátum",
+    "scoreLabel": "Címke",
+    "scoreSize": "Méret",
+    "sungLanguage": "Énekelt nyelv",
+    "title": "Cím",
+    "voicing": "Szólamösszetétel",
     "webMode": "Webes mód",
     "work": "Mű"
+  },
+  "repertoire": {
+    "noChoirs": "Még nincsenek kórusok. Kérje meg az asszisztenst, hogy hozzon létre egyet.",
+    "noWorks": "Nem található mű.",
+    "search": "Keresés"
+  },
+  "view": {
+    "actions": "Műveletek",
+    "error": "Az információkat nem sikerült megjeleníteni. Kérje meg az asszisztenst, hogy jelenítse meg őket újra.",
+    "loading": "Információk betöltése…"
+  },
+  "work": {
+    "addScore": "Kotta hozzáadása",
+    "back": "Vissza a repertoárhoz",
+    "deleteWithScores": "A műhöz tartozó kották is törlődnek.",
+    "deleteWork": "A mű törlése",
+    "noScores": "Még nincsenek kották.",
+    "opened": "Kotta megnyitva.",
+    "openError": "A kotta nem nyitható meg. Ellenőrizze, hogy telepítve van-e megfelelő alkalmazás.",
+    "openScore": "Megnyitás",
+    "uploaded": "Kotta hozzáadva.",
+    "uploadError": "A feltöltés sikertelen. Válasszon legfeljebb 50 MB-os, támogatott kottát, és próbálja újra."
   }
 }

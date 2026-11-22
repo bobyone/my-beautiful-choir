@@ -22,12 +22,44 @@
     "works": "Ovras"
   },
   "glossary": {
+    "arranger": "Arranschader",
     "choir": "Chor",
+    "composer": "Cumponist",
     "deletion": "Stizzada",
     "mode": "Modus",
+    "notes": "Remartgas",
     "personalMode": "Modus persunal",
+    "repertoire": "Repertori",
     "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etichetta",
+    "scoreSize": "Grondezza",
+    "sungLanguage": "Lingua da chant",
+    "title": "Titel",
+    "voicing": "Distribuziun da las vuschs",
     "webMode": "Modus web",
     "work": "Ovra"
+  },
+  "repertoire": {
+    "noChoirs": "I na dat anc nagins chors. Dumandai a l’assistent da crear in chor.",
+    "noWorks": "Chattà naginas ovras.",
+    "search": "Tschertgar"
+  },
+  "view": {
+    "actions": "Acziuns",
+    "error": "Las infurmaziuns n’han betg pudì vegnir mussadas. Dumandai l’assistent da las mussar anc ina giada.",
+    "loading": "Las infurmaziuns vegnan chargiadas…"
+  },
+  "work": {
+    "addScore": "Agiuntar ina partitura",
+    "back": "Enavos al repertori",
+    "deleteWithScores": "Las partituras da questa ovra vegnan medemamain stizzadas.",
+    "deleteWork": "Stizzar l’ovra",
+    "noScores": "I na dat anc naginas partituras.",
+    "opened": "Partitura averta.",
+    "openError": "I n’è betg reussì d’avrir la partitura. Verifitgai ch’ina applicaziun cumpatibla saja installada.",
+    "openScore": "Avrir",
+    "uploaded": "Partitura agiuntada.",
+    "uploadError": "La chargiada n’è betg reussida. Tschernei ina partitura sustegnida da maximalmain 50 MB ed empruvai anc ina giada."
   }
 }

@@ -22,12 +22,44 @@
     "works": "Kompozicije"
   },
   "glossary": {
+    "arranger": "Aranžer",
     "choir": "Hor",
+    "composer": "Kompozitor",
     "deletion": "Brisanje",
     "mode": "Režim rada",
+    "notes": "Beleške",
     "personalMode": "Lični režim rada",
+    "repertoire": "Repertoar",
     "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Oznaka",
+    "scoreSize": "Veličina",
+    "sungLanguage": "Jezik pevanja",
+    "title": "Naslov",
+    "voicing": "Glasovni sastav",
     "webMode": "Veb režim rada",
     "work": "Kompozicija"
+  },
+  "repertoire": {
+    "noChoirs": "Još nema horova. Zamolite asistenta da napravi hor.",
+    "noWorks": "Nijedna kompozicija nije pronađena.",
+    "search": "Pretraži"
+  },
+  "view": {
+    "actions": "Radnje",
+    "error": "Informacije nije moguće prikazati. Zamolite asistenta da ih ponovo prikaže.",
+    "loading": "Učitavanje informacija…"
+  },
+  "work": {
+    "addScore": "Dodaj partituru",
+    "back": "Povratak na repertoar",
+    "deleteWithScores": "Biće izbrisane i partiture ove kompozicije.",
+    "deleteWork": "Izbriši kompoziciju",
+    "noScores": "Još nema partitura.",
+    "opened": "Partitura je otvorena.",
+    "openError": "Partitura ne može da se otvori. Proverite da li je instalirana odgovarajuća aplikacija.",
+    "openScore": "Otvori",
+    "uploaded": "Partitura je dodata.",
+    "uploadError": "Otpremanje nije uspelo. Izaberite podržanu partituru do 50 MB i pokušajte ponovo."
   }
 }

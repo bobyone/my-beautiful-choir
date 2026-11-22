@@ -22,12 +22,44 @@
     "works": "Əsərlər"
   },
   "glossary": {
+    "arranger": "Aranjimançı",
     "choir": "Xor",
+    "composer": "Bəstəkar",
     "deletion": "Silmə",
     "mode": "Rejim",
+    "notes": "Qeydlər",
     "personalMode": "Şəxsi rejim",
+    "repertoire": "Repertuar",
     "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etiket",
+    "scoreSize": "Ölçü",
+    "sungLanguage": "Oxunan dil",
+    "title": "Başlıq",
+    "voicing": "Səs bölgüsü",
     "webMode": "Veb rejimi",
     "work": "Əsər"
+  },
+  "repertoire": {
+    "noChoirs": "Hələ xor yoxdur. Köməkçidən xor yaratmasını istəyin.",
+    "noWorks": "Əsər tapılmadı.",
+    "search": "Axtar"
+  },
+  "view": {
+    "actions": "Əməliyyatlar",
+    "error": "Məlumatı göstərmək mümkün olmadı. Köməkçidən onu yenidən göstərməsini xahiş edin.",
+    "loading": "Məlumat yüklənir…"
+  },
+  "work": {
+    "addScore": "Partitura əlavə et",
+    "back": "Repertuara qayıt",
+    "deleteWithScores": "Bu əsərin partituraları da silinəcək.",
+    "deleteWork": "Əsəri sil",
+    "noScores": "Hələ partitura yoxdur.",
+    "opened": "Partitura açıldı.",
+    "openError": "Partituranı açmaq olmadı. Uyğun tətbiqin quraşdırıldığını yoxlayın.",
+    "openScore": "Aç",
+    "uploaded": "Partitura əlavə edildi.",
+    "uploadError": "Yükləmə alınmadı. Dəstəklənən, ölçüsü 50 MB-dək olan partitura seçib yenidən cəhd edin."
   }
 }
