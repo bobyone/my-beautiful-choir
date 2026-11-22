@@ -13,6 +13,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep temporary copies of opened scores in a private directory (#7).
+
 ### Added
 
 - Repertoire and Work views in personal mode with choir switching, title

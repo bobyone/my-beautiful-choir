@@ -4,6 +4,7 @@
 """Integration tests of the system score opener, with a double of the system command."""
 
 import os
+import stat
 import subprocess
 import tempfile
 from datetime import UTC, datetime
@@ -112,9 +113,54 @@ async def test_unwritable_temporary_directory(tmp_path: Path) -> None:
     assert launcher.paths == []
 
 
-def test_personal_mode_uses_the_temporary_directory_of_the_system() -> None:
-    opener = SystemScoreOpener.in_temporary_directory()
-    assert opener.directory == Path(tempfile.gettempdir()) / "my-beautiful-choir"
+def test_personal_mode_uses_a_private_temporary_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    first = SystemScoreOpener.in_temporary_directory()
+    second = SystemScoreOpener.in_temporary_directory()
+    assert list(tmp_path.iterdir()) == []
+    assert first.directory.parent == tmp_path
+    assert first.directory.name.startswith("my-beautiful-choir-")
+    assert first.directory != second.directory
+    if os.name == "posix":
+        assert stat.S_IMODE(first.directory.stat().st_mode) == 0o700
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX permission bits")
+@pytest.mark.anyio
+async def test_opening_restricts_a_reused_directory_and_copy(tmp_path: Path) -> None:
+    score = _score()
+    directory = tmp_path / str(score.id)
+    directory.mkdir()
+    directory.chmod(0o755)
+    previous = directory / "Alto part.mscz"
+    previous.write_bytes(b"old")
+    previous.chmod(0o644)
+    launcher = _SpyLauncher()
+
+    await SystemScoreOpener(tmp_path, launcher).open(score, b"new")
+
+    assert launcher.paths == [previous]
+    assert previous.read_bytes() == b"new"
+    assert stat.S_IMODE(directory.stat().st_mode) == 0o700
+    assert stat.S_IMODE(previous.stat().st_mode) == 0o600
+
+
+@pytest.mark.skipif(os.name != "posix", reason="creating symbolic links requires POSIX")
+@pytest.mark.anyio
+async def test_opening_refuses_a_link_in_place_of_the_score_directory(tmp_path: Path) -> None:
+    score = _score()
+    real_directory = tmp_path / "other"
+    real_directory.mkdir()
+    (tmp_path / str(score.id)).symlink_to(real_directory, target_is_directory=True)
+    launcher = _SpyLauncher()
+
+    with pytest.raises(ScoreOpenError):
+        await SystemScoreOpener(tmp_path, launcher).open(score, b"new")
+
+    assert list(real_directory.iterdir()) == []
+    assert launcher.paths == []
 
 
 @pytest.mark.parametrize(("platform", "command"), [("darwin", "open"), ("linux", "xdg-open")])

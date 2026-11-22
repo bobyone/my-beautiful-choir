@@ -292,7 +292,7 @@ Table `scores`; the work's foreign key deletes its scores with it.
 
 | Parameter | Type | Description |
 |---|---|---|
-| `directory` | `Path` | Directory of the temporary copies. `SystemScoreOpener.in_temporary_directory()` gives `my-beautiful-choir` in the temporary directory of the system, with `system_launcher()`. |
+| `directory` | `Path` or `None` | Directory of the temporary copies. `None`, used by `in_temporary_directory()`, creates a private directory under the system temporary directory on first use. |
 | `launch` | `Callable[[Path], None]` | Opens a file with its default application: `os.startfile` on Windows, `open` on macOS, `xdg-open` elsewhere (`system_launcher(platform)`), with no access to the standard input, which is the MCP channel of personal mode. |
 
 Writes a copy of the score in `<directory>/<score id>/<label><extension>`
@@ -300,6 +300,10 @@ Writes a copy of the score in `<directory>/<score id>/<label><extension>`
 characters), replaced at each opening, then launches it. The stored score
 never changes: an edit in the application only changes the copy. Raises
 `ScoreOpenError` when the copy cannot be written or the launch fails.
+A replacement copy is written to a private file and then moved into place.
+On POSIX the score directory is restricted to the owner even when reused.
+On Windows its private parent controls access.
+
 Limits: copies are left for the system to clean its temporary directory; a
 launch that succeeds does not prove that an application showed the file.
 

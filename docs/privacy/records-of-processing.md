@@ -47,7 +47,7 @@ as described in P2.
 | Recipients | The local server and the selected MCP client. Users should check how their MCP client handles tool calls, results and view content. |
 | Processors and transfers outside the EU | The application stores this data locally. Any separate processing by the MCP client is governed by its own configuration and terms. See P1 for public Google Drive imports. |
 | Retention | The application keeps the records until the user deletes them. A confirmed deletion removes the affected records and score files. The user manages the retention of separately made backups. |
-| Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Score uploads have content and size validation, and destructive actions require confirmation. |
+| Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Opening a score creates a copy in a private temporary directory. Score uploads have content and size validation, and destructive actions require confirmation. |
 
 ## Web mode
 
