@@ -11,6 +11,7 @@ path = [
     "**/py.typed",
     "LICENSE",
     ".claude/settings.json",
+    ".codex/hooks.json",
     ".claude-plugin/*.json",
     "ui/package.json",
     "ui/tsconfig.json",

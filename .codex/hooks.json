@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run --no-project --no-env-file --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard",
+            "commandWindows": "uv run --no-project --no-env-file --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+default_permissions = "choir-contributor"
+
+[permissions.choir-contributor]
+description = "Workspace editing with project credential files protected."
+extends = ":workspace"
+
+[permissions.choir-contributor.filesystem]
+glob_scan_max_depth = 4
+
+[permissions.choir-contributor.filesystem.":workspace_roots"]
+"**/.env" = "deny"
+"**/.env.local" = "deny"
+"**/*.pem" = "deny"
+"**/*.key" = "deny"
+"**/secrets/**" = "deny"

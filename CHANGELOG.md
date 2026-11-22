@@ -15,6 +15,9 @@ and this project adheres to
 
 ### Added
 
+- Codex contribution guidance, a contribution skill and repository protection
+  settings backed by shared Claude Code and Codex rules (#8).
+
 - Initial architecture decision records (#1).
 - Repository foundation: editor and Git configuration, Python project with
   uv, nox sessions shared by the pre-commit hook and CI, REUSE compliance,

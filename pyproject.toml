@@ -81,12 +81,13 @@ known-first-party = ["my_beautiful_choir", "tests"]
 [tool.mypy]
 strict = true
 python_version = "3.13"
-files = ["src", "tests", "noxfile.py", ".claude/hooks"]
+files = ["src", "tests", "noxfile.py", "tools/assistant_hooks"]
 mypy_path = ["src", "."]
 explicit_package_bases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = ["--strict-markers", "--import-mode=importlib"]
 
 [tool.coverage.run]

@@ -57,6 +57,12 @@ uv run nox -s ui
 To fix a translation or add a language, follow
 [the dedicated how-to](docs/how-to/add-a-language.md).
 
+For Codex contributions, start with [AGENTS.md](AGENTS.md) and the
+repository contribution skill. In a trusted checkout, enable the project
+hook when Codex asks for approval. It uses Git and uv from the PATH.
+The repository permission profile and command rules apply where supported
+by the active client and its managed settings.
+
 ## 4. Run the tests and checks
 
 All checks are defined once, as [nox](https://nox.thea.codes/) sessions,
@@ -128,7 +134,8 @@ Never bypass the hook (`--no-verify`): fix the failure instead.
 - Every notable change is added to [CHANGELOG.md](CHANGELOG.md), under
   *Unreleased*, with its issue number.
 - Update the plugin skills (`skills/`) and development skills
-  (`.claude/skills/`) in the same commit as the behaviour they describe.
+  (`.claude/skills/`, `.agents/skills/`) in the same commit as the behaviour
+  they describe.
 - Changes to personal data processing update the
   [records of processing](docs/privacy/records-of-processing.md).
 
