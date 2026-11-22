@@ -13,6 +13,8 @@ PATH_KEYS = ("file_path", "notebook_path", "path", "pattern", "glob")
 # Case-insensitive: Windows and macOS file systems open .env for .ENV.
 _ENV_FILE = re.compile(r"(?:^|(?<=[\s'\"/\\=<>:(]))\.env(?:\.[\w-]+)*(?![\w])", re.IGNORECASE)
 _SECRET_PATH = re.compile(r"(?:\.pem|\.key)$|(?:^|[/\\])secrets(?:[/\\]|$)", re.IGNORECASE)
+# Join Bash and PowerShell continuations, retaining any preceding escaped pairs.
+_LINE_CONTINUATION = re.compile(r"(?<!\\)((?:\\\\)*)\\\r?\n|(?<!`)((?:``)*)`\r?\n")
 _SEGMENT = r"[^;&|\n]*"
 _FORCE_PUSH = re.compile(
     rf"\bgit\b{_SEGMENT}\bpush\b{_SEGMENT}(?:\s--force(?:-with-lease|-if-includes)?\b|\s-[a-zA-Z]*f[a-zA-Z]*\b|\s\+\S)"
@@ -55,9 +57,9 @@ def check_path(path: str) -> str | None:
 
 def check_command(raw_command: str) -> str | None:
     """Return the reason a command cannot proceed, or None."""
-    command = (
-        _QUOTED_MESSAGE.sub(r"\1''", raw_command) if _COMMIT.search(raw_command) else raw_command
-    )
+    command = _LINE_CONTINUATION.sub(r"\1\2", raw_command)
+    if _COMMIT.search(command):
+        command = _QUOTED_MESSAGE.sub(r"\1''", command)
     tokens = (token.strip("'\"") for token in command.split())
     if _mentions_env_file(command) or any(_SECRET_PATH.search(token) for token in tokens):
         return ENV_FILE_REASON

@@ -107,3 +107,29 @@ def test_hook_bypass_is_blocked(command: str) -> None:
 )
 def test_regular_git_commands_are_allowed(command: str) -> None:
     assert rules.check_command(command) is None
+
+
+@pytest.mark.parametrize(
+    "continuation",
+    ["\\\n", "\\\r\n", "`\n", "`\r\n"],
+)
+@pytest.mark.parametrize(
+    ("command", "reason"),
+    [
+        ("git push {}--force", rules.FORCE_PUSH_REASON),
+        ("git {}push origin +main", rules.FORCE_PUSH_REASON),
+        ("git push --fo{}rce", rules.FORCE_PUSH_REASON),
+        ("git commit {}--no-verify", rules.NO_VERIFY_REASON),
+        ("git commit -{}n", rules.NO_VERIFY_REASON),
+        ("git status && git push --no-{}verify", rules.NO_VERIFY_REASON),
+        ("git push {}origin main", None),
+        ("cat .env.{}example", None),
+    ],
+)
+def test_shell_line_continuations(continuation: str, command: str, reason: str | None) -> None:
+    assert rules.check_command(command.format(continuation)) == reason
+
+
+@pytest.mark.parametrize("line_break", ["\n", "\\\\\n", "``\r\n"])
+def test_shell_command_boundaries_remain_separate(line_break: str) -> None:
+    assert rules.check_command(f"git status {line_break}echo --no-verify") is None
