@@ -1,0 +1,20 @@
+{
+  "name": "my-beautiful-choir",
+  "interface": {
+    "displayName": "My Beautiful Choir"
+  },
+  "plugins": [
+    {
+      "name": "my-beautiful-choir",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

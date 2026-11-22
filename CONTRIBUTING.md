@@ -57,6 +57,19 @@ uv run nox -s ui
 To fix a translation or add a language, follow
 [the dedicated how-to](docs/how-to/add-a-language.md).
 
+For Codex contributions, start with [AGENTS.md](AGENTS.md) and the
+repository contribution skill. In a trusted checkout, enable the project
+hook when Codex asks for approval. It uses Git and uv from the PATH.
+The assistant hooks run offline using a local Python interpreter. They
+prefer a system interpreter and can also use an installed uv-managed
+interpreter. If a hook fails to start, check that the client can run uv
+and access a local Python interpreter.
+
+The repository permission profile denies reads of local environment files,
+including named variants, while leaving the corresponding examples
+accessible. The profile and command rules apply where supported by the
+active client and its managed settings.
+
 ## 4. Run the tests and checks
 
 All checks are defined once, as [nox](https://nox.thea.codes/) sessions,
@@ -128,7 +141,9 @@ Never bypass the hook (`--no-verify`): fix the failure instead.
 - Every notable change is added to [CHANGELOG.md](CHANGELOG.md), under
   *Unreleased*, with its issue number.
 - Update the plugin skills (`skills/`) and development skills
-  (`.claude/skills/`) in the same commit as the behaviour they describe.
+  (`.claude/skills/`, `.agents/skills/`) in the same commit as the behaviour
+  they describe. Keep the versions in `plugin.json` and
+  `.claude-plugin/plugin.json` aligned with the version in `pyproject.toml`.
 - Changes to personal data processing update the
   [records of processing](docs/privacy/records-of-processing.md).
 

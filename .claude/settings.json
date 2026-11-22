@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run --no-project --quiet python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.py\""
+            "command": "uv --no-cache --offline run --no-project --no-env-file --no-python-downloads --python-preference system --quiet --directory \"$CLAUDE_PROJECT_DIR\" python -X utf8 -B -m tools.assistant_hooks.guard"
           }
         ]
       }

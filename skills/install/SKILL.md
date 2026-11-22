@@ -1,6 +1,6 @@
 ---
 name: install
-description: Use when someone wants to install, set up or run my-beautiful-choir - in personal mode in their MCP client (Claude Desktop, VS Code...) or in web mode with Docker Compose - or to install this plugin and keep it up to date in Claude Code.
+description: Use when someone wants to install, set up or run my-beautiful-choir - in personal mode in their MCP client (Claude Desktop, VS Code...) or in web mode with Docker Compose - or to install this plugin and keep it up to date in Claude Code or Codex.
 ---
 
 <!--
@@ -67,6 +67,16 @@ so to the user before going further.
 5. The MCP endpoint is `http://localhost:9000/mcp` (Streamable HTTP).
 
 ## This plugin
+
+### Codex
+
+Follow the repository guide in `docs/how-to/install-the-plugin-in-codex.md`.
+Add the catalogue with `codex plugin marketplace add bobyone/my-beautiful-choir`,
+then install the plugin from the **My Beautiful Choir** marketplace in the
+ChatGPT desktop app. Refresh the Git marketplace with
+`codex plugin marketplace upgrade my-beautiful-choir`.
+
+### Claude Code
 
 The plugin is installed from the repository's own marketplace, declared in
 the `.claude/settings.local.json` of the project that needs it (never in a
