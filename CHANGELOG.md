@@ -16,7 +16,8 @@ and this project adheres to
 ### Added
 
 - Codex contribution guidance, a contribution skill and repository protection
-  settings backed by shared Claude Code and Codex rules (#8).
+  settings backed by shared Claude Code and Codex rules. The assistant
+  hooks run offline without relying on the shared uv cache (#8).
 - Codex plugin catalogue exposing the shared user skills (#8).
 
 - Initial architecture decision records (#1).

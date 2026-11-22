@@ -60,6 +60,11 @@ To fix a translation or add a language, follow
 For Codex contributions, start with [AGENTS.md](AGENTS.md) and the
 repository contribution skill. In a trusted checkout, enable the project
 hook when Codex asks for approval. It uses Git and uv from the PATH.
+The assistant hooks run offline using a local Python interpreter. They
+prefer a system interpreter and can also use an installed uv-managed
+interpreter. If a hook fails to start, check that the client can run uv
+and access a local Python interpreter.
+
 The repository permission profile and command rules apply where supported
 by the active client and its managed settings.
 

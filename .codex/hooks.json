@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run --no-project --no-env-file --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard",
-            "commandWindows": "uv run --no-project --no-env-file --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard"
+            "command": "uv --no-cache --offline run --no-project --no-env-file --no-python-downloads --python-preference system --quiet --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard",
+            "commandWindows": "uv --no-cache --offline run --no-project --no-env-file --no-python-downloads --python-preference system --quiet --directory \"$(git rev-parse --show-toplevel)\" python -X utf8 -B -m tools.assistant_hooks.guard"
           }
         ]
       }
