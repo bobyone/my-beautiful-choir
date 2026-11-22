@@ -8,9 +8,26 @@
   "connection": {
     "error": "See vaade ei saanud assistendiga ühendust. Sulgege see ja proovige uuesti."
   },
+  "deletion": {
+    "cancel": "Loobu",
+    "delete": "Kustuta",
+    "deleting": "Kustutamine käib…",
+    "done": "Kustutamine on lõpetatud.",
+    "error": "Kustutamise üksikasju ei saanud kuvada. Palu assistendil uuesti proovida.",
+    "failed": "Kustutamine ebaõnnestus. Palu assistendil uuesti proovida.",
+    "loading": "Kustutamise üksikasjade laadimine…",
+    "nothingDeleted": "Midagi ei kustutatud.",
+    "scores": "Noodid",
+    "warning": "Seda kustutamist ei saa tagasi võtta.",
+    "works": "Teosed"
+  },
   "glossary": {
+    "choir": "Koor",
+    "deletion": "Kustutamine",
     "mode": "Režiim",
     "personalMode": "Isiklik režiim",
-    "webMode": "Veebirežiim"
+    "score": "Noodid",
+    "webMode": "Veebirežiim",
+    "work": "Teos"
   }
 }

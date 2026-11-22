@@ -3,6 +3,7 @@
 
 """Assembly specific to personal mode."""
 
+from importlib.resources.abc import Traversable
 from typing import Any
 
 from dependency_injector import containers, providers
@@ -11,6 +12,10 @@ from my_beautiful_choir.authorization.local.local_user_authorization import Loca
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.clock.system_clock import SystemClock
 from my_beautiful_choir.configuration.settings import Settings
+from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations import (
+    InMemoryPendingConfirmations,
+)
+from my_beautiful_choir.deletion.deletion import Deletion
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
@@ -43,7 +48,14 @@ from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
 )
 from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
+    ConfirmDeletionTool,
+)
+from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import DeleteChoirTool
+from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
+from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
+from my_beautiful_choir.views.packaged.packaged_view import PackagedView
 
 
 def _metered(
@@ -83,6 +95,13 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     )
 
     clock = providers.Singleton(SystemClock)
+    pending_confirmations: providers.Singleton[InMemoryPendingConfirmations[Deletion]] = (
+        providers.Singleton(InMemoryPendingConfirmations, clock=clock)
+    )
+
+    # The directory of the common views, given by create_container.
+    views_directory: providers.Dependency[Traversable] = providers.Dependency()
+    deletion_view = providers.Singleton(PackagedView, name="deletion", directory=views_directory)
     authorization = providers.Singleton(LocalUserAuthorization)
 
     choir_service = providers.Singleton(
@@ -129,4 +148,32 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             source_factory=google_drive_source.provider,
         ),
         _metered(OpenScoreTool, metrics, service=score_service),
+        _metered(
+            DeleteChoirTool,
+            metrics,
+            view=deletion_view,
+            service=choir_service,
+            pending=pending_confirmations,
+        ),
+        _metered(
+            DeleteWorkTool,
+            metrics,
+            view=deletion_view,
+            deleter=repertoire_service,
+            pending=pending_confirmations,
+        ),
+        _metered(
+            DeleteScoreTool,
+            metrics,
+            view=deletion_view,
+            deleter=score_service,
+            pending=pending_confirmations,
+        ),
+        _metered(
+            ConfirmDeletionTool,
+            metrics,
+            view=deletion_view,
+            deleters=providers.List(choir_service, repertoire_service, score_service),
+            pending=pending_confirmations,
+        ),
     )

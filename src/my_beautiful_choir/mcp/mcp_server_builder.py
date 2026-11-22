@@ -134,6 +134,7 @@ class McpServerBuilder:
 
         Raises:
             ViewNotFoundError: if the document of a view is missing.
+            ValueError: if an app-only tool has no view.
         """
         apps = Apps()
         registered_views: set[str] = set()
@@ -141,14 +142,19 @@ class McpServerBuilder:
         for tool in self._tools:
             view = tool.view
             if view is None:
+                if tool.app_only:
+                    raise ValueError(f"The app-only tool {tool.name} has no view")
                 text_tools.append(tool)
                 continue
             if view.uri not in registered_views:
                 apps.add_html_resource(view.uri, view.content())
                 registered_views.add(view.uri)
-            apps.tool(resource_uri=view.uri, name=tool.name, description=tool.description)(
-                _handler_for(tool)
-            )
+            apps.tool(
+                resource_uri=view.uri,
+                name=tool.name,
+                description=tool.description,
+                visibility=["app"] if tool.app_only else None,
+            )(_handler_for(tool))
 
         server = MCPServer(
             name=self._application_info.name,

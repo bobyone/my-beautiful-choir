@@ -8,9 +8,26 @@
   "connection": {
     "error": "Ovaj prikaz nije mogao da se poveže sa asistentom. Zatvorite ga i pokušajte ponovo."
   },
+  "deletion": {
+    "cancel": "Otkaži",
+    "delete": "Izbriši",
+    "deleting": "Brisanje…",
+    "done": "Brisanje je završeno.",
+    "error": "Detalje o brisanju nije moguće prikazati. Zamolite asistenta da pokuša ponovo.",
+    "failed": "Brisanje nije uspelo. Zamolite asistenta da pokuša ponovo.",
+    "loading": "Učitavanje detalja o brisanju…",
+    "nothingDeleted": "Ništa nije izbrisano.",
+    "scores": "Partiture",
+    "warning": "Ovo brisanje ne može da se poništi.",
+    "works": "Kompozicije"
+  },
   "glossary": {
+    "choir": "Hor",
+    "deletion": "Brisanje",
     "mode": "Režim rada",
     "personalMode": "Lični režim rada",
-    "webMode": "Veb režim rada"
+    "score": "Partitura",
+    "webMode": "Veb režim rada",
+    "work": "Kompozicija"
   }
 }

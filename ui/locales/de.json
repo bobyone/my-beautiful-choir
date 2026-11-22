@@ -8,9 +8,26 @@
   "connection": {
     "error": "Diese Ansicht konnte keine Verbindung zum Assistenten herstellen. Schließen Sie sie und versuchen Sie es erneut."
   },
+  "deletion": {
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht…",
+    "done": "Löschung abgeschlossen.",
+    "error": "Die Details zur Löschung konnten nicht angezeigt werden. Bitten Sie den Assistenten, es erneut zu versuchen.",
+    "failed": "Die Löschung ist fehlgeschlagen. Bitten Sie den Assistenten, es erneut zu versuchen.",
+    "loading": "Details zur Löschung werden geladen…",
+    "nothingDeleted": "Es wurde nichts gelöscht.",
+    "scores": "Partituren",
+    "warning": "Diese Löschung kann nicht rückgängig gemacht werden.",
+    "works": "Werke"
+  },
   "glossary": {
+    "choir": "Chor",
+    "deletion": "Löschung",
     "mode": "Modus",
     "personalMode": "Persönlicher Modus",
-    "webMode": "Webmodus"
+    "score": "Partitur",
+    "webMode": "Webmodus",
+    "work": "Werk"
   }
 }

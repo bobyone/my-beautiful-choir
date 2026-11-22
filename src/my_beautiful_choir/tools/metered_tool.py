@@ -42,6 +42,11 @@ class MeteredTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
         """View of the wrapped tool."""
         return self._inner.view
 
+    @property
+    def app_only(self) -> bool:
+        """Visibility of the wrapped tool."""
+        return self._inner.app_only
+
     async def execute(self, arguments: ArgumentsT, context: ToolContext) -> ToolResult:
         """Run the wrapped tool and record the call, whatever its outcome.
 

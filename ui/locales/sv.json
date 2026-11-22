@@ -8,9 +8,26 @@
   "connection": {
     "error": "Den här vyn kunde inte ansluta till assistenten. Stäng den och försök igen."
   },
+  "deletion": {
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "deleting": "Tar bort…",
+    "done": "Borttagningen är klar.",
+    "error": "Det gick inte att visa informationen om borttagningen. Be assistenten att försöka igen.",
+    "failed": "Borttagningen misslyckades. Be assistenten att försöka igen.",
+    "loading": "Läser in information om borttagningen…",
+    "nothingDeleted": "Inget togs bort.",
+    "scores": "Partitur",
+    "warning": "Borttagningen kan inte ångras.",
+    "works": "Verk"
+  },
   "glossary": {
+    "choir": "Kör",
+    "deletion": "Borttagning",
     "mode": "Läge",
     "personalMode": "Personligt läge",
-    "webMode": "Webbläge"
+    "score": "Partitur",
+    "webMode": "Webbläge",
+    "work": "Verk"
   }
 }

@@ -8,9 +8,26 @@
   "connection": {
     "error": "Kjo pamje nuk mund të lidhej me asistentin. Mbylleni dhe provoni përsëri."
   },
+  "deletion": {
+    "cancel": "Anulo",
+    "delete": "Fshi",
+    "deleting": "Po fshihet…",
+    "done": "Fshirja përfundoi.",
+    "error": "Hollësitë e fshirjes nuk mund të shfaqeshin. Kërkojini asistentit të provojë përsëri.",
+    "failed": "Fshirja dështoi. Kërkojini asistentit të provojë përsëri.",
+    "loading": "Po ngarkohen hollësitë e fshirjes…",
+    "nothingDeleted": "Nuk u fshi asgjë.",
+    "scores": "Partitura",
+    "warning": "Kjo fshirje nuk mund të zhbëhet.",
+    "works": "Vepra"
+  },
   "glossary": {
+    "choir": "Kor",
+    "deletion": "Fshirje",
     "mode": "Modaliteti",
     "personalMode": "Modaliteti personal",
-    "webMode": "Modaliteti ueb"
+    "score": "Partiturë",
+    "webMode": "Modaliteti ueb",
+    "work": "Vepër"
   }
 }

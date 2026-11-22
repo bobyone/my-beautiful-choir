@@ -8,9 +8,26 @@
   "connection": {
     "error": "Cette vue n’a pas pu se connecter à l’assistant. Fermez-la, puis réessayez."
   },
+  "deletion": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "deleting": "Suppression en cours…",
+    "done": "Suppression terminée.",
+    "error": "Les détails de la suppression n’ont pas pu être affichés. Demandez à l’assistant de réessayer.",
+    "failed": "La suppression a échoué. Demandez à l’assistant de réessayer.",
+    "loading": "Chargement des détails de la suppression…",
+    "nothingDeleted": "Aucun élément n’a été supprimé.",
+    "scores": "Partitions",
+    "warning": "Cette suppression est irréversible.",
+    "works": "Œuvres"
+  },
   "glossary": {
+    "choir": "Chorale",
+    "deletion": "Suppression",
     "mode": "Mode",
     "personalMode": "Mode perso",
-    "webMode": "Mode web"
+    "score": "Partition",
+    "webMode": "Mode web",
+    "work": "Œuvre"
   }
 }

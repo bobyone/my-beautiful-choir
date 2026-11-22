@@ -48,10 +48,17 @@ class StubArguments(BaseModel):
 class StubTool(Tool[StubArguments]):
     """Tool returning a fixed result, or failing on demand."""
 
-    def __init__(self, name: str = "stub", view: View | None = None, fail: bool = False) -> None:
+    def __init__(
+        self,
+        name: str = "stub",
+        view: View | None = None,
+        fail: bool = False,
+        app_only: bool = False,
+    ) -> None:
         self._name = name
         self._view = view
         self._fail = fail
+        self._app_only = app_only
         self.calls: list[StubArguments] = []
 
     @property
@@ -69,6 +76,10 @@ class StubTool(Tool[StubArguments]):
     @property
     def view(self) -> View | None:
         return self._view
+
+    @property
+    def app_only(self) -> bool:
+        return self._app_only
 
     async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
         self.calls.append(arguments)

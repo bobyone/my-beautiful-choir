@@ -17,6 +17,13 @@ from tests.integration.stdio_session import TIMEOUT_SECONDS, StdioSession, launc
 
 LAUNCHER = Path(__file__).with_name("personal_mode_launcher.py")
 ABOUT_URI = "ui://my-beautiful-choir/about.html"
+DELETION_URI = "ui://my-beautiful-choir/deletion.html"
+VIEWS = ("about.html", "deletion.html")
+
+
+def _write_stub_views(directory: Path) -> None:
+    for view in VIEWS:
+        (directory / view).write_text(f"<p>{view.removesuffix('.html')}</p>", encoding="utf-8")
 
 
 def _exchange_show_about(session: StdioSession) -> dict[str, Any]:
@@ -32,8 +39,8 @@ def _exchange_show_about(session: StdioSession) -> dict[str, Any]:
 
 @pytest.fixture
 def launched(tmp_path: Path) -> Iterator[StdioSession]:
-    """The real entry point, with a stub view."""
-    (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
+    """The real entry point, with stub views."""
+    _write_stub_views(tmp_path)
     session = StdioSession([sys.executable, str(LAUNCHER), str(tmp_path)], tmp_path / "data")
     yield session
     session.kill()
@@ -59,7 +66,7 @@ def _call(session: StdioSession, request_id: int, tool: str, **arguments: object
 
 
 def test_choirs_are_kept_in_the_data_directory(tmp_path: Path) -> None:
-    (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
+    _write_stub_views(tmp_path)
     command = [sys.executable, str(LAUNCHER), str(tmp_path)]
     first = StdioSession(command, tmp_path / "data")
     try:
@@ -95,10 +102,10 @@ def test_missing_view_exits_with_4_without_writing_to_stdout(tmp_path: Path) -> 
 
 
 @pytest.mark.skipif(
-    not packaged_views_directory().joinpath("about.html").is_file(),
+    not all(packaged_views_directory().joinpath(view).is_file() for view in VIEWS),
     reason="the user interface is not built (uv run nox -s ui)",
 )
-def test_module_serves_the_built_view(tmp_path: Path) -> None:
+def test_module_serves_the_built_views_and_confirms_a_deletion(tmp_path: Path) -> None:
     session = StdioSession([sys.executable, "-m", "my_beautiful_choir"], tmp_path / "data")
     try:
         resource = _exchange_show_about(session)
@@ -106,6 +113,39 @@ def test_module_serves_the_built_view(tmp_path: Path) -> None:
         assert contents["mimeType"] == "text/html;profile=mcp-app"
         assert contents["text"].startswith("<!doctype html>")
         assert "<script" in contents["text"]
+
+        tools = {tool["name"]: tool for tool in session.request(5, "tools/list")["tools"]}
+        assert tools["delete_choir"]["_meta"]["ui"]["resourceUri"] == DELETION_URI
+        assert tools["confirm_deletion"]["_meta"]["ui"] == {
+            "resourceUri": DELETION_URI,
+            "visibility": ["app"],
+        }
+        deletion_resource = session.request(6, "resources/read", {"uri": DELETION_URI})
+        [deletion_view] = deletion_resource["contents"]
+        assert deletion_view["mimeType"] == "text/html;profile=mcp-app"
+        assert deletion_view["text"].startswith("<!doctype html>")
+        assert "<script" in deletion_view["text"]
+        assert "<style" in deletion_view["text"]
+
+        choir = "Chœur de Lyon"
+        _call(session, 7, "create_choir", name=choir)
+        requested = session.request(
+            8, "tools/call", {"name": "delete_choir", "arguments": {"choir": choir}}
+        )
+        assert not requested.get("isError"), requested
+        deletion = requested["structuredContent"]
+        assert deletion["status"] == "pending"
+        assert deletion["deletion"]["name"] == choir
+        assert choir in _call(session, 9, "list_choirs")
+
+        confirmation = {
+            "name": "confirm_deletion",
+            "arguments": {"token": deletion["token"]},
+        }
+        confirmed = session.request(10, "tools/call", confirmation)
+        assert confirmed["structuredContent"]["status"] == "deleted"
+        assert session.request(11, "tools/call", confirmation)["isError"]
+        assert choir not in _call(session, 12, "list_choirs")
         exit_code, stderr = session.close()
         assert exit_code == 0, stderr
     finally:

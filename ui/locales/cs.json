@@ -8,9 +8,26 @@
   "connection": {
     "error": "Toto zobrazení se nemohlo připojit k asistentovi. Zavřete ho a zkuste to znovu."
   },
+  "deletion": {
+    "cancel": "Zrušit",
+    "delete": "Odstranit",
+    "deleting": "Odstraňování…",
+    "done": "Odstranění dokončeno.",
+    "error": "Podrobnosti o odstranění se nepodařilo zobrazit. Požádejte asistenta, aby to zkusil znovu.",
+    "failed": "Odstranění se nezdařilo. Požádejte asistenta, aby to zkusil znovu.",
+    "loading": "Načítání podrobností o odstranění…",
+    "nothingDeleted": "Nic nebylo odstraněno.",
+    "scores": "Partitury",
+    "warning": "Toto odstranění nelze vrátit zpět.",
+    "works": "Skladby"
+  },
   "glossary": {
+    "choir": "Sbor",
+    "deletion": "Odstranění",
     "mode": "Režim",
     "personalMode": "Osobní režim",
-    "webMode": "Webový režim"
+    "score": "Partitura",
+    "webMode": "Webový režim",
+    "work": "Skladba"
   }
 }

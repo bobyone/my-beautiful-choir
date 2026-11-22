@@ -8,9 +8,26 @@
   "connection": {
     "error": "Aquesta vista no s’ha pogut connectar amb l’assistent. Tanqueu-la i torneu-ho a provar."
   },
+  "deletion": {
+    "cancel": "Cancel·la",
+    "delete": "Suprimeix",
+    "deleting": "S’està suprimint…",
+    "done": "Supressió completada.",
+    "error": "No s’han pogut mostrar els detalls de la supressió. Demaneu a l’assistent que ho torni a provar.",
+    "failed": "La supressió ha fallat. Demaneu a l’assistent que ho torni a provar.",
+    "loading": "S’estan carregant els detalls de la supressió…",
+    "nothingDeleted": "No s’ha suprimit res.",
+    "scores": "Partitures",
+    "warning": "Aquesta supressió no es pot desfer.",
+    "works": "Obres"
+  },
   "glossary": {
+    "choir": "Cor",
+    "deletion": "Supressió",
     "mode": "Mode",
     "personalMode": "Mode personal",
-    "webMode": "Mode web"
+    "score": "Partitura",
+    "webMode": "Mode web",
+    "work": "Obra"
   }
 }

@@ -44,7 +44,8 @@ def _clean_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 @pytest.fixture
 def views(tmp_path: Path) -> Path:
-    (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
+    for view in ("about", "deletion"):
+        (tmp_path / f"{view}.html").write_text(f"<p>{view}</p>", encoding="utf-8")
     return tmp_path
 
 

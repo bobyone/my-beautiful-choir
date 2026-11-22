@@ -137,6 +137,10 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
         "add_score_from_file",
         "add_score_from_google_drive",
         "open_score",
+        "delete_choir",
+        "delete_work",
+        "delete_score",
+        "confirm_deletion",
     ]
     assert all(isinstance(tool, MeteredTool) for tool in container.tools())
 

@@ -1,6 +1,6 @@
-﻿---
+---
 name: manage-choirs
-description: Use when a my-beautiful-choir user wants to create, rename or list their choirs, or to choose the default choir (the one used when a request names none), in personal mode.
+description: Use when a my-beautiful-choir user wants to create, rename, list or delete their choirs, or to choose the default choir (the one used when a request names none), in personal mode.
 ---
 
 <!--
@@ -21,6 +21,7 @@ personal mode. Web mode does not offer them yet (they need accounts).
 | Create a choir | `create_choir(name)` |
 | Rename a choir | `rename_choir(choir, new_name)` |
 | Choose the default choir | `set_default_choir(choir)` |
+| Delete a choir and its works and scores | `delete_choir(choir)` |
 
 ## Rules to follow
 
@@ -33,6 +34,14 @@ personal mode. Web mode does not offer them yet (they need accounts).
   of their first choir, then create it.
 - Choirs are named by their name in every tool; use `list_choirs` to find
   the exact name.
+
+## Deletion
+
+Call `delete_choir` for the choir the user asked to delete. The tool asks
+for confirmation. If the host opens the **Deletion** view, ask the user to
+review the affected works and scores and choose **Delete** or **Cancel**.
+If the deleted choir was the default choir, the oldest remaining choir
+becomes the default choir.
 
 ## If a tool is missing
 

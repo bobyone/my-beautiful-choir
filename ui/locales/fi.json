@@ -8,9 +8,26 @@
   "connection": {
     "error": "Tämä näkymä ei saanut yhteyttä avustajaan. Sulje se ja yritä uudelleen."
   },
+  "deletion": {
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "deleting": "Poistetaan…",
+    "done": "Poisto valmis.",
+    "error": "Poiston tietoja ei voitu näyttää. Pyydä avustajaa yrittämään uudelleen.",
+    "failed": "Poisto epäonnistui. Pyydä avustajaa yrittämään uudelleen.",
+    "loading": "Ladataan poiston tietoja…",
+    "nothingDeleted": "Mitään ei poistettu.",
+    "scores": "Nuotit",
+    "warning": "Tätä poistoa ei voi perua.",
+    "works": "Teokset"
+  },
   "glossary": {
+    "choir": "Kuoro",
+    "deletion": "Poisto",
     "mode": "Tila",
     "personalMode": "Henkilökohtainen tila",
-    "webMode": "Verkkotila"
+    "score": "Nuotti",
+    "webMode": "Verkkotila",
+    "work": "Teos"
   }
 }

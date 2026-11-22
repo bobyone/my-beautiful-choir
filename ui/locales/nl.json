@@ -8,9 +8,26 @@
   "connection": {
     "error": "Deze weergave kon geen verbinding maken met de assistent. Sluit deze en probeer het opnieuw."
   },
+  "deletion": {
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "deleting": "Bezig met verwijderen…",
+    "done": "Verwijdering voltooid.",
+    "error": "De gegevens over de verwijdering konden niet worden weergegeven. Vraag de assistent om het opnieuw te proberen.",
+    "failed": "De verwijdering is mislukt. Vraag de assistent om het opnieuw te proberen.",
+    "loading": "Gegevens over de verwijdering worden geladen…",
+    "nothingDeleted": "Er is niets verwijderd.",
+    "scores": "Partituren",
+    "warning": "Deze verwijdering kan niet ongedaan worden gemaakt.",
+    "works": "Werken"
+  },
   "glossary": {
+    "choir": "Koor",
+    "deletion": "Verwijdering",
     "mode": "Modus",
     "personalMode": "Persoonlijke modus",
-    "webMode": "Webmodus"
+    "score": "Partituur",
+    "webMode": "Webmodus",
+    "work": "Werk"
   }
 }

@@ -8,9 +8,26 @@
   "connection": {
     "error": "Questa vista n’ha betg pudì sa colliar cun l’assistent. Serrai ella e reempruvai."
   },
+  "deletion": {
+    "cancel": "Interrumper",
+    "delete": "Stizzar",
+    "deleting": "Stizzar en curs…",
+    "done": "La stizzada è terminada.",
+    "error": "Ils detagls da la stizzada n’han betg pudì vegnir mussads. Dumandai a l’assistent d’empruvar anc ina giada.",
+    "failed": "La stizzada n’è betg reussida. Dumandai a l’assistent d’empruvar anc ina giada.",
+    "loading": "Chargiar ils detagls da la stizzada…",
+    "nothingDeleted": "I n’è vegnì stizzà nagut.",
+    "scores": "Partituras",
+    "warning": "Questa stizzada na po betg vegnir revocada.",
+    "works": "Ovras"
+  },
   "glossary": {
+    "choir": "Chor",
+    "deletion": "Stizzada",
     "mode": "Modus",
     "personalMode": "Modus persunal",
-    "webMode": "Modus web"
+    "score": "Partitura",
+    "webMode": "Modus web",
+    "work": "Ovra"
   }
 }

@@ -8,9 +8,26 @@
   "connection": {
     "error": "Bu görünüm asistana bağlanamadı. Kapatıp yeniden deneyin."
   },
+  "deletion": {
+    "cancel": "İptal",
+    "delete": "Sil",
+    "deleting": "Siliniyor…",
+    "done": "Silme tamamlandı.",
+    "error": "Silme ayrıntıları görüntülenemedi. Asistandan yeniden denemesini isteyin.",
+    "failed": "Silme başarısız oldu. Asistandan yeniden denemesini isteyin.",
+    "loading": "Silme ayrıntıları yükleniyor…",
+    "nothingDeleted": "Hiçbir şey silinmedi.",
+    "scores": "Partisyonlar",
+    "warning": "Bu silme işlemi geri alınamaz.",
+    "works": "Eserler"
+  },
   "glossary": {
+    "choir": "Koro",
+    "deletion": "Silme",
     "mode": "Mod",
     "personalMode": "Kişisel mod",
-    "webMode": "Web modu"
+    "score": "Partisyon",
+    "webMode": "Web modu",
+    "work": "Eser"
   }
 }

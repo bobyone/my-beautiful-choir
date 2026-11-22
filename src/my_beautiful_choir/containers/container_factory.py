@@ -20,4 +20,8 @@ MODE_CONTAINERS: dict[Mode, type[containers.DeclarativeContainer]] = {
 def create_container(settings: Settings) -> ApplicationContainer:
     """Assemble the application for the mode given by ``settings``."""
     mode_container = MODE_CONTAINERS[settings.mode](settings=settings)
-    return ApplicationContainer(settings=settings, mode=mode_container)
+    container = ApplicationContainer(settings=settings, mode=mode_container)
+    # The views of a mode are read from the directory of the common views.
+    if "views_directory" in mode_container.providers:
+        mode_container.views_directory.override(container.views_directory)
+    return container

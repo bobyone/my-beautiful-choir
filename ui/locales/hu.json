@@ -8,9 +8,26 @@
   "connection": {
     "error": "Ez a nézet nem tudott csatlakozni az asszisztenshez. Zárja be, majd próbálja újra."
   },
+  "deletion": {
+    "cancel": "Mégse",
+    "delete": "Törlés",
+    "deleting": "Törlés folyamatban…",
+    "done": "A törlés befejeződött.",
+    "error": "A törlés részleteit nem sikerült megjeleníteni. Kérje meg az asszisztenst, hogy próbálja újra.",
+    "failed": "A törlés sikertelen. Kérje meg az asszisztenst, hogy próbálja újra.",
+    "loading": "A törlés részleteinek betöltése…",
+    "nothingDeleted": "Nem történt törlés.",
+    "scores": "Kották",
+    "warning": "Ez a törlés nem vonható vissza.",
+    "works": "Művek"
+  },
   "glossary": {
+    "choir": "Kórus",
+    "deletion": "Törlés",
     "mode": "Mód",
     "personalMode": "Személyes mód",
-    "webMode": "Webes mód"
+    "score": "Kotta",
+    "webMode": "Webes mód",
+    "work": "Mű"
   }
 }

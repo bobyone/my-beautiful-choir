@@ -8,9 +8,26 @@
   "connection": {
     "error": "Šis rodinys negalėjo prisijungti prie asistento. Uždarykite jį ir bandykite dar kartą."
   },
+  "deletion": {
+    "cancel": "Atšaukti",
+    "delete": "Ištrinti",
+    "deleting": "Trinama…",
+    "done": "Ištrynimas baigtas.",
+    "error": "Nepavyko parodyti ištrynimo informacijos. Paprašykite asistento bandyti dar kartą.",
+    "failed": "Nepavyko ištrinti. Paprašykite asistento bandyti dar kartą.",
+    "loading": "Įkeliama ištrynimo informacija…",
+    "nothingDeleted": "Nieko neištrinta.",
+    "scores": "Partitūros",
+    "warning": "Šio ištrynimo atšaukti negalima.",
+    "works": "Kūriniai"
+  },
   "glossary": {
+    "choir": "Choras",
+    "deletion": "Ištrynimas",
     "mode": "Režimas",
     "personalMode": "Asmeninis režimas",
-    "webMode": "Žiniatinklio režimas"
+    "score": "Partitūra",
+    "webMode": "Žiniatinklio režimas",
+    "work": "Kūrinys"
   }
 }

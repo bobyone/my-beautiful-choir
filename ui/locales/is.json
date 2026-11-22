@@ -8,9 +8,26 @@
   "connection": {
     "error": "Þetta yfirlit gat ekki tengst aðstoðarmanninum. Lokaðu því og reyndu aftur."
   },
+  "deletion": {
+    "cancel": "Hætta við",
+    "delete": "Eyða",
+    "deleting": "Eyði…",
+    "done": "Eyðingu lokið.",
+    "error": "Ekki tókst að birta upplýsingar um eyðingu. Biddu aðstoðarmanninn um að reyna aftur.",
+    "failed": "Eyðing mistókst. Biddu aðstoðarmanninn um að reyna aftur.",
+    "loading": "Hleð upplýsingum um eyðingu…",
+    "nothingDeleted": "Ekkert var eytt.",
+    "scores": "Nótur",
+    "warning": "Ekki er hægt að afturkalla þessa eyðingu.",
+    "works": "Verk"
+  },
   "glossary": {
+    "choir": "Kór",
+    "deletion": "Eyðing",
     "mode": "Hamur",
     "personalMode": "Einkahamur",
-    "webMode": "Vefhamur"
+    "score": "Nótur",
+    "webMode": "Vefhamur",
+    "work": "Verk"
   }
 }

@@ -8,9 +8,26 @@
   "connection": {
     "error": "Denne visinga kunne ikkje kopla til assistenten. Lukk ho og prøv igjen."
   },
+  "deletion": {
+    "cancel": "Avbryt",
+    "delete": "Slett",
+    "deleting": "Slettar…",
+    "done": "Slettinga er fullført.",
+    "error": "Detaljane om slettinga kunne ikkje visast. Be assistenten om å prøve på nytt.",
+    "failed": "Slettinga mislukkast. Be assistenten om å prøve på nytt.",
+    "loading": "Lastar inn detaljar om slettinga…",
+    "nothingDeleted": "Ingenting vart sletta.",
+    "scores": "Partitur",
+    "warning": "Denne slettinga kan ikkje angrast.",
+    "works": "Verk"
+  },
   "glossary": {
+    "choir": "Kor",
+    "deletion": "Sletting",
     "mode": "Modus",
     "personalMode": "Personleg modus",
-    "webMode": "Nettmodus"
+    "score": "Partitur",
+    "webMode": "Nettmodus",
+    "work": "Verk"
   }
 }

@@ -8,9 +8,26 @@
   "connection": {
     "error": "Dës Usiicht konnt sech net mam Assistent verbannen. Maacht se zou a probéiert nach eng Kéier."
   },
+  "deletion": {
+    "cancel": "Ofbriechen",
+    "delete": "Läschen",
+    "deleting": "Gëtt geläscht…",
+    "done": "D’Läschen ass ofgeschloss.",
+    "error": "D’Detailer vum Läsche konnten net ugewise ginn. Frot den Assistent, et nach eng Kéier ze probéieren.",
+    "failed": "D’Läsche war net erfollegräich. Frot den Assistent, et nach eng Kéier ze probéieren.",
+    "loading": "D’Detailer vum Läsche gi gelueden…",
+    "nothingDeleted": "Et gouf näischt geläscht.",
+    "scores": "Partituren",
+    "warning": "Dëst Läsche kann net réckgängeg gemaach ginn.",
+    "works": "Wierker"
+  },
   "glossary": {
+    "choir": "Chouer",
+    "deletion": "Läschen",
     "mode": "Modus",
     "personalMode": "Perséinleche Modus",
-    "webMode": "Webmodus"
+    "score": "Partitur",
+    "webMode": "Webmodus",
+    "work": "Wierk"
   }
 }

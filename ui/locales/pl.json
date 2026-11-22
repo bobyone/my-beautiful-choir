@@ -8,9 +8,26 @@
   "connection": {
     "error": "Ten widok nie mógł połączyć się z asystentem. Zamknij go i spróbuj ponownie."
   },
+  "deletion": {
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "deleting": "Usuwanie…",
+    "done": "Usuwanie zakończone.",
+    "error": "Nie udało się wyświetlić informacji o usuwaniu. Poproś asystenta o ponowną próbę.",
+    "failed": "Nie udało się usunąć. Poproś asystenta o ponowną próbę.",
+    "loading": "Wczytywanie informacji o usuwaniu…",
+    "nothingDeleted": "Nic nie usunięto.",
+    "scores": "Partytury",
+    "warning": "Tej operacji nie można cofnąć.",
+    "works": "Utwory"
+  },
   "glossary": {
+    "choir": "Chór",
+    "deletion": "Usuwanie",
     "mode": "Tryb",
     "personalMode": "Tryb osobisty",
-    "webMode": "Tryb webowy"
+    "score": "Partytura",
+    "webMode": "Tryb webowy",
+    "work": "Utwór"
   }
 }

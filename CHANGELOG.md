@@ -15,6 +15,9 @@ and this project adheres to
 
 ### Added
 
+- Confirmed deletion of choirs, works and scores in personal mode, with a
+  localized Deletion view when the MCP host cannot ask directly (#7).
+
 - Codex contribution guidance, a contribution skill and repository protection
   settings backed by shared Claude Code and Codex rules. The assistant
   hooks run offline without relying on the shared uv cache. The shared

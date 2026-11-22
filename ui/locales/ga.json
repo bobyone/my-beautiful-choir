@@ -8,9 +8,26 @@
   "connection": {
     "error": "Níorbh fhéidir leis an amharc seo ceangal leis an gcúntóir. Dún é agus bain triail eile as."
   },
+  "deletion": {
+    "cancel": "Cealaigh",
+    "delete": "Scrios",
+    "deleting": "Á scriosadh…",
+    "done": "Tá an scriosadh críochnaithe.",
+    "error": "Níorbh fhéidir sonraí an scriosta a thaispeáint. Iarr ar an gcúntóir triail eile a bhaint as.",
+    "failed": "Theip ar an scriosadh. Iarr ar an gcúntóir triail eile a bhaint as.",
+    "loading": "Sonraí an scriosta á lódáil…",
+    "nothingDeleted": "Níor scriosadh aon rud.",
+    "scores": "Scóir cheoil",
+    "warning": "Ní féidir an scriosadh seo a chur ar ceal.",
+    "works": "Saothair"
+  },
   "glossary": {
+    "choir": "Cór",
+    "deletion": "Scriosadh",
     "mode": "Mód",
     "personalMode": "Mód pearsanta",
-    "webMode": "Mód gréasáin"
+    "score": "Scór ceoil",
+    "webMode": "Mód gréasáin",
+    "work": "Saothar"
   }
 }

@@ -39,6 +39,15 @@ class Tool[ArgumentsT: BaseModel](ABC):
         """View displaying the result, or None for a text-only tool."""
         return None
 
+    @property
+    def app_only(self) -> bool:
+        """True for a tool only its view may call, hidden from the model.
+
+        Such a tool carries out what the user did in the view (confirming a
+        deletion, for instance); it must have a view.
+        """
+        return False
+
     @abstractmethod
     async def execute(self, arguments: ArgumentsT, context: ToolContext) -> ToolResult:
         """Run the tool with validated arguments.

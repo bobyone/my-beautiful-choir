@@ -8,9 +8,26 @@
   "connection": {
     "error": "This view could not connect to the assistant. Close it, then try again."
   },
+  "deletion": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "done": "Deletion complete.",
+    "error": "The deletion details could not be displayed. Ask the assistant to try again.",
+    "failed": "The deletion failed. Ask the assistant to try again.",
+    "loading": "Loading the deletion details…",
+    "nothingDeleted": "Nothing was deleted.",
+    "scores": "Scores",
+    "warning": "This deletion cannot be undone.",
+    "works": "Works"
+  },
   "glossary": {
+    "choir": "Choir",
+    "deletion": "Deletion",
     "mode": "Mode",
     "personalMode": "Personal mode",
-    "webMode": "Web mode"
+    "score": "Score",
+    "webMode": "Web mode",
+    "work": "Work"
   }
 }

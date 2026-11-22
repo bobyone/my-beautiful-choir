@@ -410,6 +410,23 @@ checked by default):
 **Limit:** the question is in English: the server does not know the
 user's language.
 
+### `DeleteTool` and `ConfirmDeletionTool` (`tools.view_tool.deletion`)
+
+The deletion tools describe what the user will delete before requesting
+confirmation. The description includes the target, its parent when present,
+and the number of works and scores affected. A refusal leaves the data intact.
+When the client cannot ask directly, the tool stores the description in
+`PendingConfirmations[Deletion]` and returns the Deletion view with a token.
+The in-memory store issues single-use tokens valid for ten minutes and clears
+expired entries when storing a new confirmation. Restarting the process
+clears pending confirmations.
+
+The view displays the description in the host language. The **Delete** button
+sends the token to `confirm_deletion(token)`, advertised with MCP UI visibility
+`["app"]`. **Cancel** changes the view state without requesting deletion.
+The server consumes the token before calling the target's `Deleter`.
+An expired or reused token returns `ConfirmationExpiredError`.
+
 ### `PackagedView` (`views.packaged`)
 
 | Parameter | Type | Description |

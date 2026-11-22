@@ -1,6 +1,6 @@
 ---
 name: manage-scores
-description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to open a score, in personal mode.
+description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to open or delete a score, in personal mode.
 ---
 
 <!--
@@ -21,6 +21,7 @@ personal mode. A score belongs to a work: find the work's id first (use the
 | Add a score from a file of the user's computer | `add_score_from_file(work_id, path, label?)` |
 | Add a score from a public Google Drive link | `add_score_from_google_drive(work_id, link, label?)` |
 | Open a score | `open_score(score_id)` |
+| Delete a score | `delete_score(score_id)` |
 
 ## Rules to follow
 
@@ -39,6 +40,9 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - The same file may be added twice, for instance with two labels.
 - `open_score` opens a **copy** in the default application of the computer:
   changes made there do not change the score of the repertoire.
+
+- `delete_score` requests confirmation. If the host opens the **Deletion**
+  view, ask the user to review the score and choose **Delete** or **Cancel**.
 
 ## Errors
 

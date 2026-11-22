@@ -8,9 +8,26 @@
   "connection": {
     "error": "Denne visning kunne ikke oprette forbindelse til assistenten. Luk den, og prøv igen."
   },
+  "deletion": {
+    "cancel": "Annuller",
+    "delete": "Slet",
+    "deleting": "Sletter…",
+    "done": "Sletningen er fuldført.",
+    "error": "Oplysningerne om sletningen kunne ikke vises. Bed assistenten om at prøve igen.",
+    "failed": "Sletningen mislykkedes. Bed assistenten om at prøve igen.",
+    "loading": "Indlæser oplysninger om sletningen…",
+    "nothingDeleted": "Intet blev slettet.",
+    "scores": "Partiturer",
+    "warning": "Denne sletning kan ikke fortrydes.",
+    "works": "Værker"
+  },
   "glossary": {
+    "choir": "Kor",
+    "deletion": "Sletning",
     "mode": "Tilstand",
     "personalMode": "Personlig tilstand",
-    "webMode": "Webtilstand"
+    "score": "Partitur",
+    "webMode": "Webtilstand",
+    "work": "Værk"
   }
 }

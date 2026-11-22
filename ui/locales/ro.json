@@ -8,9 +8,26 @@
   "connection": {
     "error": "Această vizualizare nu s-a putut conecta la asistent. Închideți-o și încercați din nou."
   },
+  "deletion": {
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "deleting": "Se șterge…",
+    "done": "Ștergerea s-a încheiat.",
+    "error": "Detaliile ștergerii nu au putut fi afișate. Cereți asistentului să încerce din nou.",
+    "failed": "Ștergerea a eșuat. Cereți asistentului să încerce din nou.",
+    "loading": "Se încarcă detaliile ștergerii…",
+    "nothingDeleted": "Nu s-a șters nimic.",
+    "scores": "Partituri",
+    "warning": "Această ștergere nu poate fi anulată.",
+    "works": "Lucrări"
+  },
   "glossary": {
+    "choir": "Cor",
+    "deletion": "Ștergere",
     "mode": "Mod",
     "personalMode": "Mod personal",
-    "webMode": "Mod web"
+    "score": "Partitură",
+    "webMode": "Mod web",
+    "work": "Lucrare"
   }
 }

@@ -230,3 +230,18 @@ def test_reserved_argument_name_is_refused() -> None:
     assert CONTEXT_PARAMETER == "mbc_request_context"
     with pytest.raises(ValueError, match="reserved"):
         McpServerBuilder(INFO, [_ReservedNameTool()]).build()
+
+
+@pytest.mark.anyio
+async def test_app_only_tool_is_published_for_the_view_only() -> None:
+    view = StubView(uri=VIEW_URI)
+    tools = [StubTool(name="shown", view=view), StubTool(name="hidden", view=view, app_only=True)]
+    async with _client(tools) as client:
+        published = {tool.name: tool for tool in (await client.list_tools()).tools}
+        assert published["shown"].meta == {"ui": {"resourceUri": VIEW_URI}}
+        assert published["hidden"].meta == {"ui": {"resourceUri": VIEW_URI, "visibility": ["app"]}}
+
+
+def test_app_only_tool_without_view_fails_the_build() -> None:
+    with pytest.raises(ValueError, match="hidden"):
+        McpServerBuilder(INFO, [StubTool(name="hidden", app_only=True)]).build()

@@ -29,7 +29,7 @@ describe("useHost", () => {
   it("starts connected, without result, with the initial host context", () => {
     host.initialContext = { locale: "fr-FR", theme: "dark" };
     const { result } = renderHook(() => useHost("view", "1.0.0"));
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       connected: true,
       connectionFailed: false,
       hostContext: { locale: "fr-FR", theme: "dark" },
@@ -70,12 +70,14 @@ describe("useHost", () => {
     expect(result.current.hostContext).toEqual({ locale: "fr-FR", theme: "dark" });
   });
 
-  it("reports a failed connection", () => {
+  it("reports a failed connection and rejects tool calls", async () => {
     host.connected = false;
     host.error = new Error("timeout");
     const { result } = renderHook(() => useHost("view", "1.0.0"));
     expect(result.current.connected).toBe(false);
     expect(result.current.connectionFailed).toBe(true);
     expect(mocked.useHostStyles).toHaveBeenCalledWith(null, undefined);
+    await expect(result.current.callTool("confirm_deletion", {})).rejects.toThrow("not connected");
+    expect(host.toolCalls).toEqual([]);
   });
 });

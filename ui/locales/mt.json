@@ -8,9 +8,26 @@
   "connection": {
     "error": "Din il-veduta ma setgħetx tikkonnettja mal-assistent. Agħlaqha u erġa’ pprova."
   },
+  "deletion": {
+    "cancel": "Ikkanċella",
+    "delete": "Ħassar",
+    "deleting": "Qed jitħassar…",
+    "done": "It-tħassir tlesta.",
+    "error": "Ma setgħux jintwerew id-dettalji tat-tħassir. Itlob lill-assistent jipprova mill-ġdid.",
+    "failed": "It-tħassir falla. Itlob lill-assistent jipprova mill-ġdid.",
+    "loading": "Qed jitgħabbew id-dettalji tat-tħassir…",
+    "nothingDeleted": "Ma tħassar xejn.",
+    "scores": "Partituri",
+    "warning": "Dan it-tħassir ma jistax jitreġġa’ lura.",
+    "works": "Xogħlijiet"
+  },
   "glossary": {
+    "choir": "Kor",
+    "deletion": "Tħassir",
     "mode": "Modalità",
     "personalMode": "Modalità personali",
-    "webMode": "Modalità web"
+    "score": "Partitura",
+    "webMode": "Modalità web",
+    "work": "Xogħol"
   }
 }

@@ -18,11 +18,11 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 |---|---|---|---|---|---|
 | Account | Identity of a person in web mode, used to sign in. | `Account` | | account | compte |
 | Arranger | Author of the arrangement of a work. | `Work.arranger` | | arranger | arrangeur |
-| Choir | Group of people singing together; the unit whose data is isolated from other choirs. | `Choir` | | choir | chorale |
+| Choir | Group of people singing together; the unit whose data is isolated from other choirs. | `Choir` | `glossary.choir` | Choir | Chorale |
 | Chorister | Member role allowing to consult and download the choir's repertoire and scores. | `Role.CHORISTER` | | chorister | choriste |
 | Composer | Author of the music of a work. | `Work.composer` | | composer | compositeur |
 | Default choir | Choir used when a request names none. | `Choir.is_default` | | default choir | chorale par défaut |
-| Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | | deletion | suppression |
+| Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
@@ -32,14 +32,14 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
 | Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | | repertoire | répertoire |
 | Role | Rights of a member within a choir: manager or chorister. | `Role` | | role | rôle |
-| Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | | score | partition |
+| Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | `glossary.score` | Score | Partition |
 | Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | | format | format |
 | Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | | label | libellé |
 | Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | | sung language | langue chantée |
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | | voicing | effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
-| Work | Musical work of a choir's repertoire. | `Work` | | work | œuvre |
+| Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.

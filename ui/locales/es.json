@@ -8,9 +8,26 @@
   "connection": {
     "error": "Esta vista no pudo conectarse con el asistente. Ciérrela e inténtelo de nuevo."
   },
+  "deletion": {
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando…",
+    "done": "Eliminación completada.",
+    "error": "No se pudieron mostrar los detalles de la eliminación. Pida al asistente que lo intente de nuevo.",
+    "failed": "No se pudo completar la eliminación. Pida al asistente que lo intente de nuevo.",
+    "loading": "Cargando los detalles de la eliminación…",
+    "nothingDeleted": "No se eliminó nada.",
+    "scores": "Partituras",
+    "warning": "Esta eliminación no se puede deshacer.",
+    "works": "Obras"
+  },
   "glossary": {
+    "choir": "Coro",
+    "deletion": "Eliminación",
     "mode": "Modo",
     "personalMode": "Modo personal",
-    "webMode": "Modo web"
+    "score": "Partitura",
+    "webMode": "Modo web",
+    "work": "Obra"
   }
 }

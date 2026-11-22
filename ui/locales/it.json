@@ -8,9 +8,26 @@
   "connection": {
     "error": "Questa vista non è riuscita a connettersi all’assistente. Chiudila e riprova."
   },
+  "deletion": {
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "deleting": "Eliminazione in corso…",
+    "done": "Eliminazione completata.",
+    "error": "Impossibile mostrare i dettagli dell’eliminazione. Chiedi all’assistente di riprovare.",
+    "failed": "L’eliminazione non è riuscita. Chiedi all’assistente di riprovare.",
+    "loading": "Caricamento dei dettagli dell’eliminazione…",
+    "nothingDeleted": "Non è stato eliminato nulla.",
+    "scores": "Partiture",
+    "warning": "Questa eliminazione è irreversibile.",
+    "works": "Opere"
+  },
   "glossary": {
+    "choir": "Coro",
+    "deletion": "Eliminazione",
     "mode": "Modalità",
     "personalMode": "Modalità personale",
-    "webMode": "Modalità web"
+    "score": "Partitura",
+    "webMode": "Modalità web",
+    "work": "Opera"
   }
 }

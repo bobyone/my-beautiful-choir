@@ -8,9 +8,26 @@
   "connection": {
     "error": "Šis skats nevarēja izveidot savienojumu ar asistentu. Aizveriet to un mēģiniet vēlreiz."
   },
+  "deletion": {
+    "cancel": "Atcelt",
+    "delete": "Dzēst",
+    "deleting": "Notiek dzēšana…",
+    "done": "Dzēšana pabeigta.",
+    "error": "Neizdevās parādīt dzēšanas informāciju. Lūdziet asistentam mēģināt vēlreiz.",
+    "failed": "Dzēšana neizdevās. Lūdziet asistentam mēģināt vēlreiz.",
+    "loading": "Notiek dzēšanas informācijas ielāde…",
+    "nothingDeleted": "Nekas netika dzēsts.",
+    "scores": "Partitūras",
+    "warning": "Šo dzēšanu nevar atsaukt.",
+    "works": "Skaņdarbi"
+  },
   "glossary": {
+    "choir": "Koris",
+    "deletion": "Dzēšana",
     "mode": "Režīms",
     "personalMode": "Personīgais režīms",
-    "webMode": "Tīmekļa režīms"
+    "score": "Partitūra",
+    "webMode": "Tīmekļa režīms",
+    "work": "Skaņdarbs"
   }
 }

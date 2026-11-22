@@ -44,6 +44,8 @@ def test_delegates_its_description_to_the_inner_tool() -> None:
     assert tool.description == inner.description
     assert tool.arguments_model is StubArguments
     assert tool.view is view
+    assert not tool.app_only
+    assert MeteredTool(StubTool(view=view, app_only=True), SpyMetrics()).app_only
 
 
 class _SuspendingTool(StubTool):
