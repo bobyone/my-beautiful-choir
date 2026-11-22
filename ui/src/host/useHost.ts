@@ -1,11 +1,18 @@
 // SPDX-FileCopyrightText: 2026 bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import type { McpUiHostContext, McpUiToolResultNotification } from "@modelcontextprotocol/ext-apps";
+import type {
+  App,
+  McpUiHostContext,
+  McpUiToolResultNotification,
+} from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export type ToolResult = McpUiToolResultNotification["params"];
+
+/** Result of a tool called by the view. */
+export type CalledToolResult = Awaited<ReturnType<App["callServerTool"]>>;
 
 export interface HostState {
   /** True once the view is connected to the host. */
@@ -16,11 +23,14 @@ export interface HostState {
   hostContext: McpUiHostContext | undefined;
   /** Result of the tool displayed by the view, once received. */
   toolResult: ToolResult | undefined;
+  /** Calls a tool of the server, such as an app-only tool; rejects when not connected. */
+  callTool: (name: string, args: Record<string, unknown>) => Promise<CalledToolResult>;
 }
 
 /**
  * Connects the view to the MCP host: receives the tool result and the host
- * context, and applies the host styles (CSS variables, color scheme, fonts).
+ * context, applies the host styles (CSS variables, color scheme, fonts), and
+ * lets the view call the tools of the server.
  */
 export function useHost(viewName: string, version: string): HostState {
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>(undefined);
@@ -44,10 +54,21 @@ export function useHost(viewName: string, version: string): HostState {
   const initialContext = app?.getHostContext();
   useHostStyles(app, initialContext);
 
+  const callTool = useCallback(
+    async (name: string, args: Record<string, unknown>): Promise<CalledToolResult> => {
+      if (app === null) {
+        throw new Error("The view is not connected to the host.");
+      }
+      return app.callServerTool({ name, arguments: args });
+    },
+    [app],
+  );
+
   return {
     connected: isConnected,
     connectionFailed: error !== null,
     hostContext: hostContext ?? initialContext,
     toolResult,
+    callTool,
   };
 }

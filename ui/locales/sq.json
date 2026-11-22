@@ -8,9 +8,58 @@
   "connection": {
     "error": "Kjo pamje nuk mund të lidhej me asistentin. Mbylleni dhe provoni përsëri."
   },
+  "deletion": {
+    "cancel": "Anulo",
+    "delete": "Fshi",
+    "deleting": "Po fshihet…",
+    "done": "Fshirja përfundoi.",
+    "error": "Hollësitë e fshirjes nuk mund të shfaqeshin. Kërkojini asistentit të provojë përsëri.",
+    "failed": "Fshirja dështoi. Kërkojini asistentit të provojë përsëri.",
+    "loading": "Po ngarkohen hollësitë e fshirjes…",
+    "nothingDeleted": "Nuk u fshi asgjë.",
+    "scores": "Partitura",
+    "warning": "Kjo fshirje nuk mund të zhbëhet.",
+    "works": "Vepra"
+  },
   "glossary": {
+    "arranger": "Aranzhues",
+    "choir": "Kor",
+    "composer": "Kompozitor",
+    "deletion": "Fshirje",
     "mode": "Modaliteti",
+    "notes": "Shënime",
     "personalMode": "Modaliteti personal",
-    "webMode": "Modaliteti ueb"
+    "repertoire": "Repertor",
+    "score": "Partiturë",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etiketë",
+    "scoreSize": "Madhësi",
+    "sungLanguage": "Gjuha e kënduar",
+    "title": "Titull",
+    "voicing": "Ndarja e zërave",
+    "webMode": "Modaliteti ueb",
+    "work": "Vepër"
+  },
+  "repertoire": {
+    "noChoirs": "Nuk ka ende kore. Kërkojini asistentit të krijojë një kor.",
+    "noWorks": "Nuk u gjetën vepra.",
+    "search": "Kërko"
+  },
+  "view": {
+    "actions": "Veprime",
+    "error": "Informacioni nuk mund të shfaqej. Kërkojini asistentit ta shfaqë përsëri.",
+    "loading": "Po ngarkohet informacioni…"
+  },
+  "work": {
+    "addScore": "Shto partiturë",
+    "back": "Kthehu te repertori",
+    "deleteWithScores": "Do të fshihen edhe partiturat e kësaj vepre.",
+    "deleteWork": "Fshi veprën",
+    "noScores": "Nuk ka ende partitura.",
+    "opened": "Partitura u hap.",
+    "openError": "Partitura nuk u hap. Kontrolloni nëse është instaluar një aplikacion i përshtatshëm.",
+    "openScore": "Hap",
+    "uploaded": "Partitura u shtua.",
+    "uploadError": "Ngarkimi dështoi. Zgjidhni një partiturë të mbështetur deri në 50 MB dhe provoni përsëri."
   }
 }

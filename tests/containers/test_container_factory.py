@@ -3,6 +3,9 @@
 
 """Tests of the dependency assembly of each mode."""
 
+from pathlib import Path
+
+import pytest
 from dependency_injector import providers
 
 from my_beautiful_choir import __version__
@@ -14,9 +17,19 @@ from my_beautiful_choir.containers.container_factory import create_container
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.monitoring.prometheus.prometheus_metrics import PrometheusMetrics
 from my_beautiful_choir.monitoring.server.server_health_check import ServerHealthCheck
+from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
+from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
+from my_beautiful_choir.scores.formats.score_format import ScoreFormat
+from my_beautiful_choir.scores.score_service import ScoreService
+from my_beautiful_choir.scores.sources.google_drive.google_drive_link import GoogleDriveLink
+from my_beautiful_choir.scores.sources.google_drive.google_drive_score_source import (
+    GoogleDriveScoreSource,
+)
+from my_beautiful_choir.storage.file_system.local_file_storage import LocalFileStorage
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.transport.http.http_transport import HttpTransport
 from my_beautiful_choir.transport.stdio.stdio_transport import StdioTransport
+from tests import score_samples
 
 
 def test_personal_mode_assembly() -> None:
@@ -60,3 +73,83 @@ def test_overrides_stay_within_their_container() -> None:
     overridden.mode.transport.override(providers.Object("fake"))
     assert overridden.mode.transport() == "fake"
     assert isinstance(create_container(Settings()).mode.transport(), StdioTransport)
+
+
+def test_personal_mode_prepares_its_data_store(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    [step] = container.mode.startup_steps()
+    assert isinstance(step, PrepareDataStore)
+    database = container.mode.database()
+    assert isinstance(database, SqlDatabase)
+    assert database.engine.url.database == str(tmp_path / "my-beautiful-choir.sqlite3")
+    assert container.mode.database() is database
+
+
+def test_personal_mode_stores_files_in_its_data_directory(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    file_storage = container.mode.file_storage()
+    assert isinstance(file_storage, LocalFileStorage)
+    assert file_storage.root == tmp_path / "files"
+    assert container.mode.file_storage() is file_storage
+
+
+@pytest.mark.parametrize(
+    ("content", "score_format"),
+    [
+        (score_samples.pdf(), ScoreFormat.PDF),
+        (score_samples.musicxml(), ScoreFormat.MUSICXML),
+        (score_samples.compressed_musicxml(), ScoreFormat.COMPRESSED_MUSICXML),
+        (score_samples.musescore(), ScoreFormat.MUSESCORE),
+    ],
+)
+def test_personal_mode_recognizes_every_score_format(
+    content: bytes, score_format: ScoreFormat
+) -> None:
+    detector = create_container(Settings(mode=Mode.PERSONAL)).mode.score_format_detector()
+    assert detector.detect(content) is score_format
+
+
+def test_personal_mode_downloads_from_google_drive_with_a_new_source() -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL))
+    link = GoogleDriveLink("1aBcD_eFgH-ijKlMnOpQrStUvWxYz0123")
+    first = container.mode.google_drive_source(link)
+    assert isinstance(first, GoogleDriveScoreSource)
+    assert first.link == link.url
+    assert container.mode.google_drive_source(link) is not first
+    assert isinstance(container.mode.score_service(), ScoreService)
+
+
+def test_web_mode_has_no_startup_step() -> None:
+    assert list(create_container(Settings(mode=Mode.WEB)).mode.startup_steps()) == []
+
+
+def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
+    container = create_container(Settings(mode=Mode.PERSONAL, data_dir=tmp_path))
+    names = [tool.name for tool in container.tools()]
+    assert names == [
+        "show_about",
+        "list_choirs",
+        "create_choir",
+        "rename_choir",
+        "set_default_choir",
+        "add_work",
+        "edit_work",
+        "add_score_from_file",
+        "add_score_from_google_drive",
+        "open_score",
+        "show_repertoire",
+        "show_work",
+        "upload_score",
+        "preview_work_deletion",
+        "preview_score_deletion",
+        "delete_choir",
+        "delete_work",
+        "delete_score",
+        "confirm_deletion",
+    ]
+    assert all(isinstance(tool, MeteredTool) for tool in container.tools())
+
+
+def test_web_mode_offers_no_repertoire_tool() -> None:
+    container = create_container(Settings(mode=Mode.WEB))
+    assert [tool.name for tool in container.tools()] == ["show_about"]

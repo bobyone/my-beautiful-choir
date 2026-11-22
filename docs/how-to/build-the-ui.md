@@ -45,7 +45,7 @@ From `ui/`:
 |---|---|
 | `npm run test -- --watch` | Runs the tests on every change. |
 | `npm run format` | Formats the code and applies automatic lint fixes. |
-| `npm run build` | Builds the views into `ui/dist/`. |
+| `npm run build` | Builds each HTML entry under `ui/views/` into a standalone file in `ui/dist/views/` and combines their third-party notices. |
 
 A view is tested without a host: tests replace the ext-apps React hooks
 with a fake host (`src/test/fakeHost.ts`) that sends tool results and host

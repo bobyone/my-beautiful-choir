@@ -3,12 +3,23 @@
 
 """Test doubles of the abstractions, shared by the tests."""
 
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.authorization.authorization import Authorization
+from my_beautiful_choir.authorization.errors import AccessDeniedError
+from my_beautiful_choir.authorization.permission import Permission
+from my_beautiful_choir.clock.clock import Clock
+from my_beautiful_choir.confirmation.confirmation_outcome import ConfirmationOutcome
+from my_beautiful_choir.confirmation.confirmation_requester import ConfirmationRequester
 from my_beautiful_choir.monitoring.metrics import Metrics
 from my_beautiful_choir.monitoring.metrics_export import MetricsExport
 from my_beautiful_choir.tools.errors import ToolExecutionError
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
@@ -38,10 +49,17 @@ class StubArguments(BaseModel):
 class StubTool(Tool[StubArguments]):
     """Tool returning a fixed result, or failing on demand."""
 
-    def __init__(self, name: str = "stub", view: View | None = None, fail: bool = False) -> None:
+    def __init__(
+        self,
+        name: str = "stub",
+        view: View | None = None,
+        fail: bool = False,
+        app_only: bool = False,
+    ) -> None:
         self._name = name
         self._view = view
         self._fail = fail
+        self._app_only = app_only
         self.calls: list[StubArguments] = []
 
     @property
@@ -60,7 +78,11 @@ class StubTool(Tool[StubArguments]):
     def view(self) -> View | None:
         return self._view
 
-    async def execute(self, arguments: StubArguments) -> ToolResult:
+    @property
+    def app_only(self) -> bool:
+        return self._app_only
+
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
         self.calls.append(arguments)
         if self._fail:
             raise ToolExecutionError("stub failure")
@@ -87,3 +109,47 @@ class SpyMetrics(Metrics):
 
     def export(self) -> MetricsExport:
         return MetricsExport(content_type="text/plain", body=b"spy")
+
+
+class StubConfirmation(ConfirmationRequester):
+    """Confirmation requester giving a fixed answer and keeping the questions asked."""
+
+    def __init__(self, outcome: ConfirmationOutcome = ConfirmationOutcome.CONFIRMED) -> None:
+        self.outcome = outcome
+        self.questions: list[str] = []
+
+    async def ask(
+        self, question: str, *, scope: str = "", keep: Callable[[], str] | None = None
+    ) -> ConfirmationOutcome:
+        self.questions.append(question)
+        return self.outcome
+
+
+def tool_context(confirmation: ConfirmationRequester | None = None) -> ToolContext:
+    """Context of a tool call in tests; confirmations are accepted by default."""
+    return ToolContext(confirmation=confirmation or StubConfirmation())
+
+
+class FakeClock(Clock):
+    """Clock at a fixed time, moved forward by the tests."""
+
+    def __init__(self, start: datetime = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)) -> None:
+        self.start = start
+        self.current = start
+
+    def now(self) -> datetime:
+        return self.current
+
+    def advance(self, delta: timedelta) -> None:
+        self.current += delta
+
+
+class DenyingAuthorization(Authorization):
+    """Authorization refusing the given permissions, and allowing the others."""
+
+    def __init__(self, *denied: Permission) -> None:
+        self.denied = set(denied)
+
+    def require(self, permission: Permission, choir_id: UUID | None = None) -> None:
+        if permission in self.denied:
+            raise AccessDeniedError(f"Permission {permission} denied.")

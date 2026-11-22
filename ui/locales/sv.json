@@ -8,9 +8,58 @@
   "connection": {
     "error": "Den här vyn kunde inte ansluta till assistenten. Stäng den och försök igen."
   },
+  "deletion": {
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "deleting": "Tar bort…",
+    "done": "Borttagningen är klar.",
+    "error": "Det gick inte att visa informationen om borttagningen. Be assistenten att försöka igen.",
+    "failed": "Borttagningen misslyckades. Be assistenten att försöka igen.",
+    "loading": "Läser in information om borttagningen…",
+    "nothingDeleted": "Inget togs bort.",
+    "scores": "Partitur",
+    "warning": "Borttagningen kan inte ångras.",
+    "works": "Verk"
+  },
   "glossary": {
+    "arranger": "Arrangör",
+    "choir": "Kör",
+    "composer": "Kompositör",
+    "deletion": "Borttagning",
     "mode": "Läge",
+    "notes": "Anteckningar",
     "personalMode": "Personligt läge",
-    "webMode": "Webbläge"
+    "repertoire": "Repertoar",
+    "score": "Partitur",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etikett",
+    "scoreSize": "Storlek",
+    "sungLanguage": "Sångspråk",
+    "title": "Titel",
+    "voicing": "Stämsättning",
+    "webMode": "Webbläge",
+    "work": "Verk"
+  },
+  "repertoire": {
+    "noChoirs": "Det finns inga körer ännu. Be assistenten att skapa en.",
+    "noWorks": "Inga verk hittades.",
+    "search": "Sök"
+  },
+  "view": {
+    "actions": "Åtgärder",
+    "error": "Informationen kunde inte visas. Be assistenten att visa den igen.",
+    "loading": "Läser in informationen…"
+  },
+  "work": {
+    "addScore": "Lägg till ett partitur",
+    "back": "Tillbaka till repertoaren",
+    "deleteWithScores": "Verkets partitur tas också bort.",
+    "deleteWork": "Ta bort verket",
+    "noScores": "Inga partitur ännu.",
+    "opened": "Partitur öppnat.",
+    "openError": "Partituret kunde inte öppnas. Kontrollera att en lämplig app är installerad.",
+    "openScore": "Öppna",
+    "uploaded": "Partitur tillagt.",
+    "uploadError": "Uppladdningen misslyckades. Välj ett partitur i rätt format på högst 50 MB och försök igen."
   }
 }

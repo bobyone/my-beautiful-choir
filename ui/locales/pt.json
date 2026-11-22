@@ -8,9 +8,58 @@
   "connection": {
     "error": "Esta vista não conseguiu ligar-se ao assistente. Feche-a e tente novamente."
   },
+  "deletion": {
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "A eliminar…",
+    "done": "Eliminação concluída.",
+    "error": "Não foi possível mostrar os detalhes da eliminação. Peça ao assistente para tentar novamente.",
+    "failed": "A eliminação falhou. Peça ao assistente para tentar novamente.",
+    "loading": "A carregar os detalhes da eliminação…",
+    "nothingDeleted": "Nada foi eliminado.",
+    "scores": "Partituras",
+    "warning": "Esta eliminação não pode ser desfeita.",
+    "works": "Obras"
+  },
   "glossary": {
+    "arranger": "Arranjador",
+    "choir": "Coro",
+    "composer": "Compositor",
+    "deletion": "Eliminação",
     "mode": "Modo",
+    "notes": "Notas",
     "personalMode": "Modo pessoal",
-    "webMode": "Modo web"
+    "repertoire": "Repertório",
+    "score": "Partitura",
+    "scoreFormat": "Formato",
+    "scoreLabel": "Etiqueta",
+    "scoreSize": "Tamanho",
+    "sungLanguage": "Língua cantada",
+    "title": "Título",
+    "voicing": "Distribuição vocal",
+    "webMode": "Modo web",
+    "work": "Obra"
+  },
+  "repertoire": {
+    "noChoirs": "Ainda não há coros. Peça ao assistente para criar um.",
+    "noWorks": "Não foram encontradas obras.",
+    "search": "Pesquisar"
+  },
+  "view": {
+    "actions": "Ações",
+    "error": "Não foi possível apresentar as informações. Peça ao assistente para as mostrar novamente.",
+    "loading": "A carregar as informações…"
+  },
+  "work": {
+    "addScore": "Adicionar uma partitura",
+    "back": "Voltar ao repertório",
+    "deleteWithScores": "As partituras desta obra também serão eliminadas.",
+    "deleteWork": "Eliminar a obra",
+    "noScores": "Ainda não há partituras.",
+    "opened": "Partitura aberta.",
+    "openError": "Não foi possível abrir a partitura. Verifique se existe uma aplicação compatível instalada.",
+    "openScore": "Abrir",
+    "uploaded": "Partitura adicionada.",
+    "uploadError": "O envio falhou. Escolha uma partitura compatível de até 50 MB e tente novamente."
   }
 }

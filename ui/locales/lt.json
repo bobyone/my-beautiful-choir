@@ -8,9 +8,58 @@
   "connection": {
     "error": "Šis rodinys negalėjo prisijungti prie asistento. Uždarykite jį ir bandykite dar kartą."
   },
+  "deletion": {
+    "cancel": "Atšaukti",
+    "delete": "Ištrinti",
+    "deleting": "Trinama…",
+    "done": "Ištrynimas baigtas.",
+    "error": "Nepavyko parodyti ištrynimo informacijos. Paprašykite asistento bandyti dar kartą.",
+    "failed": "Nepavyko ištrinti. Paprašykite asistento bandyti dar kartą.",
+    "loading": "Įkeliama ištrynimo informacija…",
+    "nothingDeleted": "Nieko neištrinta.",
+    "scores": "Partitūros",
+    "warning": "Šio ištrynimo atšaukti negalima.",
+    "works": "Kūriniai"
+  },
   "glossary": {
+    "arranger": "Aranžuotojas",
+    "choir": "Choras",
+    "composer": "Kompozitorius",
+    "deletion": "Ištrynimas",
     "mode": "Režimas",
+    "notes": "Pastabos",
     "personalMode": "Asmeninis režimas",
-    "webMode": "Žiniatinklio režimas"
+    "repertoire": "Repertuaras",
+    "score": "Partitūra",
+    "scoreFormat": "Formatas",
+    "scoreLabel": "Žyma",
+    "scoreSize": "Dydis",
+    "sungLanguage": "Dainavimo kalba",
+    "title": "Pavadinimas",
+    "voicing": "Balsų sudėtis",
+    "webMode": "Žiniatinklio režimas",
+    "work": "Kūrinys"
+  },
+  "repertoire": {
+    "noChoirs": "Chorų dar nėra. Paprašykite asistento sukurti chorą.",
+    "noWorks": "Kūrinių nerasta.",
+    "search": "Ieškoti"
+  },
+  "view": {
+    "actions": "Veiksmai",
+    "error": "Informacijos nepavyko parodyti. Paprašykite asistento parodyti ją dar kartą.",
+    "loading": "Įkeliama informacija…"
+  },
+  "work": {
+    "addScore": "Pridėti partitūrą",
+    "back": "Grįžti į repertuarą",
+    "deleteWithScores": "Bus ištrintos ir šio kūrinio partitūros.",
+    "deleteWork": "Ištrinti kūrinį",
+    "noScores": "Partitūrų dar nėra.",
+    "opened": "Partitūra atidaryta.",
+    "openError": "Partitūros atidaryti nepavyko. Patikrinkite, ar įdiegta tinkama programa.",
+    "openScore": "Atidaryti",
+    "uploaded": "Partitūra pridėta.",
+    "uploadError": "Įkelti nepavyko. Pasirinkite palaikomą iki 50 MB partitūrą ir bandykite dar kartą."
   }
 }

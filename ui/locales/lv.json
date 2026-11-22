@@ -8,9 +8,58 @@
   "connection": {
     "error": "Šis skats nevarēja izveidot savienojumu ar asistentu. Aizveriet to un mēģiniet vēlreiz."
   },
+  "deletion": {
+    "cancel": "Atcelt",
+    "delete": "Dzēst",
+    "deleting": "Notiek dzēšana…",
+    "done": "Dzēšana pabeigta.",
+    "error": "Neizdevās parādīt dzēšanas informāciju. Lūdziet asistentam mēģināt vēlreiz.",
+    "failed": "Dzēšana neizdevās. Lūdziet asistentam mēģināt vēlreiz.",
+    "loading": "Notiek dzēšanas informācijas ielāde…",
+    "nothingDeleted": "Nekas netika dzēsts.",
+    "scores": "Partitūras",
+    "warning": "Šo dzēšanu nevar atsaukt.",
+    "works": "Skaņdarbi"
+  },
   "glossary": {
+    "arranger": "Aranžētājs",
+    "choir": "Koris",
+    "composer": "Komponists",
+    "deletion": "Dzēšana",
     "mode": "Režīms",
+    "notes": "Piezīmes",
     "personalMode": "Personīgais režīms",
-    "webMode": "Tīmekļa režīms"
+    "repertoire": "Repertuārs",
+    "score": "Partitūra",
+    "scoreFormat": "Formāts",
+    "scoreLabel": "Apzīmējums",
+    "scoreSize": "Izmērs",
+    "sungLanguage": "Dziedājuma valoda",
+    "title": "Nosaukums",
+    "voicing": "Balsu sastāvs",
+    "webMode": "Tīmekļa režīms",
+    "work": "Skaņdarbs"
+  },
+  "repertoire": {
+    "noChoirs": "Koru vēl nav. Lūdziet asistentam izveidot kori.",
+    "noWorks": "Skaņdarbi nav atrasti.",
+    "search": "Meklēt"
+  },
+  "view": {
+    "actions": "Darbības",
+    "error": "Informāciju neizdevās parādīt. Lūdziet asistentam to parādīt vēlreiz.",
+    "loading": "Notiek informācijas ielāde…"
+  },
+  "work": {
+    "addScore": "Pievienot partitūru",
+    "back": "Atgriezties repertuārā",
+    "deleteWithScores": "Tiks dzēstas arī šī skaņdarba partitūras.",
+    "deleteWork": "Dzēst skaņdarbu",
+    "noScores": "Partitūru vēl nav.",
+    "opened": "Partitūra atvērta.",
+    "openError": "Partitūru nevarēja atvērt. Pārbaudiet, vai ir instalēta saderīga lietotne.",
+    "openScore": "Atvērt",
+    "uploaded": "Partitūra pievienota.",
+    "uploadError": "Augšupielāde neizdevās. Izvēlieties atbalstītu partitūru līdz 50 MB un mēģiniet vēlreiz."
   }
 }

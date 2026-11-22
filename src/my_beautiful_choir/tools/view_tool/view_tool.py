@@ -9,6 +9,7 @@ from collections.abc import Mapping
 from pydantic import BaseModel
 
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
@@ -28,17 +29,17 @@ class ViewTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
         """View displaying the result."""
         return self._view
 
-    async def execute(self, arguments: ArgumentsT) -> ToolResult:
+    async def execute(self, arguments: ArgumentsT, context: ToolContext) -> ToolResult:
         """Collect the data, then return it with its text description."""
-        data = await self._collect(arguments)
+        data = await self._collect(arguments, context)
         return ToolResult(text=self._describe(data), structured=data)
 
     @abstractmethod
-    async def _collect(self, arguments: ArgumentsT) -> Mapping[str, object]:
+    async def _collect(self, arguments: ArgumentsT, context: ToolContext) -> Mapping[str, object]:
         """Collect the data displayed by the view.
 
         Raises:
-            ToolExecutionError: if the data cannot be collected.
+            DomainError: if the data cannot be collected.
         """
 
     @abstractmethod

@@ -16,8 +16,38 @@ processing.
 
 ## Personal mode
 
-Personal mode runs on the user's own computer. All data stays on that
-computer; the project receives nothing. The user is their own controller.
+Personal mode runs on the user's own computer. The project receives no
+application data. The user controls their local data.
+The server stores its data locally. It can contact Google Drive at the
+user's request (P1). The MCP client handles tool calls and view content
+as described in P2.
+
+### P1. Score import from a public Google Drive link (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Copy into the user's repertoire a score file the user shared publicly on Google Drive, at the user's request. |
+| Legal basis | The user acts for themselves (household use); for a choir, legitimate interest of the controller in collecting its scores — Art. 6(1)(f) GDPR. |
+| Data subjects | The user importing the score. |
+| Data categories | Sent to Google: the IP address of the user's computer, the id of the Google Drive file and the usual technical HTTP headers. No account, cookie, name or e-mail address is sent. Received: the file and its name, stored on the user's computer with the link. |
+| Recipients | Google (Google Drive), which receives the request. |
+| Processors | None: Google acts as the provider of the file the user chose to share, under its own terms. |
+| Transfers outside the EU | Possible: Google may serve the request from servers outside the EU, under its own privacy policy. |
+| Retention | Nothing is kept by the software beyond the imported score, kept until the user deletes it. Google's retention of its request logs is set by Google. |
+| Security measures | HTTPS only; only a closed list of Google Drive domains is contacted, checked again on every redirect; time limit; download stopped beyond 50 MB; the file name sent by Google is never used as a path; nothing is downloaded without a request from the user. |
+
+### P2. Local repertoire and scores (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Manage the user's choirs, works and scores in personal mode. |
+| Legal basis | The user acts for themselves (household use). A choir using the software determines its own lawful basis. |
+| Data subjects | The user and any people named in work metadata or score files. |
+| Data categories | Choir names, work titles, composer, arranger, voicing, sung languages, notes, score metadata and file content. |
+| Recipients | The local server and the selected MCP client. Users should check how their MCP client handles tool calls, results and view content. |
+| Processors and transfers outside the EU | The application stores this data locally. Any separate processing by the MCP client is governed by its own configuration and terms. See P1 for public Google Drive imports. |
+| Retention | The application keeps the records until the user deletes them. A confirmed deletion removes the affected records and score files. Deletion previews and tokens are held in server memory, valid for up to ten minutes, and cleared on restart. The user manages the retention of separately made backups. |
+| Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Opening a score creates a copy in a private temporary directory. Score uploads have content and size validation, and destructive actions require confirmation. |
 
 ## Web mode
 

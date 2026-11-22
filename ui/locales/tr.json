@@ -8,9 +8,58 @@
   "connection": {
     "error": "Bu görünüm asistana bağlanamadı. Kapatıp yeniden deneyin."
   },
+  "deletion": {
+    "cancel": "İptal",
+    "delete": "Sil",
+    "deleting": "Siliniyor…",
+    "done": "Silme tamamlandı.",
+    "error": "Silme ayrıntıları görüntülenemedi. Asistandan yeniden denemesini isteyin.",
+    "failed": "Silme başarısız oldu. Asistandan yeniden denemesini isteyin.",
+    "loading": "Silme ayrıntıları yükleniyor…",
+    "nothingDeleted": "Hiçbir şey silinmedi.",
+    "scores": "Partisyonlar",
+    "warning": "Bu silme işlemi geri alınamaz.",
+    "works": "Eserler"
+  },
   "glossary": {
+    "arranger": "Aranjör",
+    "choir": "Koro",
+    "composer": "Besteci",
+    "deletion": "Silme",
     "mode": "Mod",
+    "notes": "Notlar",
     "personalMode": "Kişisel mod",
-    "webMode": "Web modu"
+    "repertoire": "Repertuvar",
+    "score": "Partisyon",
+    "scoreFormat": "Biçim",
+    "scoreLabel": "Etiket",
+    "scoreSize": "Boyut",
+    "sungLanguage": "Söylenen dil",
+    "title": "Başlık",
+    "voicing": "Ses dağılımı",
+    "webMode": "Web modu",
+    "work": "Eser"
+  },
+  "repertoire": {
+    "noChoirs": "Henüz koro yok. Asistandan bir koro oluşturmasını isteyin.",
+    "noWorks": "Eser bulunamadı.",
+    "search": "Ara"
+  },
+  "view": {
+    "actions": "İşlemler",
+    "error": "Bilgiler görüntülenemedi. Asistandan bunları yeniden göstermesini isteyin.",
+    "loading": "Bilgiler yükleniyor…"
+  },
+  "work": {
+    "addScore": "Partisyon ekle",
+    "back": "Repertuvara dön",
+    "deleteWithScores": "Bu eserin partisyonları da silinecek.",
+    "deleteWork": "Eseri sil",
+    "noScores": "Henüz partisyon yok.",
+    "opened": "Partisyon açıldı.",
+    "openError": "Partisyon açılamadı. Uyumlu bir uygulamanın yüklü olduğunu kontrol edin.",
+    "openScore": "Aç",
+    "uploaded": "Partisyon eklendi.",
+    "uploadError": "Yükleme başarısız. 50 MB veya daha küçük, desteklenen bir partisyon seçip yeniden deneyin."
   }
 }

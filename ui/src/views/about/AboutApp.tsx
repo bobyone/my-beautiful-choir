@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 import type { i18n as I18n } from "i18next";
-import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 
 import { useHost } from "../../host/useHost";
-import { AVAILABLE_LANGUAGES, FALLBACKS } from "../../i18n/catalogues";
-import { resolveLanguage } from "../../i18n/resolveLanguage";
-import { applyTheme } from "../../theme/applyTheme";
+import { useHostLanguageAndTheme } from "../../host/useHostLanguageAndTheme";
 import { parseAboutInfo } from "./aboutInfo";
 import { AboutView, type AboutState } from "./AboutView";
 
@@ -18,17 +15,7 @@ export const VIEW_VERSION = "1.0.0";
 /** Connects the "About" view to the host: language, theme and tool result. */
 export function AboutApp({ i18n }: { i18n: I18n }) {
   const host = useHost(VIEW_NAME, VIEW_VERSION);
-  const language = resolveLanguage(host.hostContext?.locale, AVAILABLE_LANGUAGES, FALLBACKS);
-  const theme = host.hostContext?.theme;
-
-  useEffect(() => {
-    void i18n.changeLanguage(language);
-    document.documentElement.lang = language;
-  }, [i18n, language]);
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+  useHostLanguageAndTheme(host, i18n);
 
   return (
     <I18nextProvider i18n={i18n}>

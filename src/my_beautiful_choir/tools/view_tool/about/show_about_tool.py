@@ -7,6 +7,7 @@ from collections.abc import Mapping
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.tools.no_arguments import NoArguments
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.view_tool.view_tool import ViewTool
 from my_beautiful_choir.views.view import View
 
@@ -36,7 +37,7 @@ class ShowAboutTool(ViewTool[NoArguments]):
         """No argument."""
         return NoArguments
 
-    async def _collect(self, arguments: NoArguments) -> Mapping[str, object]:
+    async def _collect(self, arguments: NoArguments, context: ToolContext) -> Mapping[str, object]:
         info = self._application_info
         return {"name": info.name, "version": info.version, "mode": info.mode.value}
 

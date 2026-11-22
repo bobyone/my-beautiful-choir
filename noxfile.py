@@ -207,8 +207,10 @@ def package(session: nox.Session) -> None:
     with zipfile.ZipFile(wheel) as archive:
         names = set(archive.namelist())
     expected = {
-        f"my_beautiful_choir/views/static/{name}" for name in ("about.html", THIRD_PARTY_NOTICES)
+        f"my_beautiful_choir/views/static/{view.name}"
+        for view in UI_DIRECTORY.joinpath("views").glob("*.html")
     }
+    expected.add(f"my_beautiful_choir/views/static/{THIRD_PARTY_NOTICES}")
     missing = sorted(expected - names)
     if missing:
         session.error(f"Missing from {wheel.name}: {', '.join(missing)}")

@@ -8,9 +8,58 @@
   "connection": {
     "error": "Deze weergave kon geen verbinding maken met de assistent. Sluit deze en probeer het opnieuw."
   },
+  "deletion": {
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "deleting": "Bezig met verwijderen…",
+    "done": "Verwijdering voltooid.",
+    "error": "De gegevens over de verwijdering konden niet worden weergegeven. Vraag de assistent om het opnieuw te proberen.",
+    "failed": "De verwijdering is mislukt. Vraag de assistent om het opnieuw te proberen.",
+    "loading": "Gegevens over de verwijdering worden geladen…",
+    "nothingDeleted": "Er is niets verwijderd.",
+    "scores": "Partituren",
+    "warning": "Deze verwijdering kan niet ongedaan worden gemaakt.",
+    "works": "Werken"
+  },
   "glossary": {
+    "arranger": "Arrangeur",
+    "choir": "Koor",
+    "composer": "Componist",
+    "deletion": "Verwijdering",
     "mode": "Modus",
+    "notes": "Notities",
     "personalMode": "Persoonlijke modus",
-    "webMode": "Webmodus"
+    "repertoire": "Repertoire",
+    "score": "Partituur",
+    "scoreFormat": "Indeling",
+    "scoreLabel": "Label",
+    "scoreSize": "Grootte",
+    "sungLanguage": "Zangtaal",
+    "title": "Titel",
+    "voicing": "Stemverdeling",
+    "webMode": "Webmodus",
+    "work": "Werk"
+  },
+  "repertoire": {
+    "noChoirs": "Er zijn nog geen koren. Vraag de assistent er een aan te maken.",
+    "noWorks": "Geen werken gevonden.",
+    "search": "Zoeken"
+  },
+  "view": {
+    "actions": "Acties",
+    "error": "De informatie kon niet worden weergegeven. Vraag de assistent om deze opnieuw te tonen.",
+    "loading": "Informatie wordt geladen…"
+  },
+  "work": {
+    "addScore": "Partituur toevoegen",
+    "back": "Terug naar repertoire",
+    "deleteWithScores": "Ook de partituren van dit werk worden verwijderd.",
+    "deleteWork": "Werk verwijderen",
+    "noScores": "Nog geen partituren.",
+    "opened": "Partituur geopend.",
+    "openError": "De partituur kon niet worden geopend. Controleer of een geschikte toepassing is geïnstalleerd.",
+    "openScore": "Openen",
+    "uploaded": "Partituur toegevoegd.",
+    "uploadError": "Upload mislukt. Kies een ondersteunde partituur van maximaal 50 MB en probeer het opnieuw."
   }
 }

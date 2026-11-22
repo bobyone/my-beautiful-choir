@@ -8,9 +8,58 @@
   "connection": {
     "error": "Cette vue n’a pas pu se connecter à l’assistant. Fermez-la, puis réessayez."
   },
+  "deletion": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "deleting": "Suppression en cours…",
+    "done": "Suppression terminée.",
+    "error": "Les détails de la suppression n’ont pas pu être affichés. Demandez à l’assistant de réessayer.",
+    "failed": "La suppression a échoué. Demandez à l’assistant de réessayer.",
+    "loading": "Chargement des détails de la suppression…",
+    "nothingDeleted": "Aucun élément n’a été supprimé.",
+    "scores": "Partitions",
+    "warning": "Cette suppression est irréversible.",
+    "works": "Œuvres"
+  },
   "glossary": {
+    "arranger": "Arrangeur",
+    "choir": "Chorale",
+    "composer": "Compositeur",
+    "deletion": "Suppression",
     "mode": "Mode",
+    "notes": "Notes",
     "personalMode": "Mode perso",
-    "webMode": "Mode web"
+    "repertoire": "Répertoire",
+    "score": "Partition",
+    "scoreFormat": "Format",
+    "scoreLabel": "Libellé",
+    "scoreSize": "Taille",
+    "sungLanguage": "Langue chantée",
+    "title": "Titre",
+    "voicing": "Effectif vocal",
+    "webMode": "Mode web",
+    "work": "Œuvre"
+  },
+  "repertoire": {
+    "noChoirs": "Aucune chorale. Demandez à l’assistant d’en créer une.",
+    "noWorks": "Aucune œuvre trouvée.",
+    "search": "Rechercher"
+  },
+  "view": {
+    "actions": "Actions",
+    "error": "Les informations n’ont pas pu être affichées. Demandez à l’assistant de les afficher à nouveau.",
+    "loading": "Chargement des informations…"
+  },
+  "work": {
+    "addScore": "Ajouter une partition",
+    "back": "Retour au répertoire",
+    "deleteWithScores": "Les partitions de cette œuvre seront aussi supprimées.",
+    "deleteWork": "Supprimer l’œuvre",
+    "noScores": "Aucune partition.",
+    "opened": "Partition ouverte.",
+    "openError": "La partition n’a pas pu être ouverte. Vérifiez qu’une application compatible est installée.",
+    "openScore": "Ouvrir",
+    "uploaded": "Partition ajoutée.",
+    "uploadError": "L’ajout a échoué. Choisissez une partition dans un format accepté, de 50 Mo maximum, puis réessayez."
   }
 }

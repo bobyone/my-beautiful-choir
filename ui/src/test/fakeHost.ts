@@ -4,7 +4,12 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import type { UseAppOptions } from "@modelcontextprotocol/ext-apps/react";
 
-import type { ToolResult } from "../host/useHost";
+import type { CalledToolResult, ToolResult } from "../host/useHost";
+
+export interface ToolCall {
+  name: string;
+  arguments?: Record<string, unknown>;
+}
 
 type Listener = (params: never) => void;
 
@@ -16,6 +21,11 @@ export class FakeHost {
   connected = true;
   error: Error | null = null;
   initialContext: McpUiHostContext | undefined;
+  /** Tool calls made by the view, in order. */
+  readonly toolCalls: ToolCall[] = [];
+  /** Answers the tool calls of the view; rejects with ``toolCallError`` when set. */
+  answerToolCall: (call: ToolCall) => CalledToolResult = () => ({ content: [] });
+  toolCallError: Error | null = null;
   private readonly listeners = new Map<string, Listener[]>();
   private created = false;
 
@@ -23,6 +33,12 @@ export class FakeHost {
     getHostContext: (): McpUiHostContext | undefined => this.initialContext,
     addEventListener: (event: string, handler: Listener): void => {
       this.listeners.set(event, [...(this.listeners.get(event) ?? []), handler]);
+    },
+    callServerTool: (call: ToolCall): Promise<CalledToolResult> => {
+      this.toolCalls.push(call);
+      return this.toolCallError === null
+        ? Promise.resolve(this.answerToolCall(call))
+        : Promise.reject(this.toolCallError);
     },
   };
 

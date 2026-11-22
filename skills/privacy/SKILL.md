@@ -17,8 +17,11 @@ advice.
 
 ## Who is responsible
 
-- **Personal mode**: everything stays on the user's computer; the project
-  receives nothing. The user is their own controller.
+- **Personal mode**: the server stores the repertoire on the user's
+  computer. The MCP client handles tool calls and results. The user can
+  request an import from Google Drive, which then receives the computer's
+  IP address and the file id. See entries P1 and P2 in the records of
+  processing.
 - **Web mode**: the organization operating the instance is the controller.
   For any request about an account on an instance, the user contacts that
   organization; the project does not hold their data.
@@ -31,10 +34,10 @@ the security measures of the processing concerned.
 
 ## Exercising rights
 
-The features of my-beautiful-choir that implement access, export,
-correction, deletion and objection are not available yet (accounts are not
-implemented). Say so, and direct web mode users to the operator of their
-instance.
+In personal mode, users can view, edit and delete their repertoire through
+the application. Use `backup-and-restore` to make a local copy of the
+database and scores. Account data management is not implemented in web
+mode. Direct web mode users to the operator of their instance.
 
 The privacy policy and terms of use, accessible from the user interface,
 come with the accounts.

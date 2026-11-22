@@ -8,9 +8,58 @@
   "connection": {
     "error": "Bu görünüş köməkçiyə qoşula bilmədi. Onu bağlayın və yenidən cəhd edin."
   },
+  "deletion": {
+    "cancel": "Ləğv et",
+    "delete": "Sil",
+    "deleting": "Silinir…",
+    "done": "Silmə tamamlandı.",
+    "error": "Silmə təfərrüatlarını göstərmək mümkün olmadı. Köməkçidən yenidən cəhd etməsini istəyin.",
+    "failed": "Silmə baş tutmadı. Köməkçidən yenidən cəhd etməsini istəyin.",
+    "loading": "Silmə təfərrüatları yüklənir…",
+    "nothingDeleted": "Heç nə silinmədi.",
+    "scores": "Partituralar",
+    "warning": "Bu silmə əməliyyatı geri qaytarıla bilməz.",
+    "works": "Əsərlər"
+  },
   "glossary": {
+    "arranger": "Aranjimançı",
+    "choir": "Xor",
+    "composer": "Bəstəkar",
+    "deletion": "Silmə",
     "mode": "Rejim",
+    "notes": "Qeydlər",
     "personalMode": "Şəxsi rejim",
-    "webMode": "Veb rejimi"
+    "repertoire": "Repertuar",
+    "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etiket",
+    "scoreSize": "Ölçü",
+    "sungLanguage": "Oxunan dil",
+    "title": "Başlıq",
+    "voicing": "Səs bölgüsü",
+    "webMode": "Veb rejimi",
+    "work": "Əsər"
+  },
+  "repertoire": {
+    "noChoirs": "Hələ xor yoxdur. Köməkçidən xor yaratmasını istəyin.",
+    "noWorks": "Əsər tapılmadı.",
+    "search": "Axtar"
+  },
+  "view": {
+    "actions": "Əməliyyatlar",
+    "error": "Məlumatı göstərmək mümkün olmadı. Köməkçidən onu yenidən göstərməsini xahiş edin.",
+    "loading": "Məlumat yüklənir…"
+  },
+  "work": {
+    "addScore": "Partitura əlavə et",
+    "back": "Repertuara qayıt",
+    "deleteWithScores": "Bu əsərin partituraları da silinəcək.",
+    "deleteWork": "Əsəri sil",
+    "noScores": "Hələ partitura yoxdur.",
+    "opened": "Partitura açıldı.",
+    "openError": "Partituranı açmaq olmadı. Uyğun tətbiqin quraşdırıldığını yoxlayın.",
+    "openScore": "Aç",
+    "uploaded": "Partitura əlavə edildi.",
+    "uploadError": "Yükləmə alınmadı. Dəstəklənən, ölçüsü 50 MB-dək olan partitura seçib yenidən cəhd edin."
   }
 }

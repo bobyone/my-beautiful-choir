@@ -18,7 +18,8 @@ from my_beautiful_choir.views.packaged.packaged_view import PackagedView, packag
 class ApplicationContainer(containers.DeclarativeContainer):
     """Providers common to both modes.
 
-    The mode-specific providers (``metrics``, ``transport``) come from the
+    The mode-specific providers (``metrics``, ``transport``, ``startup_steps``,
+    ``mode_tools``) come from the
     injected ``mode`` container: ``PersonalModeContainer`` or ``WebModeContainer``.
     """
 
@@ -39,7 +40,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
         ),
         metrics=mode.metrics,
     )
-    tools = providers.List(show_about_tool)
+    tools = providers.Callable(
+        lambda common, specific: [*common, *specific],
+        providers.List(show_about_tool),
+        mode.mode_tools,
+    )
 
     server_builder = providers.Singleton(
         McpServerBuilder, application_info=application_info, tools=tools
@@ -49,4 +54,5 @@ class ApplicationContainer(containers.DeclarativeContainer):
         application_info=application_info,
         server_builder=server_builder,
         transport=mode.transport,
+        startup_steps=mode.startup_steps,
     )

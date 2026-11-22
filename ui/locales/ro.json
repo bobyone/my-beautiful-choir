@@ -8,9 +8,58 @@
   "connection": {
     "error": "Această vizualizare nu s-a putut conecta la asistent. Închideți-o și încercați din nou."
   },
+  "deletion": {
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "deleting": "Se șterge…",
+    "done": "Ștergerea s-a încheiat.",
+    "error": "Detaliile ștergerii nu au putut fi afișate. Cereți asistentului să încerce din nou.",
+    "failed": "Ștergerea a eșuat. Cereți asistentului să încerce din nou.",
+    "loading": "Se încarcă detaliile ștergerii…",
+    "nothingDeleted": "Nu s-a șters nimic.",
+    "scores": "Partituri",
+    "warning": "Această ștergere nu poate fi anulată.",
+    "works": "Lucrări"
+  },
   "glossary": {
+    "arranger": "Aranjor",
+    "choir": "Cor",
+    "composer": "Compozitor",
+    "deletion": "Ștergere",
     "mode": "Mod",
+    "notes": "Note",
     "personalMode": "Mod personal",
-    "webMode": "Mod web"
+    "repertoire": "Repertoriu",
+    "score": "Partitură",
+    "scoreFormat": "Format",
+    "scoreLabel": "Etichetă",
+    "scoreSize": "Dimensiune",
+    "sungLanguage": "Limba cântată",
+    "title": "Titlu",
+    "voicing": "Distribuție vocală",
+    "webMode": "Mod web",
+    "work": "Lucrare"
+  },
+  "repertoire": {
+    "noChoirs": "Încă nu există coruri. Cereți asistentului să creeze unul.",
+    "noWorks": "Nu s-au găsit lucrări.",
+    "search": "Caută"
+  },
+  "view": {
+    "actions": "Acțiuni",
+    "error": "Informațiile nu au putut fi afișate. Cereți asistentului să le afișeze din nou.",
+    "loading": "Se încarcă informațiile…"
+  },
+  "work": {
+    "addScore": "Adaugă o partitură",
+    "back": "Înapoi la repertoriu",
+    "deleteWithScores": "Partiturile acestei lucrări vor fi și ele șterse.",
+    "deleteWork": "Șterge lucrarea",
+    "noScores": "Încă nu există partituri.",
+    "opened": "Partitură deschisă.",
+    "openError": "Partitura nu a putut fi deschisă. Verificați dacă este instalată o aplicație compatibilă.",
+    "openScore": "Deschide",
+    "uploaded": "Partitură adăugată.",
+    "uploadError": "Încărcarea a eșuat. Alegeți o partitură compatibilă de până la 50 MB și încercați din nou."
   }
 }

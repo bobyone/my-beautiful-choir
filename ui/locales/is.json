@@ -8,9 +8,58 @@
   "connection": {
     "error": "Þetta yfirlit gat ekki tengst aðstoðarmanninum. Lokaðu því og reyndu aftur."
   },
+  "deletion": {
+    "cancel": "Hætta við",
+    "delete": "Eyða",
+    "deleting": "Eyði…",
+    "done": "Eyðingu lokið.",
+    "error": "Ekki tókst að birta upplýsingar um eyðingu. Biddu aðstoðarmanninn um að reyna aftur.",
+    "failed": "Eyðing mistókst. Biddu aðstoðarmanninn um að reyna aftur.",
+    "loading": "Hleð upplýsingum um eyðingu…",
+    "nothingDeleted": "Ekkert var eytt.",
+    "scores": "Nótur",
+    "warning": "Ekki er hægt að afturkalla þessa eyðingu.",
+    "works": "Verk"
+  },
   "glossary": {
+    "arranger": "Útsetjari",
+    "choir": "Kór",
+    "composer": "Tónskáld",
+    "deletion": "Eyðing",
     "mode": "Hamur",
+    "notes": "Athugasemdir",
     "personalMode": "Einkahamur",
-    "webMode": "Vefhamur"
+    "repertoire": "Efnisskrá",
+    "score": "Nótur",
+    "scoreFormat": "Snið",
+    "scoreLabel": "Merki",
+    "scoreSize": "Stærð",
+    "sungLanguage": "Söngmál",
+    "title": "Titill",
+    "voicing": "Raddskipan",
+    "webMode": "Vefhamur",
+    "work": "Verk"
+  },
+  "repertoire": {
+    "noChoirs": "Engir kórar eru til enn. Biddu aðstoðarmanninn um að stofna einn.",
+    "noWorks": "Engin verk fundust.",
+    "search": "Leita"
+  },
+  "view": {
+    "actions": "Aðgerðir",
+    "error": "Ekki tókst að birta upplýsingarnar. Biddu aðstoðarmanninn að sýna þær aftur.",
+    "loading": "Hleð upplýsingum…"
+  },
+  "work": {
+    "addScore": "Bæta við nótum",
+    "back": "Aftur í efnisskrá",
+    "deleteWithScores": "Nótum verksins verður einnig eytt.",
+    "deleteWork": "Eyða verkinu",
+    "noScores": "Engar nótur enn.",
+    "opened": "Nótur opnaðar.",
+    "openError": "Ekki tókst að opna nóturnar. Athugaðu hvort samhæft forrit sé uppsett.",
+    "openScore": "Opna",
+    "uploaded": "Nótum bætt við.",
+    "uploadError": "Upphleðsla mistókst. Veldu nótur á studdu sniði, allt að 50 MB, og reyndu aftur."
   }
 }

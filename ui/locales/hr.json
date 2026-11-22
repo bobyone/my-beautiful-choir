@@ -8,9 +8,58 @@
   "connection": {
     "error": "Ovaj prikaz nije se mogao povezati s asistentom. Zatvorite ga i pokušajte ponovno."
   },
+  "deletion": {
+    "cancel": "Odustani",
+    "delete": "Izbriši",
+    "deleting": "Brisanje…",
+    "done": "Brisanje je dovršeno.",
+    "error": "Pojedinosti o brisanju nije bilo moguće prikazati. Zamolite asistenta da pokuša ponovno.",
+    "failed": "Brisanje nije uspjelo. Zamolite asistenta da pokuša ponovno.",
+    "loading": "Učitavanje pojedinosti o brisanju…",
+    "nothingDeleted": "Ništa nije izbrisano.",
+    "scores": "Partiture",
+    "warning": "Ovo se brisanje ne može poništiti.",
+    "works": "Skladbe"
+  },
   "glossary": {
+    "arranger": "Aranžer",
+    "choir": "Zbor",
+    "composer": "Skladatelj",
+    "deletion": "Brisanje",
     "mode": "Način rada",
+    "notes": "Bilješke",
     "personalMode": "Osobni način rada",
-    "webMode": "Web način rada"
+    "repertoire": "Repertoar",
+    "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Oznaka",
+    "scoreSize": "Veličina",
+    "sungLanguage": "Jezik pjevanja",
+    "title": "Naslov",
+    "voicing": "Glasovni sastav",
+    "webMode": "Web način rada",
+    "work": "Skladba"
+  },
+  "repertoire": {
+    "noChoirs": "Još nema zborova. Zamolite asistenta da izradi zbor.",
+    "noWorks": "Nije pronađena nijedna skladba.",
+    "search": "Pretraži"
+  },
+  "view": {
+    "actions": "Radnje",
+    "error": "Informacije nije moguće prikazati. Zamolite asistenta da ih ponovno prikaže.",
+    "loading": "Učitavanje informacija…"
+  },
+  "work": {
+    "addScore": "Dodaj partituru",
+    "back": "Povratak na repertoar",
+    "deleteWithScores": "Izbrisat će se i partiture ove skladbe.",
+    "deleteWork": "Izbriši skladbu",
+    "noScores": "Još nema partitura.",
+    "opened": "Partitura je otvorena.",
+    "openError": "Partituru nije moguće otvoriti. Provjerite je li instalirana kompatibilna aplikacija.",
+    "openScore": "Otvori",
+    "uploaded": "Partitura je dodana.",
+    "uploadError": "Prijenos nije uspio. Odaberite podržanu partituru do 50 MB i pokušajte ponovno."
   }
 }

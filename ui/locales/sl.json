@@ -8,9 +8,58 @@
   "connection": {
     "error": "Ta pogled se ni mogel povezati s pomočnikom. Zaprite ga in poskusite znova."
   },
+  "deletion": {
+    "cancel": "Prekliči",
+    "delete": "Izbriši",
+    "deleting": "Brisanje…",
+    "done": "Brisanje je končano.",
+    "error": "Podrobnosti o brisanju ni bilo mogoče prikazati. Prosite pomočnika, naj poskusi znova.",
+    "failed": "Brisanje ni uspelo. Prosite pomočnika, naj poskusi znova.",
+    "loading": "Nalaganje podrobnosti o brisanju…",
+    "nothingDeleted": "Nič ni bilo izbrisano.",
+    "scores": "Partiture",
+    "warning": "Tega brisanja ni mogoče razveljaviti.",
+    "works": "Skladbe"
+  },
   "glossary": {
+    "arranger": "Aranžer",
+    "choir": "Zbor",
+    "composer": "Skladatelj",
+    "deletion": "Brisanje",
     "mode": "Način",
+    "notes": "Opombe",
     "personalMode": "Osebni način",
-    "webMode": "Spletni način"
+    "repertoire": "Repertoar",
+    "score": "Partitura",
+    "scoreFormat": "Oblika",
+    "scoreLabel": "Oznaka",
+    "scoreSize": "Velikost",
+    "sungLanguage": "Jezik petja",
+    "title": "Naslov",
+    "voicing": "Glasovna zasedba",
+    "webMode": "Spletni način",
+    "work": "Skladba"
+  },
+  "repertoire": {
+    "noChoirs": "Zborov še ni. Prosite pomočnika, naj ustvari zbor.",
+    "noWorks": "Nobena skladba ni bila najdena.",
+    "search": "Išči"
+  },
+  "view": {
+    "actions": "Dejanja",
+    "error": "Podatkov ni bilo mogoče prikazati. Prosite pomočnika, naj jih znova prikaže.",
+    "loading": "Nalaganje podatkov …"
+  },
+  "work": {
+    "addScore": "Dodaj partituro",
+    "back": "Nazaj v repertoar",
+    "deleteWithScores": "Izbrisane bodo tudi partiture te skladbe.",
+    "deleteWork": "Izbriši skladbo",
+    "noScores": "Partitur še ni.",
+    "opened": "Partitura je odprta.",
+    "openError": "Partiture ni bilo mogoče odpreti. Preverite, ali je nameščena primerna aplikacija.",
+    "openScore": "Odpri",
+    "uploaded": "Partitura je dodana.",
+    "uploadError": "Nalaganje ni uspelo. Izberite podprto partituro do 50 MB in poskusite znova."
   }
 }

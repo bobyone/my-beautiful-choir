@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.view import View
 
@@ -38,10 +39,20 @@ class Tool[ArgumentsT: BaseModel](ABC):
         """View displaying the result, or None for a text-only tool."""
         return None
 
+    @property
+    def app_only(self) -> bool:
+        """True for a tool only its view may call, hidden from the model.
+
+        Such a tool carries out what the user did in the view (confirming a
+        deletion, for instance); it must have a view.
+        """
+        return False
+
     @abstractmethod
-    async def execute(self, arguments: ArgumentsT) -> ToolResult:
+    async def execute(self, arguments: ArgumentsT, context: ToolContext) -> ToolResult:
         """Run the tool with validated arguments.
 
         Raises:
-            ToolExecutionError: if the tool cannot complete.
+            DomainError: if the operation fails in an expected way (its message
+                is returned to the model).
         """

@@ -8,9 +8,58 @@
   "connection": {
     "error": "Dës Usiicht konnt sech net mam Assistent verbannen. Maacht se zou a probéiert nach eng Kéier."
   },
+  "deletion": {
+    "cancel": "Ofbriechen",
+    "delete": "Läschen",
+    "deleting": "Gëtt geläscht…",
+    "done": "D’Läschen ass ofgeschloss.",
+    "error": "D’Detailer vum Läsche konnten net ugewise ginn. Frot den Assistent, et nach eng Kéier ze probéieren.",
+    "failed": "D’Läsche war net erfollegräich. Frot den Assistent, et nach eng Kéier ze probéieren.",
+    "loading": "D’Detailer vum Läsche gi gelueden…",
+    "nothingDeleted": "Et gouf näischt geläscht.",
+    "scores": "Partituren",
+    "warning": "Dëst Läsche kann net réckgängeg gemaach ginn.",
+    "works": "Wierker"
+  },
   "glossary": {
+    "arranger": "Arrangeur",
+    "choir": "Chouer",
+    "composer": "Komponist",
+    "deletion": "Läschen",
     "mode": "Modus",
+    "notes": "Notizen",
     "personalMode": "Perséinleche Modus",
-    "webMode": "Webmodus"
+    "repertoire": "Repertoire",
+    "score": "Partitur",
+    "scoreFormat": "Format",
+    "scoreLabel": "Bezeechnung",
+    "scoreSize": "Gréisst",
+    "sungLanguage": "Sprooch vum Gesank",
+    "title": "Titel",
+    "voicing": "Stëmmeverdeelung",
+    "webMode": "Webmodus",
+    "work": "Wierk"
+  },
+  "repertoire": {
+    "noChoirs": "Et gëtt nach keng Chéier. Frot den Assistent, e Chouer unzeleeën.",
+    "noWorks": "Et goufe keng Wierker fonnt.",
+    "search": "Sichen"
+  },
+  "view": {
+    "actions": "Aktiounen",
+    "error": "D’Informatioune konnten net ugewise ginn. Frot den Assistent, se nach eng Kéier unzeweisen.",
+    "loading": "D’Informatioune ginn gelueden…"
+  },
+  "work": {
+    "addScore": "Eng Partitur derbäisetzen",
+    "back": "Zréck an de Repertoire",
+    "deleteWithScores": "D’Partiture vun dësem Wierk ginn och geläscht.",
+    "deleteWork": "D’Wierk läschen",
+    "noScores": "Et gëtt nach keng Partituren.",
+    "opened": "Partitur opgemaach.",
+    "openError": "D’Partitur konnt net opgemaach ginn. Kontrolléiert ob eng passend App installéiert ass.",
+    "openScore": "Opmaachen",
+    "uploaded": "Partitur derbäigesat.",
+    "uploadError": "Eropluede feelgeschloen. Wielt eng ënnerstëtzt Partitur vu bis zu 50 MB a probéiert et nach eng Kéier."
   }
 }

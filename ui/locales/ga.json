@@ -8,9 +8,58 @@
   "connection": {
     "error": "Níorbh fhéidir leis an amharc seo ceangal leis an gcúntóir. Dún é agus bain triail eile as."
   },
+  "deletion": {
+    "cancel": "Cealaigh",
+    "delete": "Scrios",
+    "deleting": "Á scriosadh…",
+    "done": "Tá an scriosadh críochnaithe.",
+    "error": "Níorbh fhéidir sonraí an scriosta a thaispeáint. Iarr ar an gcúntóir triail eile a bhaint as.",
+    "failed": "Theip ar an scriosadh. Iarr ar an gcúntóir triail eile a bhaint as.",
+    "loading": "Sonraí an scriosta á lódáil…",
+    "nothingDeleted": "Níor scriosadh aon rud.",
+    "scores": "Scóir cheoil",
+    "warning": "Ní féidir an scriosadh seo a chur ar ceal.",
+    "works": "Saothair"
+  },
   "glossary": {
+    "arranger": "Cóiritheoir",
+    "choir": "Cór",
+    "composer": "Cumadóir",
+    "deletion": "Scriosadh",
     "mode": "Mód",
+    "notes": "Nótaí",
     "personalMode": "Mód pearsanta",
-    "webMode": "Mód gréasáin"
+    "repertoire": "Reipéartóir",
+    "score": "Scór ceoil",
+    "scoreFormat": "Formáid",
+    "scoreLabel": "Lipéad",
+    "scoreSize": "Méid",
+    "sungLanguage": "Teanga an amhráin",
+    "title": "Teideal",
+    "voicing": "Roinnt na nguthanna",
+    "webMode": "Mód gréasáin",
+    "work": "Saothar"
+  },
+  "repertoire": {
+    "noChoirs": "Níl cóir ar bith ann fós. Iarr ar an gcúntóir cór a chruthú.",
+    "noWorks": "Níor aimsíodh aon saothar.",
+    "search": "Cuardaigh"
+  },
+  "view": {
+    "actions": "Gníomhartha",
+    "error": "Níorbh fhéidir an fhaisnéis a thaispeáint. Iarr ar an gcúntóir í a thaispeáint arís.",
+    "loading": "Ag lódáil na faisnéise…"
+  },
+  "work": {
+    "addScore": "Cuir scór ceoil leis",
+    "back": "Ar ais chuig an reipéartóir",
+    "deleteWithScores": "Scriosfar scóir cheoil an tsaothair seo freisin.",
+    "deleteWork": "Scrios an saothar",
+    "noScores": "Níl scóir cheoil ann fós.",
+    "opened": "Osclaíodh an scór.",
+    "openError": "Níorbh fhéidir an scór a oscailt. Seiceáil go bhfuil feidhmchlár comhoiriúnach suiteáilte.",
+    "openScore": "Oscail",
+    "uploaded": "Cuireadh an scór leis.",
+    "uploadError": "Theip ar an uaslódáil. Roghnaigh scór tacaithe suas le 50 MB agus bain triail eile as."
   }
 }

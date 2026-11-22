@@ -3,34 +3,43 @@
 
 """Adapter building an MCP SDK server from the application's tools and views.
 
-This is the only module of the core that knows the MCP SDK: a breaking change
-of the SDK is absorbed here.
+With the MCP adapters of other notions (``*/mcp/``), this is the only code
+that knows the MCP SDK: a breaking change of the SDK is absorbed here.
 """
 
 import inspect
 import logging
 from collections.abc import Awaitable, Callable, Sequence
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from mcp.server.apps import Apps
-from mcp.server.mcpserver import MCPServer
-from mcp.types import CallToolResult, TextContent
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.types import CallToolResult, InputRequiredResult, TextContent
 from pydantic import Field, ValidationError
 from pydantic.fields import FieldInfo
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
-from my_beautiful_choir.tools.errors import ToolExecutionError
+from my_beautiful_choir.confirmation.mcp.elicitation_confirmation import (
+    ConfirmationInputRequired,
+    ElicitationConfirmation,
+)
+from my_beautiful_choir.errors import DomainError
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 
 _LOGGER = logging.getLogger(__name__)
+
+CONTEXT_PARAMETER = "mbc_request_context"
+"""Name of the handler parameter receiving the SDK request context."""
 
 UNEXPECTED_ERROR_TEXT = (
     "The tool failed because of an unexpected error. "
     "The details are in the server logs; please report the problem if it persists."
 )
 
-ToolHandler = Callable[..., Awaitable[CallToolResult]]
+ToolOutcome = CallToolResult | InputRequiredResult
+ToolHandler = Callable[..., Awaitable[ToolOutcome]]
 
 
 def _text_result(text: str, is_error: bool = False) -> CallToolResult:
@@ -60,11 +69,23 @@ def _parameter_for(name: str, field: FieldInfo) -> inspect.Parameter:
 
 
 def _signature_of(tool: Tool[Any]) -> inspect.Signature:
-    """Keyword-only parameters mirroring the fields of the tool's arguments model."""
-    parameters = [
-        _parameter_for(name, field) for name, field in tool.arguments_model.model_fields.items()
-    ]
-    return inspect.Signature(parameters, return_annotation=CallToolResult)
+    """Keyword-only parameters mirroring the fields of the tool's arguments model.
+
+    A last parameter, annotated with the SDK ``Context``, receives the request
+    context; the SDK leaves it out of the published schema.
+    """
+    fields = tool.arguments_model.model_fields
+    if CONTEXT_PARAMETER in fields:
+        raise ValueError(f"{tool.name}: '{CONTEXT_PARAMETER}' is reserved for the request context")
+    parameters = [_parameter_for(name, field) for name, field in fields.items()]
+    parameters.append(
+        inspect.Parameter(CONTEXT_PARAMETER, inspect.Parameter.KEYWORD_ONLY, annotation=Context)
+    )
+    return inspect.Signature(parameters, return_annotation=ToolOutcome)
+
+
+def _tool_context(request_context: Context) -> ToolContext:
+    return ToolContext(confirmation=ElicitationConfirmation(request_context))
 
 
 def _handler_for(tool: Tool[Any]) -> ToolHandler:
@@ -74,13 +95,17 @@ def _handler_for(tool: Tool[Any]) -> ToolHandler:
     function signature, generated from the tool's arguments model.
     """
 
-    async def handler(**raw_arguments: object) -> CallToolResult:
+    async def handler(**raw_arguments: object) -> ToolOutcome:
+        request_context = cast(Context, raw_arguments.pop(CONTEXT_PARAMETER))
         try:
             arguments = tool.arguments_model.model_validate(raw_arguments)
-            return _to_call_tool_result(await tool.execute(arguments))
+            result = await tool.execute(arguments, _tool_context(request_context))
+            return _to_call_tool_result(result)
+        except ConfirmationInputRequired as required:
+            return required.result
         except ValidationError as error:
             return _text_result(f"Invalid arguments: {error}", is_error=True)
-        except ToolExecutionError as error:
+        except DomainError as error:
             return _text_result(str(error), is_error=True)
         except Exception:
             _LOGGER.exception("Unexpected error in tool", extra={"tool": tool.name})
@@ -88,6 +113,8 @@ def _handler_for(tool: Tool[Any]) -> ToolHandler:
 
     handler.__name__ = tool.name
     handler.__signature__ = _signature_of(tool)  # type: ignore[attr-defined]
+    # The SDK finds the context parameter from the type hints.
+    handler.__annotations__ = {CONTEXT_PARAMETER: Context, "return": ToolOutcome}
     return handler
 
 
@@ -107,6 +134,7 @@ class McpServerBuilder:
 
         Raises:
             ViewNotFoundError: if the document of a view is missing.
+            ValueError: if an app-only tool has no view.
         """
         apps = Apps()
         registered_views: set[str] = set()
@@ -114,14 +142,19 @@ class McpServerBuilder:
         for tool in self._tools:
             view = tool.view
             if view is None:
+                if tool.app_only:
+                    raise ValueError(f"The app-only tool {tool.name} has no view")
                 text_tools.append(tool)
                 continue
             if view.uri not in registered_views:
                 apps.add_html_resource(view.uri, view.content())
                 registered_views.add(view.uri)
-            apps.tool(resource_uri=view.uri, name=tool.name, description=tool.description)(
-                _handler_for(tool)
-            )
+            apps.tool(
+                resource_uri=view.uri,
+                name=tool.name,
+                description=tool.description,
+                visibility=["app"] if tool.app_only else None,
+            )(_handler_for(tool))
 
         server = MCPServer(
             name=self._application_info.name,

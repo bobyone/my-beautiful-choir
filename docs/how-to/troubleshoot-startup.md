@@ -41,8 +41,19 @@ started.
 | `MBC-CONFIG` | 2 | An option or an `MBC_` environment variable is invalid. Every invalid key is listed. | Correct the listed keys; see the [configuration reference](../configuration.md). |
 | `MBC-PORT` | 3 | Web mode cannot listen on the configured address and port, usually because another program uses the port. | Stop the other program, or set another port with `MBC_WEB__PORT`. |
 | `MBC-INSTALL` | 4 | A view of the user interface is missing from the installation. | Reinstall my-beautiful-choir. From a clone of the repository, build the user interface first: `uv run nox -s ui`. |
+| `MBC-DATA` | 5 | Personal mode cannot use its data directory: it cannot be created or written, or the database migration failed. | Check that the directory named in the message can be created and written by your user, or choose another one with `MBC_DATA_DIR` (see the [configuration reference](../configuration.md)). If the migration failed, restore your last backup, then report the problem. |
 | `MBC-UNEXPECTED` | 1 | An unexpected error, most likely a bug. | Read the `exc_info` field of the `startup_failed` log record, then [report the problem](https://github.com/bobyone/my-beautiful-choir/issues/new/choose), without secrets or personal data. |
 
-## 3. Get more details
+## 3. Messages without an error code
+
+Some failures happen before my-beautiful-choir starts, in the command that
+launches it. Their message has no `MBC-` code.
+
+| Message | Cause | Fix |
+|---|---|---|
+| `error: The system cannot find the path specified. (os error 3)` (or its translation), or `No such file or directory (os error 2)` | The `--directory` path given to `uv run` in the MCP client configuration does not exist, for instance a placeholder left from an example. | Set the absolute path of the clone of the repository, then restart the client completely. |
+| `'uv' is not recognized`, `spawn uv ENOENT` or `command not found: uv` | `uv` is not installed, or not on the `PATH` seen by the MCP client. | Install uv, or set the absolute path of the `uv` executable as `command`. |
+
+## 4. Get more details
 
 Set `MBC_LOG_LEVEL=DEBUG` to log more details, then restart.

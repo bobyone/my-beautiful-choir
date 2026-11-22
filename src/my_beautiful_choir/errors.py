@@ -10,6 +10,14 @@ class MyBeautifulChoirError(Exception):
     """Base class of every exception raised by my-beautiful-choir."""
 
 
+class DomainError(MyBeautifulChoirError):
+    """An expected failure of an operation, such as an element not found or an invalid value.
+
+    Its message, in English, is self-sufficient: it is returned to the model,
+    which explains it to the user.
+    """
+
+
 class StartupError(MyBeautifulChoirError):
     """An error preventing the application from starting.
 

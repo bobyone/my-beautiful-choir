@@ -13,7 +13,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep temporary copies of opened scores in a private directory (#7).
+- Require a fresh confirmation if a deletion preview changes (#7).
+
 ### Added
+
+- Repertoire and Work views in personal mode with choir switching, title
+  and composer search, and score upload, opening and confirmed deletion (#7).
+
+- Confirmed deletion of choirs, works and scores in personal mode, with a
+  localized Deletion view when the MCP host cannot ask directly (#7).
 
 - Codex contribution guidance, a contribution skill and repository protection
   settings backed by shared Claude Code and Codex rules. The assistant
@@ -40,3 +51,15 @@ and this project adheres to
   - startup error messages with stable error codes and exit codes;
   - container image and Compose file for web mode.
 - Plugin skills: install, troubleshoot, privacy, report an issue (#1).
+- Personal mode keeps its data in a SQLite database in the user data
+  directory, set with `MBC_DATA_DIR`; an unusable directory or a failed
+  migration stops the startup with `MBC-DATA` (exit code 5) (#7).
+- Choirs in personal mode: create, rename, list, and choose the default
+  choir (#7).
+- Works in personal mode: add and edit the works of a choir's repertoire,
+  searched ignoring case and accents (#7).
+- Scores in personal mode: add a score to a work from a local file or a
+  public Google Drive link (PDF, MusicXML, compressed MusicXML, MuseScore,
+  up to 50 MB, recognized from the file content), and open a copy of it
+  with the default application of the computer (#7).
+- Plugin skills: manage choirs, manage works, manage scores (#7).

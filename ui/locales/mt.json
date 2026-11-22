@@ -8,9 +8,58 @@
   "connection": {
     "error": "Din il-veduta ma setgħetx tikkonnettja mal-assistent. Agħlaqha u erġa’ pprova."
   },
+  "deletion": {
+    "cancel": "Ikkanċella",
+    "delete": "Ħassar",
+    "deleting": "Qed jitħassar…",
+    "done": "It-tħassir tlesta.",
+    "error": "Ma setgħux jintwerew id-dettalji tat-tħassir. Itlob lill-assistent jipprova mill-ġdid.",
+    "failed": "It-tħassir falla. Itlob lill-assistent jipprova mill-ġdid.",
+    "loading": "Qed jitgħabbew id-dettalji tat-tħassir…",
+    "nothingDeleted": "Ma tħassar xejn.",
+    "scores": "Partituri",
+    "warning": "Dan it-tħassir ma jistax jitreġġa’ lura.",
+    "works": "Xogħlijiet"
+  },
   "glossary": {
+    "arranger": "Arranġatur",
+    "choir": "Kor",
+    "composer": "Kompożitur",
+    "deletion": "Tħassir",
     "mode": "Modalità",
+    "notes": "Noti",
     "personalMode": "Modalità personali",
-    "webMode": "Modalità web"
+    "repertoire": "Repertorju",
+    "score": "Partitura",
+    "scoreFormat": "Format",
+    "scoreLabel": "Tikketta",
+    "scoreSize": "Daqs",
+    "sungLanguage": "Lingwa tal-kant",
+    "title": "Titlu",
+    "voicing": "Tqassim tal-vuċijiet",
+    "webMode": "Modalità web",
+    "work": "Xogħol"
+  },
+  "repertoire": {
+    "noChoirs": "Għad m’hemmx korijiet. Itlob lill-assistent joħloq kor.",
+    "noWorks": "Ma nstab l-ebda xogħol.",
+    "search": "Fittex"
+  },
+  "view": {
+    "actions": "Azzjonijiet",
+    "error": "L-informazzjoni ma setgħetx tintwera. Itlob lill-assistent biex jurihielek mill-ġdid.",
+    "loading": "Qed tillowdja l-informazzjoni…"
+  },
+  "work": {
+    "addScore": "Żid partitura",
+    "back": "Lura għar-repertorju",
+    "deleteWithScores": "Il-partituri ta’ dan ix-xogħol se jitħassru wkoll.",
+    "deleteWork": "Ħassar ix-xogħol",
+    "noScores": "Għad m’hemmx partituri.",
+    "opened": "Il-partitura nfetħet.",
+    "openError": "Il-partitura ma setgħetx tinfetaħ. Iċċekkja li hemm applikazzjoni kompatibbli installata.",
+    "openScore": "Iftaħ",
+    "uploaded": "Il-partitura żdiedet.",
+    "uploadError": "It-tlugħ falla. Agħżel partitura appoġġata sa 50 MB u erġa’ pprova."
   }
 }

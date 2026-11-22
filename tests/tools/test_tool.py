@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from my_beautiful_choir.tools.no_arguments import NoArguments
 from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 
 
@@ -24,7 +25,7 @@ class _MinimalTool(Tool[NoArguments]):
     def arguments_model(self) -> type[NoArguments]:
         return NoArguments
 
-    async def execute(self, arguments: NoArguments) -> ToolResult:
+    async def execute(self, arguments: NoArguments, context: ToolContext) -> ToolResult:
         return ToolResult(text="done")
 
 

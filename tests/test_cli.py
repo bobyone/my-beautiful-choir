@@ -31,9 +31,10 @@ class _ScriptedTransport(Transport):
 
 
 @pytest.fixture(autouse=True)
-def _clean_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+def _clean_environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[None]:
     for key in ("MBC_MODE", "MBC_LOG_LEVEL", "MBC_WEB__HOST", "MBC_WEB__PORT"):
         monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("MBC_DATA_DIR", str(tmp_path / "data"))
     root = logging.getLogger()
     handlers, level = list(root.handlers), root.level
     yield
@@ -44,7 +45,8 @@ def _clean_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 @pytest.fixture
 def views(tmp_path: Path) -> Path:
-    (tmp_path / "about.html").write_text("<p>about</p>", encoding="utf-8")
+    for view in ("about", "deletion", "repertoire", "work"):
+        (tmp_path / f"{view}.html").write_text(f"<p>{view}</p>", encoding="utf-8")
     return tmp_path
 
 
