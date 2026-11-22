@@ -130,6 +130,13 @@ class InMemoryScoreRepository(ScoreRepository):
             key=lambda s: (s.added_at, s.label, s.id),
         )
 
+    async def list_of_choir(self, choir_id: UUID) -> builtins.list[Score]:
+        return [
+            score
+            for score in self._data.scores.values()
+            if self._data.works[score.work_id].choir_id == choir_id
+        ]
+
     async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
         counts: dict[UUID, int] = {}
         for score in self._data.scores.values():
@@ -193,6 +200,9 @@ class InMemoryUnitOfWork(UnitOfWork):
         traceback: TracebackType | None,
     ) -> None:
         self._data = InMemoryData()
+
+    async def start_snapshot(self, *, for_update: bool = False) -> None:
+        """The double already works on a snapshot."""
 
     async def commit(self) -> None:
         self._database.data = copy.deepcopy(self._data)

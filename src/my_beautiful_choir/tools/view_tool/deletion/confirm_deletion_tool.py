@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""App-only tool confirming a deletion kept pending by the "Deletion" view."""
+"""App-only tool confirming a pending deletion from a view."""
 
 from collections.abc import Mapping, Sequence
 
@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 
 from my_beautiful_choir.confirmation.pending_confirmations import PendingConfirmations
 from my_beautiful_choir.deletion.deleter import Deleter
-from my_beautiful_choir.deletion.deletion import Deletion
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
+from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.view_tool.deletion.deletion_data import (
     DeletionStatus,
@@ -34,7 +35,10 @@ class ConfirmDeletionTool(ViewTool[ConfirmDeletionArguments]):
     """
 
     def __init__(
-        self, view: View, deleters: Sequence[Deleter], pending: PendingConfirmations[Deletion]
+        self,
+        view: View,
+        deleters: Sequence[Deleter],
+        pending: PendingConfirmations[DeletionPreview],
     ) -> None:
         super().__init__(view)
         self._deleters = {deleter.deletion_target: deleter for deleter in deleters}
@@ -48,11 +52,11 @@ class ConfirmDeletionTool(ViewTool[ConfirmDeletionArguments]):
     @property
     def description(self) -> str:
         """Description for the host."""
-        return "Carry out the deletion the user confirmed in the Deletion view."
+        return "Carry out the deletion the user confirmed in the Work or Deletion view."
 
     @property
     def app_only(self) -> bool:
-        """Only the "Deletion" view calls it."""
+        """Only the Work and Deletion views call it."""
         return True
 
     @property
@@ -63,8 +67,13 @@ class ConfirmDeletionTool(ViewTool[ConfirmDeletionArguments]):
     async def _collect(
         self, arguments: ConfirmDeletionArguments, context: ToolContext
     ) -> Mapping[str, object]:
-        pending = self._pending.take(arguments.token)
-        deleted = await self._deleters[pending.target].delete(pending.target_id)
+        preview = self._pending.take(arguments.token)
+        try:
+            deleted = await self._deleters[preview.deletion.target].delete(preview)
+        except StaleConfirmationError as error:
+            return deletion_data(
+                DeletionStatus.PENDING, error.preview.deletion, self._pending.keep(error.preview)
+            )
         return deletion_data(DeletionStatus.DELETED, deleted)
 
     def _describe(self, data: Mapping[str, object]) -> str:

@@ -16,6 +16,7 @@ and this project adheres to
 ### Fixed
 
 - Keep temporary copies of opened scores in a private directory (#7).
+- Require a fresh confirmation if a deletion preview changes (#7).
 
 ### Added
 

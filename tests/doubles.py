@@ -3,6 +3,7 @@
 
 """Test doubles of the abstractions, shared by the tests."""
 
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -117,7 +118,9 @@ class StubConfirmation(ConfirmationRequester):
         self.outcome = outcome
         self.questions: list[str] = []
 
-    async def ask(self, question: str) -> ConfirmationOutcome:
+    async def ask(
+        self, question: str, *, scope: str = "", keep: Callable[[], str] | None = None
+    ) -> ConfirmationOutcome:
         self.questions.append(question)
         return self.outcome
 

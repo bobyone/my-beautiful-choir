@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.confirmation.pending_confirmations import PendingConfirmations
-from my_beautiful_choir.deletion.deletion import Deletion
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.tools.view_tool.deletion.delete_tool import DeleteTool
 from my_beautiful_choir.views.view import View
 
@@ -24,9 +24,13 @@ class DeleteChoirTool(DeleteTool[DeleteChoirArguments]):
     """Deletes a choir after the user's confirmation."""
 
     def __init__(
-        self, view: View, service: ChoirService, pending: PendingConfirmations[Deletion]
+        self,
+        view: View,
+        service: ChoirService,
+        pending: PendingConfirmations[DeletionPreview],
+        conversation: PendingConfirmations[tuple[str, DeletionPreview]],
     ) -> None:
-        super().__init__(view, service, pending)
+        super().__init__(view, service, pending, conversation)
         self._service = service
 
     @property

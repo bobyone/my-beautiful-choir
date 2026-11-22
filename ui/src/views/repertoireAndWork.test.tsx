@@ -201,8 +201,54 @@ describe("repertoire and work views", () => {
     expect(host.toolCalls).toHaveLength(1);
   });
 
+  it("asks again when a work changes while its confirmation is open", async () => {
+    host.answerToolCall = ({ name, arguments: args }) => {
+      if (name === "preview_work_deletion") {
+        return result({ ...deleted, status: "pending", token: "original" });
+      }
+      if (args?.["token"] === "original") {
+        return result({
+          status: "pending",
+          token: "refreshed",
+          deletion: { ...deleted.deletion, name: "Gloria", score_count: 2 },
+        });
+      }
+      return result(deleted);
+    };
+    await show(WorkApp, result(workResult));
+    fireEvent.click(screen.getByRole("button", { name: "Delete the work" }));
+    let dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Gloria")).toBeDefined();
+    dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Nothing was deleted.")).toBeDefined();
+    expect(within(dialog).getByText("2")).toBeDefined();
+    expect(host.toolCalls).toHaveLength(2);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Deletion complete.")).toBeDefined();
+    expect(host.toolCalls.at(-1)?.arguments).toEqual({ token: "refreshed" });
+  });
+
   it("requires confirmation to delete a score or the work", async () => {
-    host.answerToolCall = () => result(deleted);
+    host.answerToolCall = ({ name, arguments: args }) => {
+      const removingWork = name === "preview_work_deletion" || args?.["token"] === "work-token";
+      const deletion = removingWork
+        ? deleted.deletion
+        : {
+            ...deleted.deletion,
+            target: "score",
+            name: score.label,
+            parent_name: work.title,
+            score_count: 0,
+          };
+      return name === "confirm_deletion"
+        ? result({ ...deleted, deletion })
+        : result({
+            status: "pending",
+            deletion,
+            token: removingWork ? "work-token" : "score-token",
+          });
+    };
     await show(WorkApp, result(workResult));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     let dialog = await screen.findByRole("dialog");
@@ -211,7 +257,9 @@ describe("repertoire and work views", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });
-    expect(host.toolCalls).toEqual([]);
+    expect(host.toolCalls).toEqual([
+      { name: "preview_score_deletion", arguments: { target_id: score.id } },
+    ]);
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
@@ -227,8 +275,11 @@ describe("repertoire and work views", () => {
       expect(screen.queryByRole("button", { name: "Delete the work" })).toBeNull();
     });
     expect(host.toolCalls).toEqual([
-      { name: "delete_score_from_view", arguments: { target_id: score.id } },
-      { name: "delete_work_from_view", arguments: { target_id: work.id } },
+      { name: "preview_score_deletion", arguments: { target_id: score.id } },
+      { name: "preview_score_deletion", arguments: { target_id: score.id } },
+      { name: "confirm_deletion", arguments: { token: "score-token" } },
+      { name: "preview_work_deletion", arguments: { target_id: work.id } },
+      { name: "confirm_deletion", arguments: { token: "work-token" } },
     ]);
   });
 });

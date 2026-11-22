@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 
 
 class Deleter(ABC):
@@ -23,7 +24,7 @@ class Deleter(ABC):
         """Kind of element this deleter removes."""
 
     @abstractmethod
-    async def describe_deletion(self, target_id: UUID) -> Deletion:
+    async def describe_deletion(self, target_id: UUID) -> DeletionPreview:
         """What deleting the element would remove; changes nothing.
 
         Raises:
@@ -32,9 +33,10 @@ class Deleter(ABC):
         """
 
     @abstractmethod
-    async def delete(self, target_id: UUID) -> Deletion:
+    async def delete(self, preview: DeletionPreview) -> Deletion:
         """Delete the element and everything it contains; return what was removed.
 
         Raises:
             DomainError: if the element does not exist or may not be deleted.
+            StaleConfirmationError: if its state no longer matches the preview.
         """

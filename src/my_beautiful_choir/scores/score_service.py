@@ -10,6 +10,8 @@ from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.clock.clock import Clock
 from my_beautiful_choir.deletion.deleter import Deleter
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
+from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.repertoire.work import Work
@@ -131,32 +133,38 @@ class ScoreService(Deleter):
         """Scores."""
         return DeletionTarget.SCORE
 
-    async def describe_deletion(self, target_id: UUID) -> Deletion:
+    async def describe_deletion(self, target_id: UUID) -> DeletionPreview:
         """The score and its work.
 
         Raises:
             ScoreNotFoundError: if no score has this id.
         """
         async with self._unit_of_work() as unit_of_work:
-            deletion, _ = await self._deletion(unit_of_work, target_id)
-        return deletion
+            await unit_of_work.start_snapshot()
+            return await self._deletion(unit_of_work, target_id)
 
-    async def delete(self, target_id: UUID) -> Deletion:
+    async def delete(self, preview: DeletionPreview) -> Deletion:
         """Delete the score, then its stored content.
 
         Raises:
             ScoreNotFoundError: if no score has this id.
         """
+        target_id = preview.deletion.target_id
         async with self._unit_of_work() as unit_of_work:
-            deletion, key = await self._deletion(unit_of_work, target_id)
+            await unit_of_work.start_snapshot(for_update=True)
+            current = await self._deletion(unit_of_work, target_id)
+            if current != preview:
+                raise StaleConfirmationError(current)
             await unit_of_work.scores.delete(target_id)
             await unit_of_work.commit()
-        await remove_stored_contents(self._file_storage, [key])
-        return deletion
+        await remove_stored_contents(
+            self._file_storage, [score.storage_key for score in current.scores]
+        )
+        return current.deletion
 
-    async def _deletion(self, unit_of_work: UnitOfWork, score_id: UUID) -> tuple[Deletion, str]:
+    async def _deletion(self, unit_of_work: UnitOfWork, score_id: UUID) -> DeletionPreview:
         score = await unit_of_work.scores.get(score_id)
         work = await unit_of_work.works.get(score.work_id)
         self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
         deletion = Deletion(DeletionTarget.SCORE, score.id, score.label, work.title)
-        return deletion, score.storage_key
+        return DeletionPreview(deletion, scores=(score,))

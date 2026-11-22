@@ -23,6 +23,8 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Composer | Author of the music of a work. | `Work.composer` | `glossary.composer` | Composer | Compositeur |
 | Default choir | Choir used when a request names none. | `Choir.is_default` | | default choir | chorale par défaut |
 | Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
+
+| Deletion preview | Summary and record state covered by a deletion confirmation. | `DeletionPreview` | | deletion preview | aperçu de suppression |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
@@ -38,6 +40,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | `glossary.scoreLabel` | Label | Libellé |
 | Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
 | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
+| Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
 | Sung language | Langue chantée |
 | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |

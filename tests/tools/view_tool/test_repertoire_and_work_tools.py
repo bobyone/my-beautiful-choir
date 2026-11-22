@@ -9,15 +9,23 @@ import pytest
 
 from my_beautiful_choir.authorization.errors import AccessDeniedError
 from my_beautiful_choir.authorization.permission import Permission
+from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations import (
+    InMemoryPendingConfirmations,
+)
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.scores.errors import InvalidScoreError, UnsupportedScoreFormatError
 from my_beautiful_choir.scores.sources.uploaded_score_source import UploadedScoreSource
+from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
+    ConfirmDeletionArguments,
+    ConfirmDeletionTool,
+)
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import (
     ShowRepertoireArguments,
     ShowRepertoireTool,
 )
-from my_beautiful_choir.tools.view_tool.work.delete_from_work_view_tool import (
-    DeleteFromWorkViewArguments,
-    DeleteFromWorkViewTool,
+from my_beautiful_choir.tools.view_tool.work.preview_deletion_from_work_view_tool import (
+    PreviewDeletionFromWorkViewArguments,
+    PreviewDeletionFromWorkViewTool,
 )
 from my_beautiful_choir.tools.view_tool.work.show_work_tool import ShowWorkArguments, ShowWorkTool
 from my_beautiful_choir.tools.view_tool.work.upload_score_tool import (
@@ -69,12 +77,14 @@ async def test_work_upload_and_deletion() -> None:
     scores = world.scores()
     show = ShowWorkTool(VIEW, world.repertoire(), scores)
     upload = UploadScoreTool(VIEW, scores, UploadedScoreSource)
-    delete = DeleteFromWorkViewTool(VIEW, scores)
+    pending = InMemoryPendingConfirmations[DeletionPreview](world.clock)
+    delete = PreviewDeletionFromWorkViewTool(VIEW, scores, pending)
+    confirm = ConfirmDeletionTool(VIEW, [scores], pending)
     assert upload.app_only
     assert delete.app_only
     assert upload.view is VIEW
     assert upload.arguments_model is UploadScoreArguments
-    assert delete.arguments_model is DeleteFromWorkViewArguments
+    assert delete.arguments_model is PreviewDeletionFromWorkViewArguments
 
     with pytest.raises(InvalidScoreError):
         await upload.execute(
@@ -102,9 +112,17 @@ async def test_work_upload_and_deletion() -> None:
     assert shown.structured["choir"] == "Lyon"
     [score] = await scores.list_scores(work.id)
     assert score.label == "Altos"
-    result = await delete.execute(DeleteFromWorkViewArguments(target_id=score.id), tool_context())
+    result = await delete.execute(
+        PreviewDeletionFromWorkViewArguments(target_id=score.id), tool_context()
+    )
     assert result.structured is not None
-    assert result.structured["status"] == "deleted"
+    assert result.structured["status"] == "pending"
+    assert await scores.list_scores(work.id) == [score]
+    confirmed = await confirm.execute(
+        ConfirmDeletionArguments(token=str(result.structured["token"])), tool_context()
+    )
+    assert confirmed.structured is not None
+    assert confirmed.structured["status"] == "deleted"
     assert await scores.list_scores(work.id) == []
 
 
@@ -117,7 +135,11 @@ async def test_views_preserve_service_authorization() -> None:
     repertoire = ShowRepertoireTool(VIEW, world.repertoire(denied), world.choirs())
     with pytest.raises(AccessDeniedError):
         await repertoire.execute(ShowRepertoireArguments(), tool_context())
-    delete = DeleteFromWorkViewTool(VIEW, world.repertoire(denied))
+    delete = PreviewDeletionFromWorkViewTool(
+        VIEW, world.repertoire(denied), InMemoryPendingConfirmations(world.clock)
+    )
     with pytest.raises(AccessDeniedError):
-        await delete.execute(DeleteFromWorkViewArguments(target_id=work.id), tool_context())
+        await delete.execute(
+            PreviewDeletionFromWorkViewArguments(target_id=work.id), tool_context()
+        )
     assert (await world.repertoire().get_work(work.id))[1] == work

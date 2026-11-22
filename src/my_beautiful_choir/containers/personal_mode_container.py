@@ -15,7 +15,7 @@ from my_beautiful_choir.configuration.settings import Settings
 from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations import (
     InMemoryPendingConfirmations,
 )
-from my_beautiful_choir.deletion.deletion import Deletion
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
@@ -56,8 +56,8 @@ from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import Delete
 from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import ShowRepertoireTool
-from my_beautiful_choir.tools.view_tool.work.delete_from_work_view_tool import (
-    DeleteFromWorkViewTool,
+from my_beautiful_choir.tools.view_tool.work.preview_deletion_from_work_view_tool import (
+    PreviewDeletionFromWorkViewTool,
 )
 from my_beautiful_choir.tools.view_tool.work.show_work_tool import ShowWorkTool
 from my_beautiful_choir.tools.view_tool.work.upload_score_tool import UploadScoreTool
@@ -102,9 +102,12 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     )
 
     clock = providers.Singleton(SystemClock)
-    pending_confirmations: providers.Singleton[InMemoryPendingConfirmations[Deletion]] = (
-        providers.Singleton(InMemoryPendingConfirmations, clock=clock)
+    pending_confirmations = providers.Singleton[InMemoryPendingConfirmations[DeletionPreview]](
+        InMemoryPendingConfirmations, clock=clock
     )
+    conversation_confirmations = providers.Singleton[
+        InMemoryPendingConfirmations[tuple[str, DeletionPreview]]
+    ](InMemoryPendingConfirmations, clock=clock)
 
     # The directory of the common views, given by create_container.
     views_directory: providers.Dependency[Traversable] = providers.Dependency()
@@ -181,14 +184,27 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             service=score_service,
             source_factory=uploaded_score_source.provider,
         ),
-        _metered(DeleteFromWorkViewTool, metrics, view=work_view, deleter=repertoire_service),
-        _metered(DeleteFromWorkViewTool, metrics, view=work_view, deleter=score_service),
+        _metered(
+            PreviewDeletionFromWorkViewTool,
+            metrics,
+            view=work_view,
+            deleter=repertoire_service,
+            pending=pending_confirmations,
+        ),
+        _metered(
+            PreviewDeletionFromWorkViewTool,
+            metrics,
+            view=work_view,
+            deleter=score_service,
+            pending=pending_confirmations,
+        ),
         _metered(
             DeleteChoirTool,
             metrics,
             view=deletion_view,
             service=choir_service,
             pending=pending_confirmations,
+            conversation=conversation_confirmations,
         ),
         _metered(
             DeleteWorkTool,
@@ -196,6 +212,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             view=deletion_view,
             deleter=repertoire_service,
             pending=pending_confirmations,
+            conversation=conversation_confirmations,
         ),
         _metered(
             DeleteScoreTool,
@@ -203,6 +220,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             view=deletion_view,
             deleter=score_service,
             pending=pending_confirmations,
+            conversation=conversation_confirmations,
         ),
         _metered(
             ConfirmDeletionTool,

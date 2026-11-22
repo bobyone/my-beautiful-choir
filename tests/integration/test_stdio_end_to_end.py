@@ -166,7 +166,7 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     work_uri = "ui://my-beautiful-choir/work.html"
     assert tools["show_repertoire"]["_meta"]["ui"]["resourceUri"] == repertoire_uri
     assert tools["show_work"]["_meta"]["ui"]["resourceUri"] == work_uri
-    for name in ("upload_score", "delete_score_from_view", "delete_work_from_view"):
+    for name in ("upload_score", "preview_score_deletion", "preview_work_deletion"):
         assert tools[name]["_meta"]["ui"] == {"resourceUri": work_uri, "visibility": ["app"]}
     for index, uri in enumerate((repertoire_uri, work_uri), start=13):
         [view] = session.request(index, "resources/read", {"uri": uri})["contents"]
@@ -194,9 +194,17 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     work = _tool_result(session, 19, "show_work", work_id=work_id)["structuredContent"]
     [score] = work["scores"]
     assert (score["id"], score["label"], score["format"]) == (score_id, "Alto", "pdf")
-    _tool_result(session, 20, "delete_score_from_view", target_id=score_id)
-    assert (
-        _tool_result(session, 21, "show_work", work_id=work_id)["structuredContent"]["scores"] == []
-    )
-    _tool_result(session, 22, "delete_work_from_view", target_id=work_id)
-    assert _tool_result(session, 23, "show_repertoire")["structuredContent"]["works"] == []
+    score_preview = _tool_result(session, 20, "preview_score_deletion", target_id=score_id)
+    _tool_result(session, 21, "confirm_deletion", token=score_preview["structuredContent"]["token"])
+    shown = _tool_result(session, 22, "show_work", work_id=work_id)
+    assert not shown["structuredContent"]["scores"]
+
+    work_preview = _tool_result(session, 23, "preview_work_deletion", target_id=work_id)
+    _tool_result(session, 24, "edit_work", work_id=work_id, title="Gloria")
+    refreshed = _tool_result(
+        session, 25, "confirm_deletion", token=work_preview["structuredContent"]["token"]
+    )["structuredContent"]
+    assert refreshed["status"] == "pending"
+    assert refreshed["deletion"]["name"] == "Gloria"
+    _tool_result(session, 26, "confirm_deletion", token=refreshed["token"])
+    assert _tool_result(session, 27, "show_repertoire")["structuredContent"]["works"] == []

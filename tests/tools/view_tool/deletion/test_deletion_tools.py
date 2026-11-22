@@ -13,7 +13,7 @@ from my_beautiful_choir.confirmation.errors import ConfirmationExpiredError
 from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations import (
     InMemoryPendingConfirmations,
 )
-from my_beautiful_choir.deletion.deletion import Deletion
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
     ConfirmDeletionArguments,
@@ -31,6 +31,7 @@ from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import (
     DeleteWorkArguments,
     DeleteWorkTool,
 )
+from my_beautiful_choir.tools.view_tool.deletion.deletion_data import deletion_from_data
 from tests.doubles import StubConfirmation, StubView, tool_context
 from tests.repertoire_world import RepertoireWorld
 
@@ -40,10 +41,11 @@ VIEW = StubView(uri="ui://my-beautiful-choir/deletion.html")
 class _Tools:
     def __init__(self, world: RepertoireWorld) -> None:
         self.world = world
-        self.pending = InMemoryPendingConfirmations[Deletion](world.clock)
-        self.choir = DeleteChoirTool(VIEW, world.choirs(), self.pending)
-        self.work = DeleteWorkTool(VIEW, world.repertoire(), self.pending)
-        self.score = DeleteScoreTool(VIEW, world.scores(), self.pending)
+        self.pending = InMemoryPendingConfirmations[DeletionPreview](world.clock)
+        conversation = InMemoryPendingConfirmations[tuple[str, DeletionPreview]](world.clock)
+        self.choir = DeleteChoirTool(VIEW, world.choirs(), self.pending, conversation)
+        self.work = DeleteWorkTool(VIEW, world.repertoire(), self.pending, conversation)
+        self.score = DeleteScoreTool(VIEW, world.scores(), self.pending, conversation)
         self.confirm = ConfirmDeletionTool(
             VIEW, [world.choirs(), world.repertoire(), world.scores()], self.pending
         )
@@ -139,11 +141,23 @@ async def test_the_view_confirms_a_choir_and_a_work(tools: _Tools) -> None:
     unavailable = tool_context(StubConfirmation(ConfirmationOutcome.UNAVAILABLE))
     work = await tools.work.execute(DeleteWorkArguments(work_id=_work_id(tools)), unavailable)
     choir = await tools.choir.execute(DeleteChoirArguments(choir="Chœur"), unavailable)
-    for pending in (work, choir):
-        token = ConfirmDeletionArguments(token=str(pending.structured["token"]))
-        assert (await tools.confirm.execute(token, tool_context())).structured[
-            "status"
-        ] == "deleted"
+    work_token = ConfirmDeletionArguments(token=str(work.structured["token"]))
+    assert (await tools.confirm.execute(work_token, tool_context())).structured[
+        "status"
+    ] == "deleted"
+
+    choir_token = ConfirmDeletionArguments(token=str(choir.structured["token"]))
+    refreshed = await tools.confirm.execute(choir_token, tool_context())
+    assert refreshed.structured["status"] == "pending"
+    assert deletion_from_data(refreshed.structured).work_count == 0
+    assert len(tools.world.database.data.choirs) == 1
+    with pytest.raises(ConfirmationExpiredError):
+        await tools.confirm.execute(choir_token, tool_context())
+
+    new_token = ConfirmDeletionArguments(token=str(refreshed.structured["token"]))
+    assert (await tools.confirm.execute(new_token, tool_context())).structured[
+        "status"
+    ] == "deleted"
     assert tools.world.database.data.choirs == {}
 
 

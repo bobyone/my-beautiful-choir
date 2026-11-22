@@ -36,4 +36,5 @@ personal mode.
 - Two works may have the same title (for example two arrangements).
 - `delete_work` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the work and its scores and choose
-  **Delete** or **Cancel**.
+  **Delete** or **Cancel**. If the deletion preview changes, review it
+  again before confirming.

@@ -47,6 +47,7 @@ personal mode. A score belongs to a work: find the work's id first (use the
 
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.
+  If the deletion preview changes, review it again before confirming.
 
 ## Errors
 

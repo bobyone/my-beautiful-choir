@@ -17,6 +17,7 @@ export type DeletionState =
   | {
       kind: "pending" | "deleting" | "deleted" | "nothing-deleted" | "failed";
       deletion: DeletionSummary;
+      refreshed?: boolean;
     };
 
 export interface DeletionActions {
@@ -54,7 +55,10 @@ export function DeletionView({
             <Card.Title as="h1" className="h5">
               {t("glossary.deletion")}
             </Card.Title>
-            <Summary deletion={state.deletion} />
+            <DeletionSummaryView deletion={state.deletion} />
+            {state.refreshed && state.kind === "pending" && (
+              <Alert variant="info">{t("deletion.nothingDeleted")}</Alert>
+            )}
             <Outcome kind={state.kind} onDelete={onDelete} onCancel={onCancel} />
           </Card.Body>
         </Card>
@@ -115,7 +119,7 @@ function Outcome({
   }
 }
 
-function Summary({ deletion }: { deletion: DeletionSummary }) {
+export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary }) {
   const { t, i18n } = useTranslation();
   const number = new Intl.NumberFormat(i18n.language);
   const parentTarget: DeletionTarget | undefined =

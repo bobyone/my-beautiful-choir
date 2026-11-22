@@ -18,11 +18,18 @@ from mcp.types import ElicitRequestParams, ElicitResult, ErrorData, TextContent
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
 from my_beautiful_choir.configuration.mode import Mode
+from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations import (
+    InMemoryPendingConfirmations,
+)
 from my_beautiful_choir.mcp.mcp_server_builder import McpServerBuilder
+from my_beautiful_choir.repertoire.work import WorkChanges
 from my_beautiful_choir.tools.no_arguments import NoArguments
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
+from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
+from tests.doubles import StubView
+from tests.repertoire_world import RepertoireWorld
 
 INFO = ApplicationInfo("my-beautiful-choir", "1.2.3", Mode.PERSONAL)
 QUESTION = "Delete the work Ave Maria and its 2 scores?"
@@ -124,3 +131,37 @@ async def test_client_error_during_the_call_is_unavailable() -> None:
         return ErrorData(code=-32603, message="no user")
 
     assert await _outcome("legacy", failing) == "unavailable"
+
+
+@pytest.mark.anyio
+async def test_a_conversation_confirmation_is_bound_to_the_original_preview(mode: str) -> None:
+    world = RepertoireWorld()
+    await world.choir("Choir")
+    work = await world.work("Choir", "Ave Maria")
+    repertoire = world.repertoire()
+    tool = DeleteWorkTool(
+        StubView(),
+        repertoire,
+        InMemoryPendingConfirmations(world.clock),
+        InMemoryPendingConfirmations(world.clock),
+    )
+    questions: list[str] = []
+
+    async def answer(context: ClientRequestContext, params: ElicitRequestParams) -> ElicitResult:
+        questions.append(params.message)
+        if len(questions) == 1:
+            await repertoire.edit_work(work.id, WorkChanges(title="Gloria"))
+            return ElicitResult(action="accept", content={"confirmed": True})
+        assert (await repertoire.get_work(work.id))[1].title == "Gloria"
+        return ElicitResult(action="decline")
+
+    server = McpServerBuilder(INFO, [tool]).build()
+    async with Client(server, mode=mode, elicitation_callback=answer) as client:
+        result = await client.call_tool("delete_work", {"work_id": str(work.id)})
+
+    assert "Ave Maria" in questions[0]
+    assert "Gloria" in questions[1]
+    assert len(questions) == 2
+    assert result.structured_content is not None
+    assert result.structured_content["status"] == "refused"
+    assert (await repertoire.get_work(work.id))[1].title == "Gloria"

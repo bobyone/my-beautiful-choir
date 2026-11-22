@@ -86,6 +86,15 @@ class SqlScoreRepository(ScoreRepository):
         )
         return [_score(row) for row in rows]
 
+    async def list_of_choir(self, choir_id: UUID) -> builtins.list[Score]:
+        """Read every score of the choir in a single query."""
+        rows = await self._connection.execute(
+            select(*_COLUMNS)
+            .join(works, works.c.id == scores.c.work_id)
+            .where(works.c.choir_id == choir_id)
+        )
+        return [_score(row) for row in rows]
+
     async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
         """Number of scores per work of the choir, in one query."""
         rows = await self._connection.execute(

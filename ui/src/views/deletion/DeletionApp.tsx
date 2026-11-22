@@ -7,7 +7,7 @@ import { I18nextProvider } from "react-i18next";
 
 import { useHost, type HostState } from "../../host/useHost";
 import { useHostLanguageAndTheme } from "../../host/useHostLanguageAndTheme";
-import { parseDeletionInfo } from "./deletionInfo";
+import { type DeletionInfo, parseDeletionInfo } from "./deletionInfo";
 import { DeletionView, type DeletionState } from "./DeletionView";
 
 export const VIEW_NAME = "my-beautiful-choir-deletion";
@@ -25,8 +25,10 @@ export function DeletionApp({ i18n }: { i18n: I18n }) {
   const host = useHost(VIEW_NAME, VIEW_VERSION);
   useHostLanguageAndTheme(host, i18n);
   const [progress, setProgress] = useState<Progress>("waiting");
-  const state = stateOf(host, progress);
-  const info = host.toolResult === undefined ? undefined : parseDeletionInfo(host.toolResult);
+  const [refreshed, setRefreshed] = useState<Extract<DeletionInfo, { status: "pending" }>>();
+  const info =
+    refreshed ?? (host.toolResult === undefined ? undefined : parseDeletionInfo(host.toolResult));
+  const state = stateOf(host, progress, info, refreshed !== undefined);
 
   const onDelete = () => {
     if (info?.status !== "pending" || progress !== "waiting") {
@@ -36,7 +38,13 @@ export function DeletionApp({ i18n }: { i18n: I18n }) {
     host
       .callTool(CONFIRM_TOOL, { token: info.token })
       .then((result) => {
-        setProgress(parseDeletionInfo(result)?.status === "deleted" ? "deleted" : "failed");
+        const reply = parseDeletionInfo(result);
+        if (reply?.status === "pending") {
+          setRefreshed(reply);
+          setProgress("waiting");
+        } else {
+          setProgress(reply?.status === "deleted" ? "deleted" : "failed");
+        }
       })
       .catch(() => {
         setProgress("failed");
@@ -56,14 +64,19 @@ export function DeletionApp({ i18n }: { i18n: I18n }) {
   );
 }
 
-function stateOf(host: HostState, progress: Progress): DeletionState {
+function stateOf(
+  host: HostState,
+  progress: Progress,
+  info: DeletionInfo | undefined,
+  refreshed: boolean,
+): DeletionState {
   if (host.connectionFailed) {
     return { kind: "connection-error" };
   }
   if (host.toolResult === undefined) {
     return { kind: "loading" };
   }
-  const info = parseDeletionInfo(host.toolResult);
+
   if (info === undefined) {
     return { kind: "error" };
   }
@@ -76,7 +89,7 @@ function stateOf(host: HostState, progress: Progress): DeletionState {
   }
   switch (progress) {
     case "waiting":
-      return { kind: "pending", deletion };
+      return { kind: "pending", deletion, refreshed };
     case "cancelled":
       return { kind: "nothing-deleted", deletion };
     default:

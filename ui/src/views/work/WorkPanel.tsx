@@ -7,19 +7,21 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useTranslation } from "react-i18next";
 
-import { parseDeletionInfo } from "../deletion/deletionInfo";
+import { type DeletionInfo, parseDeletionInfo } from "../deletion/deletionInfo";
+import { CONFIRM_TOOL } from "../deletion/DeletionApp";
+import { DeletionSummaryView } from "../deletion/DeletionView";
 import { type CallTool, resultData } from "../viewData";
 import { readScoreFile } from "./readScoreFile";
 import { ScoreTable } from "./ScoreTable";
 import { WorkDetails } from "./WorkDetails";
 import { parseScore, type ScoreInfo, type WorkResult } from "./workInfo";
 
-type Action = "upload" | "open" | "delete";
+type Action = "upload" | "open" | "prepare-delete" | "delete";
 type Outcome = { action: Action; state: "waiting" | "done" | "failed" };
 type Deletion = {
   id: string;
-  label: string;
-  tool: "delete_score_from_view" | "delete_work_from_view";
+  preview: Extract<DeletionInfo, { status: "pending" }>;
+  refreshed: boolean;
 };
 
 export function WorkPanel({
@@ -70,16 +72,39 @@ export function WorkPanel({
     });
   };
 
-  const confirmDeletion = () => {
+  async function prepareDeletion(target: "work" | "score", id: string) {
+    setOutcome({ action: "prepare-delete", state: "waiting" });
+    try {
+      const reply = await callTool(`preview_${target}_deletion`, { target_id: id });
+      const preview = parseDeletionInfo(reply);
+      if (preview?.status !== "pending") throw new Error("The deletion preview is unavailable.");
+      setDeletion({ id, preview, refreshed: false });
+      setOutcome(undefined);
+    } catch {
+      setOutcome({ action: "prepare-delete", state: "failed" });
+    }
+  }
+
+  async function confirmDeletion() {
     if (deletion === null) return;
     setDeletion(null);
-    void perform("delete", async () => {
-      const reply = await callTool(deletion.tool, { target_id: deletion.id });
-      if (parseDeletionInfo(reply)?.status !== "deleted") throw new Error("The deletion failed.");
-      if (deletion.tool === "delete_work_from_view") setRemoved(true);
+    setOutcome({ action: "delete", state: "waiting" });
+    try {
+      const reply = await callTool(CONFIRM_TOOL, { token: deletion.preview.token });
+      const result = parseDeletionInfo(reply);
+      if (result?.status === "pending") {
+        setDeletion({ ...deletion, preview: result, refreshed: true });
+        setOutcome(undefined);
+        return;
+      }
+      if (result?.status !== "deleted") throw new Error("The deletion failed.");
+      if (result.deletion.target === "work") setRemoved(true);
       else setScores((previous) => previous.filter((score) => score.id !== deletion.id));
-    });
-  };
+      setOutcome({ action: "delete", state: "done" });
+    } catch {
+      setOutcome({ action: "delete", state: "failed" });
+    }
+  }
 
   return (
     <section className="p-3" aria-labelledby="work-heading">
@@ -101,7 +126,7 @@ export function WorkPanel({
             busy={busy}
             onOpen={openScore}
             onDelete={(score) => {
-              setDeletion({ id: score.id, label: score.label, tool: "delete_score_from_view" });
+              void prepareDeletion("score", score.id);
             }}
           />
           <div className="d-flex flex-wrap gap-2">
@@ -123,11 +148,7 @@ export function WorkPanel({
               variant="outline-danger"
               disabled={busy}
               onClick={() => {
-                setDeletion({
-                  id: data.work.id,
-                  label: data.work.title,
-                  tool: "delete_work_from_view",
-                });
+                void prepareDeletion("work", data.work.id);
               }}
             >
               {t("work.deleteWork")}
@@ -146,8 +167,9 @@ export function WorkPanel({
           <Modal.Title id="confirm-work-deletion">{t("glossary.deletion")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="fw-semibold">{deletion?.label}</p>
-          {deletion?.tool === "delete_work_from_view" && <p>{t("work.deleteWithScores")}</p>}
+          {deletion?.refreshed && <Alert variant="info">{t("deletion.nothingDeleted")}</Alert>}
+          {deletion && <DeletionSummaryView deletion={deletion.preview.deletion} />}
+          {deletion?.preview.deletion.target === "work" && <p>{t("work.deleteWithScores")}</p>}
           <p>{t("deletion.warning")}</p>
         </Modal.Body>
         <Modal.Footer>
@@ -160,7 +182,7 @@ export function WorkPanel({
           >
             {t("deletion.cancel")}
           </Button>
-          <Button variant="danger" onClick={confirmDeletion}>
+          <Button variant="danger" onClick={() => void confirmDeletion()}>
             {t("deletion.delete")}
           </Button>
         </Modal.Footer>

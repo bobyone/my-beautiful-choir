@@ -70,6 +70,10 @@ class SqlUnitOfWork(UnitOfWork):
             self._connection = None
             self._transaction = None
 
+    async def start_snapshot(self, *, for_update: bool = False) -> None:
+        """Start the SQLite transaction explicitly, including for read-only previews."""
+        await self.connection.exec_driver_sql("BEGIN IMMEDIATE" if for_update else "BEGIN")
+
     async def commit(self) -> None:
         """Commit the transaction, and begin a new one for the following changes."""
         connection = self.connection

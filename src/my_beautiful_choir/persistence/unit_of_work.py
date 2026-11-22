@@ -50,6 +50,10 @@ class UnitOfWork(ABC):
         """Repository of the scores."""
 
     @abstractmethod
+    async def start_snapshot(self, *, for_update: bool = False) -> None:
+        """Before repository access, pin a snapshot and optionally exclude concurrent writers."""
+
+    @abstractmethod
     async def commit(self) -> None:
         """Keep the changes made so far."""
 

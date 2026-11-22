@@ -40,6 +40,7 @@ personal mode. Web mode does not offer them yet (they need accounts).
 Call `delete_choir` for the choir the user asked to delete. The tool asks
 for confirmation. If the host opens the **Deletion** view, ask the user to
 review the affected works and scores and choose **Delete** or **Cancel**.
+If the deletion preview changes, review the fresh preview before confirming again.
 If the deleted choir was the default choir, the oldest remaining choir
 becomes the default choir.
 

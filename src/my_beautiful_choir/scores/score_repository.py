@@ -30,6 +30,10 @@ class ScoreRepository(ABC):
         """Scores of the work, the oldest first."""
 
     @abstractmethod
+    async def list_of_choir(self, choir_id: UUID) -> builtins.list[Score]:
+        """All scores of the choir."""
+
+    @abstractmethod
     async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
         """Number of scores per work of the choir. Omit works without scores."""
 

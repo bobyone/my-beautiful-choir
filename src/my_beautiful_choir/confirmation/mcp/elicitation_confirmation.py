@@ -4,6 +4,8 @@
 """Confirmation asked through MCP elicitation, on every protocol version."""
 
 import logging
+from collections.abc import Callable
+from hashlib import sha256
 
 from mcp.server.elicitation import AcceptedElicitation, render_elicitation_schema
 from mcp.server.mcpserver import Context
@@ -64,16 +66,32 @@ class ElicitationConfirmation(ConfirmationRequester):
     def __init__(self, context: Context) -> None:
         self._context = context
 
-    async def ask(self, question: str) -> ConfirmationOutcome:
+    def resume(self, scope: str) -> tuple[str, ConfirmationOutcome] | None:
+        """Find the answer bound to this invocation's opaque confirmation key."""
+        prefix = self._key_prefix(scope)
+        for key, answer in reversed(list((self._context.input_responses or {}).items())):
+            if key.startswith(prefix) and isinstance(answer, ElicitResult):
+                return key.removeprefix(prefix), _outcome_of(answer)
+        return None
+
+    @staticmethod
+    def _key_prefix(scope: str) -> str:
+        return f"{INPUT_KEY}-{sha256(scope.encode('utf-8')).hexdigest()}-"
+
+    async def ask(
+        self, question: str, *, scope: str = "", keep: Callable[[], str] | None = None
+    ) -> ConfirmationOutcome:
         """Confirmed only when the user accepts the form with the box checked."""
-        answer = (self._context.input_responses or {}).get(INPUT_KEY)
-        if isinstance(answer, ElicitResult):
-            return _outcome_of(answer)
+        if keep is None:
+            answer = (self._context.input_responses or {}).get(INPUT_KEY)
+            if isinstance(answer, ElicitResult):
+                return _outcome_of(answer)
         capabilities = self._context.client_capabilities
         if capabilities is None or capabilities.elicitation is None:
             return ConfirmationOutcome.UNAVAILABLE
         if (self._context.protocol_version or "") >= MULTI_ROUND_TRIP_PROTOCOL:
-            raise ConfirmationInputRequired(self._input_request(question))
+            key = INPUT_KEY if keep is None else self._key_prefix(scope) + keep()
+            raise ConfirmationInputRequired(self._input_request(question, key))
         return await self._ask_during_the_call(question)
 
     async def _ask_during_the_call(self, question: str) -> ConfirmationOutcome:
@@ -90,11 +108,11 @@ class ElicitationConfirmation(ConfirmationRequester):
         return ConfirmationOutcome.REFUSED
 
     @staticmethod
-    def _input_request(question: str) -> InputRequiredResult:
+    def _input_request(question: str, key: str) -> InputRequiredResult:
         request = ElicitRequest(
             params=ElicitRequestFormParams(
                 message=question,
                 requested_schema=render_elicitation_schema(ConfirmationAnswer),
             )
         )
-        return InputRequiredResult(input_requests={INPUT_KEY: request})
+        return InputRequiredResult(input_requests={key: request})

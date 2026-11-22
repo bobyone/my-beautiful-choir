@@ -14,6 +14,8 @@ from my_beautiful_choir.choirs.errors import ChoirNameTakenError, ChoirNotFoundE
 from my_beautiful_choir.clock.clock import Clock
 from my_beautiful_choir.deletion.deleter import Deleter
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
+from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.storage.file_storage import FileStorage
@@ -126,17 +128,17 @@ class ChoirService(Deleter):
         """Choirs."""
         return DeletionTarget.CHOIR
 
-    async def describe_deletion(self, target_id: UUID) -> Deletion:
+    async def describe_deletion(self, target_id: UUID) -> DeletionPreview:
         """The choir with its number of works and scores.
 
         Raises:
             ChoirNotFoundError: if no choir has this id.
         """
         async with self._unit_of_work() as unit_of_work:
-            deletion, _ = await self._deletion(unit_of_work, target_id)
-        return deletion
+            await unit_of_work.start_snapshot()
+            return await self._deletion(unit_of_work, target_id)
 
-    async def delete(self, target_id: UUID) -> Deletion:
+    async def delete(self, preview: DeletionPreview) -> Deletion:
         """Delete the choir, its works, its scores and their stored contents.
 
         When the default choir is deleted and choirs remain, the oldest one
@@ -145,8 +147,12 @@ class ChoirService(Deleter):
         Raises:
             ChoirNotFoundError: if no choir has this id.
         """
+        target_id = preview.deletion.target_id
         async with self._unit_of_work() as unit_of_work:
-            deletion, keys = await self._deletion(unit_of_work, target_id)
+            await unit_of_work.start_snapshot(for_update=True)
+            current = await self._deletion(unit_of_work, target_id)
+            if current != preview:
+                raise StaleConfirmationError(current)
             choirs = unit_of_work.choirs
             was_default = (await choirs.get(target_id)).is_default
             await choirs.delete(target_id)
@@ -154,20 +160,26 @@ class ChoirService(Deleter):
             if was_default and remaining:
                 await choirs.make_default(remaining[0].id)
             await unit_of_work.commit()
-        await remove_stored_contents(self._file_storage, keys)
-        return deletion
+        await remove_stored_contents(
+            self._file_storage, [score.storage_key for score in current.scores]
+        )
+        return current.deletion
 
-    async def _deletion(
-        self, unit_of_work: UnitOfWork, choir_id: UUID
-    ) -> tuple[Deletion, list[str]]:
+    async def _deletion(self, unit_of_work: UnitOfWork, choir_id: UUID) -> DeletionPreview:
         choir = await unit_of_work.choirs.get(choir_id)
         self._authorization.require(Permission.MANAGE_CHOIRS, choir.id)
-        keys = await unit_of_work.scores.storage_keys_of_choir(choir.id)
+        works = await unit_of_work.works.search(choir.id)
+        scores = await unit_of_work.scores.list_of_choir(choir.id)
         deletion = Deletion(
             DeletionTarget.CHOIR,
             choir.id,
             choir.name,
-            work_count=await unit_of_work.works.count(choir.id),
-            score_count=len(keys),
+            work_count=len(works),
+            score_count=len(scores),
         )
-        return deletion, keys
+        return DeletionPreview(
+            deletion,
+            choir=choir,
+            works=tuple(sorted(works, key=lambda work: work.id)),
+            scores=tuple(sorted(scores, key=lambda score: score.id)),
+        )

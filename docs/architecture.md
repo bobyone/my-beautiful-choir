@@ -70,7 +70,7 @@ code and the process exit code.
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`. |
-| `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> Deletion` (what would be removed; changes nothing, so the user can be asked first), `delete(id) -> Deletion` (removes the element, everything it contains and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
+| `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
@@ -201,7 +201,7 @@ Only the entry point calls it. See the [configuration reference](configuration.m
   (`NoChoirError` when there is no choir). Used by every operation taking
   an optional choir.
 
-Deletion (`Deleter`, receives the `file_storage`): `delete(id)` removes the
+Deletion (`Deleter`, receives the `file_storage`): `delete(preview)` removes the
 choir, its works and scores, then their stored contents; when the default
 choir is deleted and choirs remain, the oldest one becomes the default
 choir. `get_choir(name)` finds a choir by name, to delete it by id.
@@ -440,19 +440,21 @@ passes the bytes to `UploadedScoreSource` and the regular score service.
 The service checks the decoded size and recognizes the format from the
 content. The original name is metadata. The file storage key uses UUIDs.
 
-`DeleteFromWorkViewTool(view, deleter)` is registered for the work and score
-deleters, with one required UUID `target_id`. Both registrations are
-advertised to app hosts with visibility `["app"]`. The Work panel calls them
-only after the user confirms in its dialog. The deleters still check the
-permissions for the target.
+`PreviewDeletionFromWorkViewTool(view, deleter, pending)` registers
+`preview_work_deletion` and `preview_score_deletion` with visibility
+`["app"]` and a required UUID `target_id`. The Work panel loads the preview
+before enabling its confirmation dialog. It confirms using
+`confirm_deletion(token)`, like the Deletion view.
 
 ### `DeleteTool` and `ConfirmDeletionTool` (`tools.view_tool.deletion`)
 
 The deletion tools describe what the user will delete before requesting
 confirmation. The description includes the target, its parent when present,
 and the number of works and scores affected. A refusal leaves the data intact.
-When the client cannot ask directly, the tool stores the description in
-`PendingConfirmations[Deletion]` and returns the Deletion view with a token.
+When the client cannot ask directly, the tool stores the preview in
+`PendingConfirmations[DeletionPreview]` and returns the Deletion view with
+a token. MCP elicitation continuations use a separate registry of tokens
+bound to the original tool call and preview.
 The in-memory store issues single-use tokens valid for ten minutes and clears
 expired entries when storing a new confirmation. Restarting the process
 clears pending confirmations.
@@ -461,7 +463,11 @@ The view displays the description in the host language. The **Delete** button
 sends the token to `confirm_deletion(token)`, advertised with MCP UI visibility
 `["app"]`. **Cancel** changes the view state without requesting deletion.
 The server consumes the token before calling the target's `Deleter`.
-An expired or reused token returns `ConfirmationExpiredError`.
+An expired or reused token returns `ConfirmationExpiredError`. If the
+preview has changed, the deleter raises `StaleConfirmationError` with a
+refreshed preview and the caller requests confirmation again. The SQLite
+unit of work starts the verification and deletion transaction using
+`BEGIN IMMEDIATE` before reading the current state. See ADR 0016.
 
 ### `PackagedView` (`views.packaged`)
 

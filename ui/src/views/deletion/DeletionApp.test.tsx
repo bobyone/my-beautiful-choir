@@ -66,6 +66,32 @@ describe("DeletionApp", () => {
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
   });
 
+  it("shows a refreshed preview and requires a second click", async () => {
+    host.answerToolCall = ({ arguments: args }) =>
+      args?.["token"] === "test-token"
+        ? {
+            content: [],
+            structuredContent: {
+              status: "pending",
+              deletion: { ...deletion, name: "Gloria", score_count: 3 },
+              token: "fresh-token",
+            },
+          }
+        : result("deleted");
+    await renderApp();
+    act(() => {
+      host.sendToolResult(result("pending"));
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Gloria")).toBeDefined();
+    expect(screen.getByText("3")).toBeDefined();
+    expect(screen.getByText("Nothing was deleted.")).toBeDefined();
+    expect(host.toolCalls).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Deletion complete.")).toBeDefined();
+    expect(host.toolCalls.at(-1)?.arguments).toEqual({ token: "fresh-token" });
+  });
+
   it("cancels without calling the host", async () => {
     await renderApp();
     act(() => {

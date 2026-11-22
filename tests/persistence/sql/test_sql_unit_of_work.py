@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy import func, insert, select
+from sqlalchemy.exc import OperationalError
 
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.persistence.sql.sql_unit_of_work import SqlUnitOfWork
@@ -73,6 +74,22 @@ async def test_an_exception_discards_the_changes(database: SqlDatabase) -> None:
     with pytest.raises(RuntimeError):
         await _add_then_fail(database)
     assert await _count(database) == 0
+
+
+@pytest.mark.anyio
+async def test_snapshot_for_update_excludes_a_second_writer_before_delete(
+    database: SqlDatabase,
+) -> None:
+    async with database.unit_of_work() as confirm, database.unit_of_work() as concurrent:
+        await concurrent.connection.exec_driver_sql("PRAGMA busy_timeout = 0")
+        await confirm.start_snapshot(for_update=True)
+        assert await confirm.choirs.list() == []
+        with pytest.raises(OperationalError, match="database is locked"):
+            await _add_choir(concurrent, "Concurrent")
+        await _add_choir(confirm, "Confirmed")
+        await confirm.commit()
+
+    assert await _count(database) == 1
 
 
 def test_connection_is_unavailable_outside_the_block(tmp_path: Path) -> None:
