@@ -43,3 +43,10 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.
+
+## Contribution
+
+| Term | Definition | Code |
+|---|---|---|
+| Action request | The proposed action and any resource it targets. | `check_request` input |
+| Protection rule | A condition an action request must satisfy before it proceeds. | `protection_rules` |

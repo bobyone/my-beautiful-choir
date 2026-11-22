@@ -72,6 +72,11 @@ Prerequisite: [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 Read the logs with `docker compose logs`, stop with `docker compose down`.
 
+## Plugin skills
+
+See [how to install the plugin in Codex](how-to/install-the-plugin-in-codex.md)
+to use the application's skills from Codex.
+
 ## Development setup
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) to install the development

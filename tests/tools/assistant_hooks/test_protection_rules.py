@@ -1,29 +1,11 @@
 # SPDX-FileCopyrightText: 2026 bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""Tests of the Claude Code guard hook (.claude/hooks/guard.py)."""
-
-import importlib.util
-import io
-import json
-from pathlib import Path
-from types import ModuleType
+"""Tests for the shared assistant protection rules."""
 
 import pytest
 
-GUARD_PATH = Path(__file__).parents[2] / ".claude" / "hooks" / "guard.py"
-
-
-def _load_guard() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("guard", GUARD_PATH)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-guard = _load_guard()
+from tools.assistant_hooks import protection_rules as rules
 
 
 @pytest.mark.parametrize(
@@ -41,7 +23,7 @@ guard = _load_guard()
     ],
 )
 def test_file_tools_block_secret_files(path: str) -> None:
-    assert guard.find_violation("Read", {"file_path": path}) == guard.ENV_FILE_REASON
+    assert rules.check_path(path) == rules.ENV_FILE_REASON
 
 
 @pytest.mark.parametrize(
@@ -49,11 +31,11 @@ def test_file_tools_block_secret_files(path: str) -> None:
     [".env.example", ".ENV.EXAMPLE", "docs/environment.md", "src/settings.py", "keyboard.py"],
 )
 def test_file_tools_allow_other_files(path: str) -> None:
-    assert guard.find_violation("Read", {"file_path": path}) is None
+    assert rules.check_path(path) is None
 
 
 def test_grep_on_env_file_is_blocked() -> None:
-    assert guard.find_violation("Grep", {"pattern": "TOKEN", "path": ".env"}) is not None
+    assert rules.check_path(".env") is not None
 
 
 @pytest.mark.parametrize(
@@ -69,7 +51,7 @@ def test_grep_on_env_file_is_blocked() -> None:
     ],
 )
 def test_shell_reading_env_file_is_blocked(command: str) -> None:
-    assert guard.find_violation("Bash", {"command": command}) == guard.ENV_FILE_REASON
+    assert rules.check_command(command) == rules.ENV_FILE_REASON
 
 
 @pytest.mark.parametrize(
@@ -77,7 +59,7 @@ def test_shell_reading_env_file_is_blocked(command: str) -> None:
     ["cat .env.example", "node -e 'process.env.HOME'", "python -c 'import os; os.environ'"],
 )
 def test_shell_allowed_env_references(command: str) -> None:
-    assert guard.find_violation("Bash", {"command": command}) is None
+    assert rules.check_command(command) is None
 
 
 @pytest.mark.parametrize(
@@ -91,7 +73,7 @@ def test_shell_allowed_env_references(command: str) -> None:
     ],
 )
 def test_force_push_is_blocked(command: str) -> None:
-    assert guard.find_violation("PowerShell", {"command": command}) == guard.FORCE_PUSH_REASON
+    assert rules.check_command(command) == rules.FORCE_PUSH_REASON
 
 
 @pytest.mark.parametrize(
@@ -109,7 +91,7 @@ def test_force_push_is_blocked(command: str) -> None:
     ],
 )
 def test_hook_bypass_is_blocked(command: str) -> None:
-    assert guard.find_violation("Bash", {"command": command}) == guard.NO_VERIFY_REASON
+    assert rules.check_command(command) == rules.NO_VERIFY_REASON
 
 
 @pytest.mark.parametrize(
@@ -124,23 +106,30 @@ def test_hook_bypass_is_blocked(command: str) -> None:
     ],
 )
 def test_regular_git_commands_are_allowed(command: str) -> None:
-    assert guard.find_violation("Bash", {"command": command}) is None
+    assert rules.check_command(command) is None
 
 
-def test_other_tools_are_allowed() -> None:
-    assert guard.find_violation("WebSearch", {"query": ".env"}) is None
+@pytest.mark.parametrize(
+    "continuation",
+    ["\\\n", "\\\r\n", "`\n", "`\r\n"],
+)
+@pytest.mark.parametrize(
+    ("command", "reason"),
+    [
+        ("git push {}--force", rules.FORCE_PUSH_REASON),
+        ("git {}push origin +main", rules.FORCE_PUSH_REASON),
+        ("git push --fo{}rce", rules.FORCE_PUSH_REASON),
+        ("git commit {}--no-verify", rules.NO_VERIFY_REASON),
+        ("git commit -{}n", rules.NO_VERIFY_REASON),
+        ("git status && git push --no-{}verify", rules.NO_VERIFY_REASON),
+        ("git push {}origin main", None),
+        ("cat .env.{}example", None),
+    ],
+)
+def test_shell_line_continuations(continuation: str, command: str, reason: str | None) -> None:
+    assert rules.check_command(command.format(continuation)) == reason
 
 
-def test_main_blocks_with_exit_code_2(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    payload = {"tool_name": "Read", "tool_input": {"file_path": ".env"}}
-    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(payload)))
-    assert guard.main() == 2
-    assert "Blocked by project rules" in capsys.readouterr().err
-
-
-def test_main_allows_with_exit_code_0(monkeypatch: pytest.MonkeyPatch) -> None:
-    payload = {"tool_name": "Read", "tool_input": {"file_path": "README.md"}}
-    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(payload)))
-    assert guard.main() == 0
+@pytest.mark.parametrize("line_break", ["\n", "\\\\\n", "``\r\n"])
+def test_shell_command_boundaries_remain_separate(line_break: str) -> None:
+    assert rules.check_command(f"git status {line_break}echo --no-verify") is None

@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+default_permissions = "choir-contributor"
+
+[permissions.choir-contributor]
+description = "Workspace editing with project credential files protected."
+extends = ":workspace"
+
+[permissions.choir-contributor.filesystem]
+glob_scan_max_depth = 4
+
+[permissions.choir-contributor.filesystem.":workspace_roots"]
+# Protect environment filenames case-insensitively, including nested variants.
+"**/.[eE][nN][vV]" = "deny"
+# Suffixes shorter than "example" cannot be examples.
+"**/.[eE][nN][vV]." = "deny"
+"**/.[eE][nN][vV].?" = "deny"
+"**/.[eE][nN][vV].??" = "deny"
+"**/.[eE][nN][vV].???" = "deny"
+"**/.[eE][nN][vV].????" = "deny"
+"**/.[eE][nN][vV].?????" = "deny"
+"**/.[eE][nN][vV].??????" = "deny"
+# Deny suffixes that differ from the ending ".example". Each glob tests
+# one position from the end, with the delimiter required for longer suffixes.
+"**/.[eE][nN][vV].*[!eE]" = "deny"
+"**/.[eE][nN][vV].*[!lL]?" = "deny"
+"**/.[eE][nN][vV].*[!pP]??" = "deny"
+"**/.[eE][nN][vV].*[!mM]???" = "deny"
+"**/.[eE][nN][vV].*[!aA]????" = "deny"
+"**/.[eE][nN][vV].*[!xX]?????" = "deny"
+"**/.[eE][nN][vV].*[!eE]??????" = "deny"
+"**/.[eE][nN][vV].*[!.]???????" = "deny"
+
+"**/*.pem" = "deny"
+"**/*.key" = "deny"
+"**/secrets/**" = "deny"
