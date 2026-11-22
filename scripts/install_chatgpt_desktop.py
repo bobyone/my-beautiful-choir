@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Install the local MCP server for ChatGPT desktop via Codex."""

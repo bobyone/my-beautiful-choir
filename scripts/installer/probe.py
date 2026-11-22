@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Verify personal-mode startup through the MCP SDK using an isolated data directory."""

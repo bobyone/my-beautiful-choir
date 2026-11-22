@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Build and verify a checkout before requesting any registration change."""
