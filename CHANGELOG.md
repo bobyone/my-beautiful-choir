@@ -20,6 +20,8 @@ and this project adheres to
 
 ### Added
 
+- Python installers for Claude Desktop and ChatGPT desktop with local Codex (#11).
+
 - Repertoire and Work views in personal mode with choir switching, title
   and composer search, and score upload, opening and confirmed deletion (#7).
 

@@ -41,6 +41,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
 | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
 | Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
+| Server registration | Settings that tell a client how to start the local MCP server. | `ClientRegistration` | | server registration | inscription du serveur |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
 | Sung language | Langue chantée |
 | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |

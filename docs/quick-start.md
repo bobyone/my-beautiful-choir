@@ -11,6 +11,10 @@ the repository. Once released, personal mode will be launched with
 
 ## Personal mode, from a clone
 
+For Claude Desktop or ChatGPT desktop with local Codex, start with the
+[desktop installation commands](how-to/install-desktop-clients.md).
+The manual setup below also works for compatible local MCP clients.
+
 Prerequisites: [Git](https://git-scm.com/), [uv](https://docs.astral.sh/uv/)
 and [Node.js](https://nodejs.org/) (LTS) to build the user interface.
 

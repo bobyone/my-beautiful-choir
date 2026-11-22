@@ -480,6 +480,22 @@ Reads `<name>.html` on first use and keeps it in memory. A missing file
 raises `ViewNotFoundError` (`MBC-INSTALL`, exit code 4): the user interface
 was not built (`uv run nox -s ui`) or the installation is broken.
 
+### Personal-mode desktop installers (`scripts/installer`)
+
+The two Python entry points compose the same installer with a
+`ClientRegistration` for the selected client. The installer resolves uv,
+checks Node.js and npm, syncs the lockfile, builds the interface and probes
+the `Launcher` over MCP stdio with a temporary data directory. The launcher
+records the absolute uv and checkout paths and starts personal mode without
+synchronizing dependencies.
+
+`ClaudeDesktopRegistration(config: Path)` atomically updates the named JSON
+entry in the profile. `CodexDesktopRegistration(codex: Path)` uses the
+Codex CLI to check and register the named MCP server. The client adapters
+receive an approval callback. They call it before replacing a conflicting
+registration. Failures are reported as `InstallationError`. See ADR 0017
+and [the installation how-to](how-to/install-desktop-clients.md).
+
 ### `McpServerBuilder` (`mcp`)
 
 Adapter between our tools and views and the MCP SDK (`MCPServer` and its
