@@ -85,7 +85,7 @@ known-first-party = ["my_beautiful_choir", "tests"]
 [tool.mypy]
 strict = true
 python_version = "3.13"
-files = ["src", "tests", "noxfile.py", "tools/assistant_hooks"]
+files = ["src", "tests", "scripts", "noxfile.py", "tools/assistant_hooks"]
 mypy_path = ["src", "."]
 explicit_package_bases = true
 

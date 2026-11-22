@@ -22,6 +22,14 @@ the steps below summarize it.
 
 ## Personal mode
 
+For Claude Desktop or ChatGPT desktop with local Codex, use
+`docs/how-to/install-desktop-clients.md`. Run the installation command
+for the selected client from the clone. The installer builds the interface,
+verifies personal mode with temporary data, and registers the server. Ask
+before launching the installer against a user's live client settings.
+
+For manual setup or another local MCP client, follow the steps below.
+
 1. Check the prerequisites: `git --version`, `uv --version`,
    `node --version` (Node.js LTS, only to build the user interface).
    Point to <https://docs.astral.sh/uv/> or <https://nodejs.org/> if one
