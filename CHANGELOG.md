@@ -18,7 +18,9 @@ and this project adheres to
 - Codex contribution guidance, a contribution skill and repository protection
   settings backed by shared Claude Code and Codex rules. The assistant
   hooks run offline without relying on the shared uv cache. The shared
-  rules account for Bash and PowerShell line continuations (#8).
+  rules account for Bash and PowerShell line continuations. The Codex
+  permissions profile protects named environment files while preserving
+  access to examples (#8).
 - Codex plugin catalogue exposing the shared user skills (#8).
 
 - Initial architecture decision records (#1).

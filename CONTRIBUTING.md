@@ -65,8 +65,10 @@ prefer a system interpreter and can also use an installed uv-managed
 interpreter. If a hook fails to start, check that the client can run uv
 and access a local Python interpreter.
 
-The repository permission profile and command rules apply where supported
-by the active client and its managed settings.
+The repository permission profile denies reads of local environment files,
+including named variants, while leaving the corresponding examples
+accessible. The profile and command rules apply where supported by the
+active client and its managed settings.
 
 ## 4. Run the tests and checks
 
