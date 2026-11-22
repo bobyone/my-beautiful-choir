@@ -135,7 +135,8 @@ Never bypass the hook (`--no-verify`): fix the failure instead.
   *Unreleased*, with its issue number.
 - Update the plugin skills (`skills/`) and development skills
   (`.claude/skills/`, `.agents/skills/`) in the same commit as the behaviour
-  they describe.
+  they describe. Keep the versions in `plugin.json` and
+  `.claude-plugin/plugin.json` aligned with the version in `pyproject.toml`.
 - Changes to personal data processing update the
   [records of processing](docs/privacy/records-of-processing.md).
 

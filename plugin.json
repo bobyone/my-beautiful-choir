@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "my-beautiful-choir",
+  "version": "0.1.0-dev.0",
+  "description": "Skills to install, use, administer, troubleshoot and contribute to my-beautiful-choir, a choir management MCP app.",
+  "author": {
+    "name": "bobyone",
+    "url": "https://github.com/bobyone"
+  },
+  "homepage": "https://github.com/bobyone/my-beautiful-choir",
+  "repository": "https://github.com/bobyone/my-beautiful-choir",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "choir",
+    "mcp",
+    "mcp-apps",
+    "repertoire",
+    "scores"
+  ]
+}

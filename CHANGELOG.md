@@ -17,6 +17,7 @@ and this project adheres to
 
 - Codex contribution guidance, a contribution skill and repository protection
   settings backed by shared Claude Code and Codex rules (#8).
+- Codex plugin catalogue exposing the shared user skills (#8).
 
 - Initial architecture decision records (#1).
 - Repository foundation: editor and Git configuration, Python project with

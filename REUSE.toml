@@ -12,6 +12,8 @@ path = [
     "LICENSE",
     ".claude/settings.json",
     ".codex/hooks.json",
+    ".agents/plugins/marketplace.json",
+    "plugin.json",
     ".claude-plugin/*.json",
     "ui/package.json",
     "ui/tsconfig.json",

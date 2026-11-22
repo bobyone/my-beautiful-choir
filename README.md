@@ -24,6 +24,7 @@ The first version covers the choir's repertoire and scores.
 ## Documentation
 
 - [Quick-start](docs/quick-start.md)
+- [Install the plugin in Codex](docs/how-to/install-the-plugin-in-codex.md)
 - [Architecture](docs/architecture.md)
 - [How-to guides](docs/how-to/)
 - [Glossary](docs/glossary.md)
