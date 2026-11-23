@@ -41,9 +41,14 @@
     "work": "Verk"
   },
   "repertoire": {
+    "nextPage": "Nästa",
     "noChoirs": "Det finns inga körer ännu. Be assistenten att skapa en.",
     "noWorks": "Inga verk hittades.",
-    "search": "Sök"
+    "pageOf": "Sida {page, number} av {pageCount, number}",
+    "pages": "Repertoarsidor",
+    "previousPage": "Föregående",
+    "search": "Sök",
+    "workCount": "{workCount, plural, one {# verk} other {# verk}}"
   },
   "view": {
     "actions": "Åtgärder",

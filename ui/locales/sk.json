@@ -41,9 +41,14 @@
     "work": "Skladba"
   },
   "repertoire": {
+    "nextPage": "Ďalšia",
     "noChoirs": "Zatiaľ nie sú žiadne zbory. Požiadajte asistenta, aby jeden vytvoril.",
     "noWorks": "Nenašli sa žiadne skladby.",
-    "search": "Hľadať"
+    "pageOf": "Strana {page, number} z {pageCount, number}",
+    "pages": "Stránky repertoáru",
+    "previousPage": "Predchádzajúca",
+    "search": "Hľadať",
+    "workCount": "{workCount, plural, one {# skladba} few {# skladby} many {# skladby} other {# skladieb}}"
   },
   "view": {
     "actions": "Akcie",

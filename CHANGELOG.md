@@ -20,6 +20,9 @@ and this project adheres to
 
 ### Added
 
+- Repertoire pages of 10 works by default in the Repertoire view and
+  `show_repertoire`, with `page` and `page_size` arguments (#13).
+
 - Python installers for Claude Desktop and ChatGPT desktop with local Codex (#11).
 
 - Repertoire and Work views in personal mode with choir switching, title

@@ -41,9 +41,14 @@
     "work": "Obra"
   },
   "repertoire": {
+    "nextPage": "Siguiente",
     "noChoirs": "Todavía no hay coros. Pida al asistente que cree uno.",
     "noWorks": "No se encontraron obras.",
-    "search": "Buscar"
+    "pageOf": "Página {page, number} de {pageCount, number}",
+    "pages": "Páginas del repertorio",
+    "previousPage": "Anterior",
+    "search": "Buscar",
+    "workCount": "{workCount, plural, one {# obra} other {# obras}}"
   },
   "view": {
     "actions": "Acciones",

@@ -41,9 +41,14 @@
     "work": "Произведение"
   },
   "repertoire": {
+    "nextPage": "Следующая",
     "noChoirs": "Хоров пока нет. Попросите помощника создать хор.",
     "noWorks": "Произведения не найдены.",
-    "search": "Поиск"
+    "pageOf": "Страница {page, number} из {pageCount, number}",
+    "pages": "Страницы репертуара",
+    "previousPage": "Предыдущая",
+    "search": "Поиск",
+    "workCount": "{workCount, plural, one {# произведение} few {# произведения} many {# произведений} other {# произведения}}"
   },
   "view": {
     "actions": "Действия",

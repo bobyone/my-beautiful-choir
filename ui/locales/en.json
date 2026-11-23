@@ -41,9 +41,14 @@
     "work": "Work"
   },
   "repertoire": {
+    "nextPage": "Next",
     "noChoirs": "No choirs yet. Ask the assistant to create one.",
     "noWorks": "No works found.",
-    "search": "Search"
+    "pageOf": "Page {page, number} of {pageCount, number}",
+    "pages": "Repertoire pages",
+    "previousPage": "Previous",
+    "search": "Search",
+    "workCount": "{workCount, plural, one {# work} other {# works}}"
   },
   "view": {
     "actions": "Actions",

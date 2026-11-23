@@ -41,9 +41,14 @@
     "work": "Saothar"
   },
   "repertoire": {
+    "nextPage": "Ar aghaidh",
     "noChoirs": "Níl cóir ar bith ann fós. Iarr ar an gcúntóir cór a chruthú.",
     "noWorks": "Níor aimsíodh aon saothar.",
-    "search": "Cuardaigh"
+    "pageOf": "Leathanach {page, number} as {pageCount, number}",
+    "pages": "Leathanaigh an stóir",
+    "previousPage": "Roimhe",
+    "search": "Cuardaigh",
+    "workCount": "{workCount, plural, one {# saothar} two {# shaothar} few {# shaothar} many {# saothar} other {# saothar}}"
   },
   "view": {
     "actions": "Gníomhartha",

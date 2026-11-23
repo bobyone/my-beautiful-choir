@@ -41,9 +41,14 @@
     "work": "Ստեղծագործություն"
   },
   "repertoire": {
+    "nextPage": "Հաջորդ",
     "noChoirs": "Դեռ երգչախմբեր չկան։ Խնդրեք օգնականին ստեղծել երգչախումբ։",
     "noWorks": "Ստեղծագործություններ չեն գտնվել։",
-    "search": "Որոնել"
+    "pageOf": "Էջ {page, number}՝ {pageCount, number}-ից",
+    "pages": "Խաղացանկի էջեր",
+    "previousPage": "Նախորդ",
+    "search": "Որոնել",
+    "workCount": "{workCount, plural, one {# ստեղծագործություն} other {# ստեղծագործություն}}"
   },
   "view": {
     "actions": "Գործողություններ",

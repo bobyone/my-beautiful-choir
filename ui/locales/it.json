@@ -41,9 +41,14 @@
     "work": "Opera"
   },
   "repertoire": {
+    "nextPage": "Successiva",
     "noChoirs": "Non ci sono ancora cori. Chiedi all’assistente di crearne uno.",
     "noWorks": "Nessuna opera trovata.",
-    "search": "Cerca"
+    "pageOf": "Pagina {page, number} di {pageCount, number}",
+    "pages": "Pagine del repertorio",
+    "previousPage": "Precedente",
+    "search": "Cerca",
+    "workCount": "{workCount, plural, one {# opera} other {# opere}}"
   },
   "view": {
     "actions": "Azioni",

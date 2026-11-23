@@ -41,9 +41,14 @@
     "work": "ნაწარმოები"
   },
   "repertoire": {
+    "nextPage": "შემდეგი",
     "noChoirs": "გუნდები ჯერ არ არის. სთხოვეთ ასისტენტს გუნდის შექმნა.",
     "noWorks": "ნაწარმოებები ვერ მოიძებნა.",
-    "search": "ძიება"
+    "pageOf": "გვერდი {page, number} / {pageCount, number}",
+    "pages": "რეპერტუარის გვერდები",
+    "previousPage": "წინა",
+    "search": "ძიება",
+    "workCount": "{workCount, plural, one {# ნაწარმოები} other {# ნაწარმოები}}"
   },
   "view": {
     "actions": "მოქმედებები",

@@ -438,8 +438,12 @@ to create one.
 `ShowWorkTool(view, repertoire, scores)` accepts a required UUID
 `work_id`. It returns work attributes and score metadata. The same Work
 panel is used by the standalone Work view and when a user opens a work
-in the Repertoire view. Returning from a work refreshes the repertoire.
-The UI sorts titles with the host language, displays sung languages by
+in the Repertoire view. Returning from a work refreshes the same
+repertoire page. The Repertoire view keeps the server order, shows the
+number of matching works and, when there is more than one page, a
+react-bootstrap pager (Previous, "Page n of N", Next) in a navigation
+landmark; a new search or another choir returns to page 1. The UI sorts
+choir names with the host language, displays sung languages by
 their localized names and formats the score size with `Intl.NumberFormat`.
 
 `UploadScoreTool(view, service, source_factory)` is app-only. Its

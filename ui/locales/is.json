@@ -41,9 +41,14 @@
     "work": "Verk"
   },
   "repertoire": {
+    "nextPage": "Næsta",
     "noChoirs": "Engir kórar eru til enn. Biddu aðstoðarmanninn um að stofna einn.",
     "noWorks": "Engin verk fundust.",
-    "search": "Leita"
+    "pageOf": "Síða {page, number} af {pageCount, number}",
+    "pages": "Síður efnisskrár",
+    "previousPage": "Fyrri",
+    "search": "Leita",
+    "workCount": "{workCount, plural, one {# verk} other {# verk}}"
   },
   "view": {
     "actions": "Aðgerðir",

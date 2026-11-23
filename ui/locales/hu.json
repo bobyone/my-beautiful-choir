@@ -41,9 +41,14 @@
     "work": "Mű"
   },
   "repertoire": {
+    "nextPage": "Következő",
     "noChoirs": "Még nincsenek kórusok. Kérje meg az asszisztenst, hogy hozzon létre egyet.",
     "noWorks": "Nem található mű.",
-    "search": "Keresés"
+    "pageOf": "{page, number}. oldal / {pageCount, number}",
+    "pages": "Repertoároldalak",
+    "previousPage": "Előző",
+    "search": "Keresés",
+    "workCount": "{workCount, plural, one {# mű} other {# mű}}"
   },
   "view": {
     "actions": "Műveletek",

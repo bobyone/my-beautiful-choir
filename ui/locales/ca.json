@@ -41,9 +41,14 @@
     "work": "Obra"
   },
   "repertoire": {
+    "nextPage": "Següent",
     "noChoirs": "Encara no hi ha cors. Demaneu a l’assistent que en creï un.",
     "noWorks": "No s’ha trobat cap obra.",
-    "search": "Cerca"
+    "pageOf": "Pàgina {page, number} de {pageCount, number}",
+    "pages": "Pàgines del repertori",
+    "previousPage": "Anterior",
+    "search": "Cerca",
+    "workCount": "{workCount, plural, one {# obra} other {# obres}}"
   },
   "view": {
     "actions": "Accions",

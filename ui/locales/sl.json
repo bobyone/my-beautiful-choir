@@ -41,9 +41,14 @@
     "work": "Skladba"
   },
   "repertoire": {
+    "nextPage": "Naslednja",
     "noChoirs": "Zborov še ni. Prosite pomočnika, naj ustvari zbor.",
     "noWorks": "Nobena skladba ni bila najdena.",
-    "search": "Išči"
+    "pageOf": "Stran {page, number} od {pageCount, number}",
+    "pages": "Strani repertoarja",
+    "previousPage": "Prejšnja",
+    "search": "Išči",
+    "workCount": "{workCount, plural, one {# delo} two {# deli} few {# dela} other {# del}}"
   },
   "view": {
     "actions": "Dejanja",

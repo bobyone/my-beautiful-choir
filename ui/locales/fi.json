@@ -41,9 +41,14 @@
     "work": "Teos"
   },
   "repertoire": {
+    "nextPage": "Seuraava",
     "noChoirs": "Kuoroja ei vielä ole. Pyydä avustajaa luomaan kuoro.",
     "noWorks": "Teoksia ei löytynyt.",
-    "search": "Hae"
+    "pageOf": "Sivu {page, number}/{pageCount, number}",
+    "pages": "Ohjelmiston sivut",
+    "previousPage": "Edellinen",
+    "search": "Hae",
+    "workCount": "{workCount, plural, one {# teos} other {# teosta}}"
   },
   "view": {
     "actions": "Toiminnot",

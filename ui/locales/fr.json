@@ -41,9 +41,14 @@
     "work": "Œuvre"
   },
   "repertoire": {
+    "nextPage": "Suivante",
     "noChoirs": "Aucune chorale. Demandez à l’assistant d’en créer une.",
     "noWorks": "Aucune œuvre trouvée.",
-    "search": "Rechercher"
+    "pageOf": "Page {page, number} sur {pageCount, number}",
+    "pages": "Pages du répertoire",
+    "previousPage": "Précédente",
+    "search": "Rechercher",
+    "workCount": "{workCount, plural, one {# œuvre} other {# œuvres}}"
   },
   "view": {
     "actions": "Actions",

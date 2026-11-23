@@ -41,9 +41,14 @@
     "work": "Verk"
   },
   "repertoire": {
+    "nextPage": "Neste",
     "noChoirs": "Det finst ingen kor enno. Be assistenten opprette eit.",
     "noWorks": "Ingen verk funne.",
-    "search": "Søk"
+    "pageOf": "Side {page, number} av {pageCount, number}",
+    "pages": "Repertoarsider",
+    "previousPage": "Førre",
+    "search": "Søk",
+    "workCount": "{workCount, plural, one {# verk} other {# verk}}"
   },
   "view": {
     "actions": "Handlingar",

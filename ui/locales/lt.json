@@ -41,9 +41,14 @@
     "work": "Kūrinys"
   },
   "repertoire": {
+    "nextPage": "Kitas",
     "noChoirs": "Chorų dar nėra. Paprašykite asistento sukurti chorą.",
     "noWorks": "Kūrinių nerasta.",
-    "search": "Ieškoti"
+    "pageOf": "{page, number} puslapis iš {pageCount, number}",
+    "pages": "Repertuaro puslapiai",
+    "previousPage": "Ankstesnis",
+    "search": "Ieškoti",
+    "workCount": "{workCount, plural, one {# kūrinys} few {# kūriniai} many {# kūrinio} other {# kūrinių}}"
   },
   "view": {
     "actions": "Veiksmai",

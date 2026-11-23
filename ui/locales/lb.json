@@ -41,9 +41,14 @@
     "work": "Wierk"
   },
   "repertoire": {
+    "nextPage": "Weider",
     "noChoirs": "Et gëtt nach keng Chéier. Frot den Assistent, e Chouer unzeleeën.",
     "noWorks": "Et goufe keng Wierker fonnt.",
-    "search": "Sichen"
+    "pageOf": "Säit {page, number} vu {pageCount, number}",
+    "pages": "Repertoiresäiten",
+    "previousPage": "Zréck",
+    "search": "Sichen",
+    "workCount": "{workCount, plural, one {# Wierk} other {# Wierker}}"
   },
   "view": {
     "actions": "Aktiounen",

@@ -36,10 +36,14 @@ const repertoire = {
   choir,
   choirs: [{ name: choir }, { name: "Paris" }],
   works: [
-    { ...work, score_count: 1 },
     { ...work, id: "second", title: "Alleluia", score_count: 0 },
+    { ...work, score_count: 1 },
   ],
   search: "",
+  page: 1,
+  page_size: 10,
+  page_count: 1,
+  work_count: 2,
 };
 const workResult = { choir, work, scores: [score] };
 const deleted = {
@@ -60,6 +64,11 @@ describe("view result validation", () => {
     { works: [null] },
     { works: {} },
     { search: false },
+    { page: 0 },
+    { page: 2 },
+    { page_size: 0 },
+    { page_count: 1.5 },
+    { work_count: -1 },
   ])("rejects an invalid repertoire payload", (fields) => {
     expect(parseRepertoire(result({ ...repertoire, ...fields }))).toBeUndefined();
   });
@@ -97,7 +106,7 @@ describe("repertoire and work views", () => {
     mocked.host = host;
   });
 
-  it("shows and searches a sorted repertoire and switches choirs", async () => {
+  it("shows and searches a repertoire in the server order and switches choirs", async () => {
     host.answerToolCall = () => result({ ...repertoire, choir: "Paris", works: [] });
     const { container } = await show(RepertoireApp, result(repertoire));
     const rows = screen.getAllByRole("row");
@@ -106,6 +115,8 @@ describe("repertoire and work views", () => {
       "AlleluiaLili BoulangerSATB0",
       "ÉtoileLili BoulangerSATB1",
     ]);
+    expect(screen.getByText("2 works")).toBeDefined();
+    expect(screen.queryByRole("navigation")).toBeNull();
     expect(await accessibilityViolations(container)).toEqual([]);
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "boulanger" } });
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "Paris" } });
@@ -113,15 +124,42 @@ describe("repertoire and work views", () => {
     fireEvent.click(screen.getByRole("button", { name: "Search" }));
     await waitFor(() => {
       expect(host.toolCalls).toEqual([
-        { name: "show_repertoire", arguments: { choir: "Paris", search: "boulanger" } },
-        { name: "show_repertoire", arguments: { choir: "Paris", search: "boulanger" } },
+        {
+          name: "show_repertoire",
+          arguments: { choir: "Paris", search: "boulanger", page_size: 10 },
+        },
+        {
+          name: "show_repertoire",
+          arguments: { choir: "Paris", search: "boulanger", page_size: 10 },
+        },
       ]);
     });
   });
 
-  it("opens a work from the repertoire and refreshes after returning", async () => {
-    host.answerToolCall = ({ name }) => result(name === "show_work" ? workResult : repertoire);
-    await show(RepertoireApp, result(repertoire));
+  it("pages through the repertoire", async () => {
+    const paged = { ...repertoire, search: "li", page_size: 2, page_count: 3, work_count: 5 };
+    host.answerToolCall = ({ arguments: args }) => result({ ...paged, page: args?.["page"] });
+    const { container } = await show(RepertoireApp, result(paged));
+    const pages = screen.getByRole("navigation", { name: "Repertoire pages" });
+    expect(within(pages).getByText("Page 1 of 3").getAttribute("aria-current")).toBe("page");
+    expect(within(pages).queryByRole("button", { name: "Previous" })).toBeNull();
+    expect(await accessibilityViolations(container)).toEqual([]);
+    fireEvent.click(within(pages).getByRole("button", { name: "Next" }));
+    expect(await screen.findByText("Page 2 of 3")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(await screen.findByText("Page 3 of 3")).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Previous" }));
+    expect(await screen.findByText("Page 2 of 3")).toBeDefined();
+    expect(host.toolCalls.map(({ arguments: args }) => args)).toEqual(
+      [2, 3, 2].map((page) => ({ choir, search: "li", page, page_size: 2 })),
+    );
+  });
+
+  it("opens a work from the repertoire and returns to the same page", async () => {
+    const second = { ...repertoire, page: 2, page_count: 2, work_count: 12 };
+    host.answerToolCall = ({ name }) => result(name === "show_work" ? workResult : second);
+    await show(RepertoireApp, result(second));
     fireEvent.click(screen.getByRole("button", { name: work.title }));
     expect(await screen.findByRole("heading", { name: work.title })).toBeDefined();
     expect(screen.getByText(/Latin/)).toBeDefined();
@@ -131,10 +169,16 @@ describe("repertoire and work views", () => {
     await waitFor(() => {
       expect(host.toolCalls.map(({ name }) => name)).toEqual(["show_work", "show_repertoire"]);
     });
+    expect(host.toolCalls[1]?.arguments).toEqual({
+      choir,
+      search: "",
+      page: 2,
+      page_size: 10,
+    });
   });
 
   it("prompts for a choir when the repertoire is empty", async () => {
-    await show(RepertoireApp, result({ choir: null, choirs: [], works: [], search: "" }));
+    await show(RepertoireApp, result({ ...repertoire, choir: null, choirs: [], works: [] }));
     expect(screen.getByText("No choirs yet. Ask the assistant to create one.")).toBeDefined();
   });
 

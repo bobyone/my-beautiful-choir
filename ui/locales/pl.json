@@ -41,9 +41,14 @@
     "work": "Utwór"
   },
   "repertoire": {
+    "nextPage": "Następna",
     "noChoirs": "Nie ma jeszcze chórów. Poproś asystenta o utworzenie chóru.",
     "noWorks": "Nie znaleziono utworów.",
-    "search": "Szukaj"
+    "pageOf": "Strona {page, number} z {pageCount, number}",
+    "pages": "Strony repertuaru",
+    "previousPage": "Poprzednia",
+    "search": "Szukaj",
+    "workCount": "{workCount, plural, one {# utwór} few {# utwory} many {# utworów} other {# utworu}}"
   },
   "view": {
     "actions": "Działania",
