@@ -6,7 +6,7 @@
 import json
 import subprocess
 import sys
-from base64 import b64encode
+from base64 import b64decode, b64encode
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -187,6 +187,12 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
         content=b64encode(score_samples.pdf()).decode(),
     )
     score_id = uploaded["structuredContent"]["score"]["id"]
+    returned = _tool_result(session, 170, "get_score_file", score_id=score_id)
+    [_, file] = returned["content"]
+    assert file["type"] == "resource"
+    assert file["resource"]["uri"] == "file:///Alto.pdf"
+    assert file["resource"]["mimeType"] == "application/pdf"
+    assert b64decode(file["resource"]["blob"]) == score_samples.pdf()
     repertoire = _tool_result(session, 18, "show_repertoire", search="etoile")["structuredContent"]
     assert repertoire["choir"] == "Lyon"
     [work_row] = repertoire["works"]

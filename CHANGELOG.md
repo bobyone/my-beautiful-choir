@@ -20,6 +20,9 @@ and this project adheres to
 
 ### Added
 
+- `get_score_file` gives a score of up to 2 MB back in the conversation as
+  an embedded file (#15).
+
 - Repertoire pages of 10 works by default in the Repertoire view and
   `show_repertoire`, with `page` and `page_size` arguments (#13).
 

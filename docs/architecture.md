@@ -326,8 +326,23 @@ launch that succeeds does not prove that an application showed the file.
 
 Text tools: `add_score_from_file(work_id, path, label?)`,
 `add_score_from_google_drive(work_id, link, label?)` (receives a factory of
-Google Drive sources) and `open_score(score_id)`. Scores are named by their
-id. The structured content gives the `work_id` and the score (`score_data`).
+Google Drive sources), `open_score(score_id)` and `get_score_file(score_id)`.
+Scores are named by their id. The structured content gives the `work_id` and
+the score (`score_data`).
+
+`GetScoreFileTool(service, maximum_size=CONVERSATION_FILE_MAXIMUM_SIZE)`
+reads the score with `ScoreService.read_score` and returns it with
+`score_file_result`: a text describing it and one `ToolFile` named by its
+original name, with the media type of its format.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `service` | `ScoreService` | required | Reads the score. |
+| `maximum_size` | `int` | 2 MiB | Largest score returned, in bytes: a returned file may enter the model context. |
+
+It raises `ScoreTooLargeToReturnError` when the recorded or the stored size
+exceeds the limit; the message points to `open_score` and to Download in the
+Work view. Limit: the content is read before its actual size is checked.
 
 ### Score format signatures (`scores.formats.signatures`)
 

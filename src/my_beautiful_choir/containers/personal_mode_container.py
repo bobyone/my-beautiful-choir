@@ -47,6 +47,7 @@ from my_beautiful_choir.tools.scores.add_score_from_file_tool import AddScoreFro
 from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
     AddScoreFromGoogleDriveTool,
 )
+from my_beautiful_choir.tools.scores.get_score_file_tool import GetScoreFileTool
 from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
@@ -163,6 +164,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             source_factory=google_drive_source.provider,
         ),
         _metered(OpenScoreTool, metrics, service=score_service),
+        _metered(GetScoreFileTool, metrics, service=score_service),
         _metered(
             ShowRepertoireTool,
             metrics,
