@@ -41,9 +41,14 @@
     "work": "Vepër"
   },
   "repertoire": {
+    "nextPage": "Tjetra",
     "noChoirs": "Nuk ka ende kore. Kërkojini asistentit të krijojë një kor.",
     "noWorks": "Nuk u gjetën vepra.",
-    "search": "Kërko"
+    "pageOf": "Faqja {page, number} nga {pageCount, number}",
+    "pages": "Faqet e repertorit",
+    "previousPage": "E mëparshmja",
+    "search": "Kërko",
+    "workCount": "{workCount, plural, one {# vepër} other {# vepra}}"
   },
   "view": {
     "actions": "Veprime",

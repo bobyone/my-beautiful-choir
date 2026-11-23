@@ -41,9 +41,14 @@
     "work": "Werk"
   },
   "repertoire": {
+    "nextPage": "Weiter",
     "noChoirs": "Es gibt noch keinen Chor. Bitten Sie den Assistenten, einen zu erstellen.",
     "noWorks": "Keine Werke gefunden.",
-    "search": "Suchen"
+    "pageOf": "Seite {page, number} von {pageCount, number}",
+    "pages": "Repertoireseiten",
+    "previousPage": "Zurück",
+    "search": "Suchen",
+    "workCount": "{workCount, plural, one {# Werk} other {# Werke}}"
   },
   "view": {
     "actions": "Aktionen",

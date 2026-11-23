@@ -41,9 +41,14 @@
     "work": "Əsər"
   },
   "repertoire": {
+    "nextPage": "Növbəti",
     "noChoirs": "Hələ xor yoxdur. Köməkçidən xor yaratmasını istəyin.",
     "noWorks": "Əsər tapılmadı.",
-    "search": "Axtar"
+    "pageOf": "Səhifə {page, number}/{pageCount, number}",
+    "pages": "Repertuar səhifələri",
+    "previousPage": "Əvvəlki",
+    "search": "Axtar",
+    "workCount": "{workCount, plural, one {# əsər} other {# əsər}}"
   },
   "view": {
     "actions": "Əməliyyatlar",

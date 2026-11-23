@@ -41,9 +41,14 @@
     "work": "Teos"
   },
   "repertoire": {
+    "nextPage": "Järgmine",
     "noChoirs": "Koore veel pole. Palu assistendil üks luua.",
     "noWorks": "Teoseid ei leitud.",
-    "search": "Otsi"
+    "pageOf": "Lehekülg {page, number}/{pageCount, number}",
+    "pages": "Repertuaari lehed",
+    "previousPage": "Eelmine",
+    "search": "Otsi",
+    "workCount": "{workCount, plural, one {# teos} other {# teost}}"
   },
   "view": {
     "actions": "Toimingud",

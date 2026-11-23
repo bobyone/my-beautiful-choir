@@ -41,9 +41,14 @@
     "work": "Έργο"
   },
   "repertoire": {
+    "nextPage": "Επόμενη",
     "noChoirs": "Δεν υπάρχουν ακόμη χορωδίες. Ζητήστε από τον βοηθό να δημιουργήσει μία.",
     "noWorks": "Δεν βρέθηκαν έργα.",
-    "search": "Αναζήτηση"
+    "pageOf": "Σελίδα {page, number} από {pageCount, number}",
+    "pages": "Σελίδες ρεπερτορίου",
+    "previousPage": "Προηγούμενη",
+    "search": "Αναζήτηση",
+    "workCount": "{workCount, plural, one {# έργο} other {# έργα}}"
   },
   "view": {
     "actions": "Ενέργειες",

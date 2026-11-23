@@ -5,6 +5,7 @@
 
 import builtins
 import copy
+from collections.abc import Collection
 from dataclasses import dataclass, field, replace
 from types import TracebackType
 from typing import Self
@@ -96,6 +97,23 @@ class InMemoryWorkRepository(WorkRepository):
             )
         ]
 
+    async def count_matching(self, choir_id: UUID, text: str | None = None) -> int:
+        return len(await self.search(choir_id, text))
+
+    async def search_page(
+        self, choir_id: UUID, text: str | None, offset: int, limit: int
+    ) -> list[Work]:
+        ordered = sorted(
+            await self.search(choir_id, text),
+            key=lambda work: (
+                search_text(work.title) or "",
+                work.details.composer is not None,
+                search_text(work.details.composer) or "",
+                work.id.hex,
+            ),
+        )
+        return ordered[offset : offset + limit]
+
     async def update(self, work: Work) -> None:
         self._data.works[work.id] = work
 
@@ -137,10 +155,10 @@ class InMemoryScoreRepository(ScoreRepository):
             if self._data.works[score.work_id].choir_id == choir_id
         ]
 
-    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
+    async def counts_of_works(self, work_ids: Collection[UUID]) -> dict[UUID, int]:
         counts: dict[UUID, int] = {}
         for score in self._data.scores.values():
-            if self._data.works[score.work_id].choir_id == choir_id:
+            if score.work_id in work_ids:
                 counts[score.work_id] = counts.get(score.work_id, 0) + 1
         return counts
 

@@ -41,9 +41,14 @@
     "work": "Kompozicija"
   },
   "repertoire": {
+    "nextPage": "Sljedeća",
     "noChoirs": "Još nema horova. Zamolite asistenta da kreira hor.",
     "noWorks": "Nijedna kompozicija nije pronađena.",
-    "search": "Pretraži"
+    "pageOf": "Stranica {page, number} od {pageCount, number}",
+    "pages": "Stranice repertoara",
+    "previousPage": "Prethodna",
+    "search": "Pretraži",
+    "workCount": "{workCount, plural, one {# djelo} few {# djela} other {# djela}}"
   },
   "view": {
     "actions": "Radnje",

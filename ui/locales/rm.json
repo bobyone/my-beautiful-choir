@@ -41,9 +41,14 @@
     "work": "Ovra"
   },
   "repertoire": {
+    "nextPage": "Proxima",
     "noChoirs": "I na dat anc nagins chors. Dumandai a l’assistent da crear in chor.",
     "noWorks": "Chattà naginas ovras.",
-    "search": "Tschertgar"
+    "pageOf": "Pagina {page, number} da {pageCount, number}",
+    "pages": "Paginas dal repertori",
+    "previousPage": "Precedenta",
+    "search": "Tschertgar",
+    "workCount": "{workCount, plural, one {# ovra} other {# ovras}}"
   },
   "view": {
     "actions": "Acziuns",

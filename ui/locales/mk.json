@@ -41,9 +41,14 @@
     "work": "Дело"
   },
   "repertoire": {
+    "nextPage": "Следна",
     "noChoirs": "Сè уште нема хорови. Побарајте од асистентот да создаде хор.",
     "noWorks": "Не се пронајдени дела.",
-    "search": "Пребарај"
+    "pageOf": "Страница {page, number} од {pageCount, number}",
+    "pages": "Страници од репертоарот",
+    "previousPage": "Претходна",
+    "search": "Пребарај",
+    "workCount": "{workCount, plural, one {# дело} other {# дела}}"
   },
   "view": {
     "actions": "Дејства",

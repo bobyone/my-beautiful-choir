@@ -41,9 +41,14 @@
     "work": "Werk"
   },
   "repertoire": {
+    "nextPage": "Volgende",
     "noChoirs": "Er zijn nog geen koren. Vraag de assistent er een aan te maken.",
     "noWorks": "Geen werken gevonden.",
-    "search": "Zoeken"
+    "pageOf": "Pagina {page, number} van {pageCount, number}",
+    "pages": "Repertoirepagina's",
+    "previousPage": "Vorige",
+    "search": "Zoeken",
+    "workCount": "{workCount, plural, one {# werk} other {# werken}}"
   },
   "view": {
     "actions": "Acties",

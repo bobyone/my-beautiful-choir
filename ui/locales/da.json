@@ -41,9 +41,14 @@
     "work": "Værk"
   },
   "repertoire": {
+    "nextPage": "Næste",
     "noChoirs": "Der er endnu ingen kor. Bed assistenten om at oprette et.",
     "noWorks": "Ingen værker fundet.",
-    "search": "Søg"
+    "pageOf": "Side {page, number} af {pageCount, number}",
+    "pages": "Repertoiresider",
+    "previousPage": "Forrige",
+    "search": "Søg",
+    "workCount": "{workCount, plural, one {# værk} other {# værker}}"
   },
   "view": {
     "actions": "Handlinger",

@@ -14,6 +14,10 @@ export interface RepertoireInfo {
   choirs: string[];
   works: RepertoireWork[];
   search: string;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  workCount: number;
 }
 
 function parseChoir(value: unknown): string | undefined {
@@ -26,12 +30,34 @@ function parseRepertoireWork(value: unknown): RepertoireWork | undefined {
   return work && { ...work, scoreCount: value["score_count"] };
 }
 
+function positiveInteger(value: unknown): value is number {
+  return nonnegativeInteger(value) && value > 0;
+}
+
 export function parseRepertoire(result: ToolResult): RepertoireInfo | undefined {
   const data = resultData(result);
   if (!data || !textOrNull(data["choir"]) || typeof data["search"] !== "string") return undefined;
+  const { page, page_size: pageSize, page_count: pageCount, work_count: workCount } = data;
+  if (
+    !positiveInteger(page) ||
+    !positiveInteger(pageSize) ||
+    !positiveInteger(pageCount) ||
+    !nonnegativeInteger(workCount) ||
+    page > pageCount
+  )
+    return undefined;
   const choirs = parseList(data["choirs"], parseChoir);
   const works = parseList(data["works"], parseRepertoireWork);
   return choirs && works
-    ? { choir: data["choir"], choirs, works, search: data["search"] }
+    ? {
+        choir: data["choir"],
+        choirs,
+        works,
+        search: data["search"],
+        page,
+        pageSize,
+        pageCount,
+        workCount,
+      }
     : undefined;
 }

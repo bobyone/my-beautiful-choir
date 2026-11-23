@@ -6,6 +6,7 @@
 from base64 import b64encode
 
 import pytest
+from pydantic import ValidationError
 
 from my_beautiful_choir.authorization.errors import AccessDeniedError
 from my_beautiful_choir.authorization.permission import Permission
@@ -44,7 +45,16 @@ async def test_repertoire_reads_search_and_score_totals() -> None:
     world = RepertoireWorld()
     tool = ShowRepertoireTool(VIEW, world.repertoire(), world.choirs())
     empty = await tool.execute(ShowRepertoireArguments(), tool_context())
-    assert empty.structured == {"choir": None, "choirs": [], "works": [], "search": ""}
+    assert empty.structured == {
+        "choir": None,
+        "choirs": [],
+        "works": [],
+        "search": "",
+        "page": 1,
+        "page_size": 10,
+        "page_count": 1,
+        "work_count": 0,
+    }
     assert "first choir" in empty.text
 
     await world.choir("Lyon")
@@ -67,6 +77,34 @@ async def test_repertoire_reads_search_and_score_totals() -> None:
     [matched] = works
     assert matched["score_count"] == 1
     assert str(work.id) in result.text
+    assert "1 work(s), page 1 of 1" in result.text
+
+
+@pytest.mark.anyio
+async def test_repertoire_pages() -> None:
+    world = RepertoireWorld()
+    tool = ShowRepertoireTool(VIEW, world.repertoire(), world.choirs())
+    await world.choir("Lyon")
+    for title in ["Delta", "Alpha", "Charlie", "Bravo", "Echo"]:
+        await world.work("Lyon", title)
+    result = await tool.execute(ShowRepertoireArguments(page=2, page_size=2), tool_context())
+    data = result.structured
+    assert data is not None
+    works = data["works"]
+    assert isinstance(works, list)
+    assert [work["title"] for work in works] == ["Charlie", "Delta"]
+    assert (data["page"], data["page_size"], data["page_count"], data["work_count"]) == (
+        2,
+        2,
+        3,
+        5,
+    )
+    assert "5 work(s), page 2 of 3" in result.text
+    assert "Alpha" not in result.text
+    with pytest.raises(ValidationError):
+        ShowRepertoireArguments(page_size=101)
+    with pytest.raises(ValidationError):
+        ShowRepertoireArguments(page=0)
 
 
 @pytest.mark.anyio

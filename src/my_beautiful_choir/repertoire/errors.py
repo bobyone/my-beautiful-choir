@@ -22,6 +22,14 @@ class WorkNotFoundError(RepertoireError):
         self.work_id = work_id
 
 
+class InvalidRepertoirePageError(RepertoireError):
+    """The requested repertoire page number or size is out of bounds."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"The repertoire page is invalid: {reason}.")
+        self.reason = reason
+
+
 class InvalidWorkError(RepertoireError):
     """An attribute of the work is invalid."""
 

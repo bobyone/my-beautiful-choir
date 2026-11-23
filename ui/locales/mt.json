@@ -41,9 +41,14 @@
     "work": "Xogħol"
   },
   "repertoire": {
+    "nextPage": "Li jmiss",
     "noChoirs": "Għad m’hemmx korijiet. Itlob lill-assistent joħloq kor.",
     "noWorks": "Ma nstab l-ebda xogħol.",
-    "search": "Fittex"
+    "pageOf": "Paġna {page, number} minn {pageCount, number}",
+    "pages": "Paġni tar-repertorju",
+    "previousPage": "Ta’ qabel",
+    "search": "Fittex",
+    "workCount": "{workCount, plural, one {# xogħol} two {# xogħlijiet} few {# xogħlijiet} many {# xogħlijiet} other {# xogħlijiet}}"
   },
   "view": {
     "actions": "Azzjonijiet",

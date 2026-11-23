@@ -41,9 +41,14 @@
     "work": "Композиција"
   },
   "repertoire": {
+    "nextPage": "Следећа",
     "noChoirs": "Још нема хорова. Замолите асистента да направи хор.",
     "noWorks": "Ниједна композиција није пронађена.",
-    "search": "Претражи"
+    "pageOf": "Страница {page, number} од {pageCount, number}",
+    "pages": "Странице репертоара",
+    "previousPage": "Претходна",
+    "search": "Претражи",
+    "workCount": "{workCount, plural, one {# дело} few {# дела} other {# дела}}"
   },
   "view": {
     "actions": "Радње",

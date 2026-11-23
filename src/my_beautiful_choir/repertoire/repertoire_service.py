@@ -17,6 +17,8 @@ from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
+from my_beautiful_choir.repertoire.page_request import PageRequest, page_count
+from my_beautiful_choir.repertoire.repertoire_page import RepertoirePage
 from my_beautiful_choir.repertoire.work import Work, WorkChanges, WorkDetails
 from my_beautiful_choir.repertoire.work_rules import apply_work_changes, clean_work_details
 from my_beautiful_choir.storage.file_storage import FileStorage
@@ -92,16 +94,34 @@ class RepertoireService(Deleter):
             self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
             return target, await unit_of_work.works.search(target.id, text)
 
-    async def search_with_score_counts(
-        self, choir: str | None, text: str | None
-    ) -> tuple[Choir, list[Work], dict[UUID, int]]:
-        """Return the matching works and the score totals for their choir."""
+    async def search_page_with_score_counts(
+        self, choir: str | None, text: str | None, request: PageRequest
+    ) -> RepertoirePage:
+        """One repertoire page of the matching works, with their score totals.
+
+        A page number past the last page returns the last page.
+
+        Raises:
+            ChoirNotFoundError, NoChoirError: if the choir cannot be found.
+        """
         async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot()
             target = await find_choir(unit_of_work.choirs, choir)
             self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
-            works = await unit_of_work.works.search(target.id, text)
-            counts = await unit_of_work.scores.counts_of_choir(target.id)
-            return target, works, counts
+            work_count = await unit_of_work.works.count_matching(target.id, text)
+            number = min(request.number, page_count(work_count, request.size))
+            works = await unit_of_work.works.search_page(
+                target.id, text, offset=(number - 1) * request.size, limit=request.size
+            )
+            counts = await unit_of_work.scores.counts_of_works([work.id for work in works])
+        return RepertoirePage(
+            target,
+            tuple(works),
+            {work.id: counts.get(work.id, 0) for work in works},
+            number,
+            request.size,
+            work_count,
+        )
 
     @property
     def deletion_target(self) -> DeletionTarget:

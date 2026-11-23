@@ -41,9 +41,14 @@
     "work": "Skaņdarbs"
   },
   "repertoire": {
+    "nextPage": "Nākamā",
     "noChoirs": "Koru vēl nav. Lūdziet asistentam izveidot kori.",
     "noWorks": "Skaņdarbi nav atrasti.",
-    "search": "Meklēt"
+    "pageOf": "{page, number}. lapa no {pageCount, number}",
+    "pages": "Repertuāra lapas",
+    "previousPage": "Iepriekšējā",
+    "search": "Meklēt",
+    "workCount": "{workCount, plural, zero {# darbu} one {# darbs} other {# darbi}}"
   },
   "view": {
     "actions": "Darbības",

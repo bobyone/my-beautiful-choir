@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2026 bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import Pagination from "react-bootstrap/Pagination";
 import Table from "react-bootstrap/Table";
 import { useTranslation } from "react-i18next";
 
@@ -22,18 +23,45 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
   const busy = state === "loading";
   const collator = new Intl.Collator(i18n.language);
   const totals = new Intl.NumberFormat(i18n.language);
-  const sorted = repertoire.works.toSorted(
-    (first, second) =>
-      collator.compare(first.title, second.title) ||
-      collator.compare(first.composer ?? "", second.composer ?? ""),
-  );
+  const section = useRef<HTMLElement>(null);
+  // After a page change, focus goes to the results; after returning from a work, to its button.
+  const focusAfterUpdate = useRef<{ workId: string | undefined } | undefined>(undefined);
 
-  async function searchRepertoire(choir: string, text: string): Promise<void> {
+  useEffect(() => {
+    const target = focusAfterUpdate.current;
+    if (target === undefined || section.current === null) return;
+    focusAfterUpdate.current = undefined;
+    const candidates = [
+      target.workId === undefined ? undefined : `[data-work-id="${CSS.escape(target.workId)}"]`,
+      "#repertoire-results",
+      "#repertoire-heading",
+    ];
+    for (const selector of candidates) {
+      const element = selector && section.current.querySelector<HTMLElement>(selector);
+      if (element) {
+        element.focus();
+        return;
+      }
+    }
+  }, [repertoire]);
+
+  async function searchRepertoire(
+    choir: string,
+    text: string,
+    page?: number,
+    returningFrom?: string,
+  ): Promise<void> {
     setState("loading");
     try {
-      const reply = await callTool("show_repertoire", { choir, search: text });
+      const reply = await callTool(
+        "show_repertoire",
+        page === undefined
+          ? { choir, search: text, page_size: repertoire.pageSize }
+          : { choir, search: text, page, page_size: repertoire.pageSize },
+      );
       const updated = parseRepertoire(reply);
       if (!updated) throw new Error("The repertoire reply was invalid.");
+      if (page !== undefined) focusAfterUpdate.current = { workId: returningFrom };
       setRepertoire(updated);
       setState("idle");
     } catch {
@@ -63,15 +91,16 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
         callTool={callTool}
         onBack={() => {
           setSelectedWork(undefined);
-          if (choir !== null) void searchRepertoire(choir, repertoire.search);
+          if (choir !== null)
+            void searchRepertoire(choir, repertoire.search, repertoire.page, selectedWork.work.id);
         }}
       />
     );
   }
 
   return (
-    <section className="p-3" aria-labelledby="repertoire-heading">
-      <h1 id="repertoire-heading" className="h4">
+    <section ref={section} className="p-3" aria-labelledby="repertoire-heading">
+      <h1 id="repertoire-heading" className="h4" tabIndex={-1}>
         {t("glossary.repertoire")}
       </h1>
       {choir === null ? (
@@ -120,41 +149,77 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
           </Form>
           {busy && <p role="status">{t("view.loading")}</p>}
           {state === "error" && <Alert variant="danger">{t("view.error")}</Alert>}
-          {sorted.length === 0 ? (
+          {repertoire.works.length === 0 ? (
             <p>{t("repertoire.noWorks")}</p>
           ) : (
-            <Table responsive striped>
-              <caption className="visually-hidden">{t("deletion.works")}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{t("glossary.title")}</th>
-                  <th scope="col">{t("glossary.composer")}</th>
-                  <th scope="col">{t("glossary.voicing")}</th>
-                  <th scope="col">{t("deletion.scores")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((work) => (
-                  <tr key={work.id}>
-                    <th scope="row">
-                      <Button
-                        variant="link"
-                        className="p-0 text-start"
-                        disabled={busy}
-                        onClick={() => {
-                          void showWork(work.id);
-                        }}
-                      >
-                        {work.title}
-                      </Button>
-                    </th>
-                    <td>{work.composer}</td>
-                    <td>{work.voicing}</td>
-                    <td>{totals.format(work.scoreCount)}</td>
+            <>
+              <h3 id="repertoire-results" className="h6" tabIndex={-1}>
+                {t("repertoire.workCount", { workCount: repertoire.workCount })}
+              </h3>
+              <Table responsive striped>
+                <caption className="visually-hidden">{t("deletion.works")}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{t("glossary.title")}</th>
+                    <th scope="col">{t("glossary.composer")}</th>
+                    <th scope="col">{t("glossary.voicing")}</th>
+                    <th scope="col">{t("deletion.scores")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {repertoire.works.map((work) => (
+                    <tr key={work.id}>
+                      <th scope="row">
+                        <Button
+                          variant="link"
+                          className="p-0 text-start"
+                          data-work-id={work.id}
+                          disabled={busy}
+                          onClick={() => {
+                            void showWork(work.id);
+                          }}
+                        >
+                          {work.title}
+                        </Button>
+                      </th>
+                      <td>{work.composer}</td>
+                      <td>{work.voicing}</td>
+                      <td>{totals.format(work.scoreCount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              {repertoire.pageCount > 1 && (
+                <nav aria-label={t("repertoire.pages")}>
+                  <Pagination className="flex-wrap">
+                    <Pagination.Item
+                      disabled={repertoire.page === 1}
+                      onClick={() => {
+                        if (!busy)
+                          void searchRepertoire(choir, repertoire.search, repertoire.page - 1);
+                      }}
+                    >
+                      {t("repertoire.previousPage")}
+                    </Pagination.Item>
+                    <Pagination.Item active activeLabel="" aria-current="page">
+                      {t("repertoire.pageOf", {
+                        page: repertoire.page,
+                        pageCount: repertoire.pageCount,
+                      })}
+                    </Pagination.Item>
+                    <Pagination.Item
+                      disabled={repertoire.page === repertoire.pageCount}
+                      onClick={() => {
+                        if (!busy)
+                          void searchRepertoire(choir, repertoire.search, repertoire.page + 1);
+                      }}
+                    >
+                      {t("repertoire.nextPage")}
+                    </Pagination.Item>
+                  </Pagination>
+                </nav>
+              )}
+            </>
           )}
         </>
       )}

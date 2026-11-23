@@ -41,9 +41,14 @@
     "work": "Eser"
   },
   "repertoire": {
+    "nextPage": "Sonraki",
     "noChoirs": "Henüz koro yok. Asistandan bir koro oluşturmasını isteyin.",
     "noWorks": "Eser bulunamadı.",
-    "search": "Ara"
+    "pageOf": "Sayfa {page, number}/{pageCount, number}",
+    "pages": "Repertuvar sayfaları",
+    "previousPage": "Önceki",
+    "search": "Ara",
+    "workCount": "{workCount, plural, one {# eser} other {# eser}}"
   },
   "view": {
     "actions": "İşlemler",

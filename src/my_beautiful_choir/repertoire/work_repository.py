@@ -29,7 +29,21 @@ class WorkRepository(ABC):
         """Works of the choir whose title or composer contains ``text``.
 
         ``text`` is compared ignoring case and accents; None returns every work.
-        The order is unspecified: the user interface sorts by language.
+        The order is unspecified; ``search_page`` returns ordered pages.
+        """
+
+    @abstractmethod
+    async def count_matching(self, choir_id: UUID, text: str | None = None) -> int:
+        """Number of works that ``search`` would return."""
+
+    @abstractmethod
+    async def search_page(
+        self, choir_id: UUID, text: str | None, offset: int, limit: int
+    ) -> list[Work]:
+        """At most ``limit`` matching works, skipping the first ``offset``.
+
+        The works are ordered by title, then composer (no composer first), compared
+        ignoring case and accents, then by id so that the pages never overlap.
         """
 
     @abstractmethod

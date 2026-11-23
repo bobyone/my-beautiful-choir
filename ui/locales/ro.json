@@ -41,9 +41,14 @@
     "work": "Lucrare"
   },
   "repertoire": {
+    "nextPage": "Următoare",
     "noChoirs": "Încă nu există coruri. Cereți asistentului să creeze unul.",
     "noWorks": "Nu s-au găsit lucrări.",
-    "search": "Caută"
+    "pageOf": "Pagina {page, number} din {pageCount, number}",
+    "pages": "Paginile repertoriului",
+    "previousPage": "Anterioară",
+    "search": "Caută",
+    "workCount": "{workCount, plural, one {# lucrare} few {# lucrări} other {# de lucrări}}"
   },
   "view": {
     "actions": "Acțiuni",

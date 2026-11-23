@@ -41,9 +41,14 @@
     "work": "Твір"
   },
   "repertoire": {
+    "nextPage": "Наступна",
     "noChoirs": "Хорів ще немає. Попросіть помічника створити хор.",
     "noWorks": "Творів не знайдено.",
-    "search": "Пошук"
+    "pageOf": "Сторінка {page, number} з {pageCount, number}",
+    "pages": "Сторінки репертуару",
+    "previousPage": "Попередня",
+    "search": "Пошук",
+    "workCount": "{workCount, plural, one {# твір} few {# твори} many {# творів} other {# твору}}"
   },
   "view": {
     "actions": "Дії",
