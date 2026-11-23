@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from my_beautiful_choir.scores.errors import MEGABYTE
+from my_beautiful_choir.scores.errors import MEGABYTE, ScoreAboveLimitError
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.tools.scores.errors import ScoreTooLargeToReturnError
 from my_beautiful_choir.tools.scores.score_data import score_file_result
@@ -61,7 +61,10 @@ class GetScoreFileTool(Tool[GetScoreFileArguments]):
         Raises:
             ScoreTooLargeToReturnError: if the score is larger than the limit.
         """
-        work, score, content = await self._service.read_score(arguments.score_id)
-        if max(score.size, len(content)) > self._maximum_size:
-            raise ScoreTooLargeToReturnError(score.label, self._maximum_size)
+        try:
+            work, score, content = await self._service.read_score(
+                arguments.score_id, self._maximum_size
+            )
+        except ScoreAboveLimitError as error:
+            raise ScoreTooLargeToReturnError(error.label, error.limit) from error
         return score_file_result(work, score, content)

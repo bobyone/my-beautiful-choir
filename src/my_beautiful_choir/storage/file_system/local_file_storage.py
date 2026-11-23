@@ -41,9 +41,11 @@ class LocalFileStorage(FileStorage):
         path = self._path(key)
         await self._run(key, self._write, path, content)
 
-    async def read(self, key: str) -> bytes:
+    async def read(self, key: str, maximum_size: int | None = None) -> bytes:
         path = self._path(key)
-        return await self._run(key, path.read_bytes)
+        if maximum_size is None:
+            return await self._run(key, path.read_bytes)
+        return await self._run(key, self._read_at_most, path, maximum_size + 1)
 
     async def delete(self, key: str) -> None:
         path = self._path(key)
@@ -55,6 +57,11 @@ class LocalFileStorage(FileStorage):
 
     def _path(self, key: str) -> Path:
         return self._root.joinpath(*check_storage_key(key).split("/"))
+
+    @staticmethod
+    def _read_at_most(path: Path, size: int) -> bytes:
+        with path.open("rb") as file:
+            return file.read(size)
 
     @staticmethod
     def _write(path: Path, content: bytes) -> None:
