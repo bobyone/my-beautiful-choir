@@ -55,6 +55,16 @@ function result(structuredContent: Record<string, unknown>): ToolResult {
   return { content: [], structuredContent };
 }
 
+/** The element the next Tab press reaches after ``element``. */
+function nextTabStop(element: Element): Element | undefined {
+  const stops = [
+    ...document.querySelectorAll("a[href], button, input, select, textarea, [tabindex]"),
+  ].filter((item) => item.getAttribute("tabindex") !== "-1" && !item.hasAttribute("disabled"));
+  return stops.find(
+    (item) => element.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING,
+  );
+}
+
 describe("view result validation", () => {
   it.each([
     { choir: 1 },
@@ -145,7 +155,10 @@ describe("repertoire and work views", () => {
     expect(within(pages).queryByRole("button", { name: "Previous" })).toBeNull();
     expect(await accessibilityViolations(container)).toEqual([]);
     fireEvent.click(within(pages).getByRole("button", { name: "Next" }));
-    expect(await screen.findByText("Page 2 of 3")).toBe(document.activeElement);
+    expect(await screen.findByText("Page 2 of 3")).toBeDefined();
+    const results = screen.getByRole("heading", { name: "5 works" });
+    expect(document.activeElement).toBe(results);
+    expect(nextTabStop(results)).toBe(screen.getByRole("button", { name: "Alleluia" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Page 3 of 3")).toBeDefined();
     expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
@@ -174,6 +187,21 @@ describe("repertoire and work views", () => {
       search: "",
       page: 2,
       page_size: 10,
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: work.title }));
+    });
+  });
+
+  it("focuses the results when the opened work is no longer listed", async () => {
+    const without = { ...repertoire, works: [repertoire.works[0]], work_count: 1 };
+    host.answerToolCall = ({ name }) => result(name === "show_work" ? workResult : without);
+    await show(RepertoireApp, result(repertoire));
+    fireEvent.click(screen.getByRole("button", { name: work.title }));
+    fireEvent.click(await screen.findByRole("button", { name: "Back to repertoire" }));
+    const results = await screen.findByRole("heading", { name: "1 work" });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(results);
     });
   });
 

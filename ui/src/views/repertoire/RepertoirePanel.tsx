@@ -23,16 +23,34 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
   const busy = state === "loading";
   const collator = new Intl.Collator(i18n.language);
   const totals = new Intl.NumberFormat(i18n.language);
-  const pager = useRef<HTMLElement>(null);
-  const focusCurrentPage = useRef(false);
+  const section = useRef<HTMLElement>(null);
+  // After a page change, focus goes to the results; after returning from a work, to its button.
+  const focusAfterUpdate = useRef<{ workId: string | undefined } | undefined>(undefined);
 
   useEffect(() => {
-    if (!focusCurrentPage.current) return;
-    focusCurrentPage.current = false;
-    pager.current?.querySelector<HTMLElement>('[aria-current="page"]')?.focus();
+    const target = focusAfterUpdate.current;
+    if (target === undefined || section.current === null) return;
+    focusAfterUpdate.current = undefined;
+    const candidates = [
+      target.workId === undefined ? undefined : `[data-work-id="${CSS.escape(target.workId)}"]`,
+      "#repertoire-results",
+      "#repertoire-heading",
+    ];
+    for (const selector of candidates) {
+      const element = selector && section.current.querySelector<HTMLElement>(selector);
+      if (element) {
+        element.focus();
+        return;
+      }
+    }
   }, [repertoire]);
 
-  async function searchRepertoire(choir: string, text: string, page?: number): Promise<void> {
+  async function searchRepertoire(
+    choir: string,
+    text: string,
+    page?: number,
+    returningFrom?: string,
+  ): Promise<void> {
     setState("loading");
     try {
       const reply = await callTool(
@@ -43,7 +61,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
       );
       const updated = parseRepertoire(reply);
       if (!updated) throw new Error("The repertoire reply was invalid.");
-      focusCurrentPage.current = page !== undefined;
+      if (page !== undefined) focusAfterUpdate.current = { workId: returningFrom };
       setRepertoire(updated);
       setState("idle");
     } catch {
@@ -73,15 +91,16 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
         callTool={callTool}
         onBack={() => {
           setSelectedWork(undefined);
-          if (choir !== null) void searchRepertoire(choir, repertoire.search, repertoire.page);
+          if (choir !== null)
+            void searchRepertoire(choir, repertoire.search, repertoire.page, selectedWork.work.id);
         }}
       />
     );
   }
 
   return (
-    <section className="p-3" aria-labelledby="repertoire-heading">
-      <h1 id="repertoire-heading" className="h4">
+    <section ref={section} className="p-3" aria-labelledby="repertoire-heading">
+      <h1 id="repertoire-heading" className="h4" tabIndex={-1}>
         {t("glossary.repertoire")}
       </h1>
       {choir === null ? (
@@ -134,7 +153,9 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
             <p>{t("repertoire.noWorks")}</p>
           ) : (
             <>
-              <p>{t("repertoire.workCount", { workCount: repertoire.workCount })}</p>
+              <h3 id="repertoire-results" className="h6" tabIndex={-1}>
+                {t("repertoire.workCount", { workCount: repertoire.workCount })}
+              </h3>
               <Table responsive striped>
                 <caption className="visually-hidden">{t("deletion.works")}</caption>
                 <thead>
@@ -152,6 +173,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
                         <Button
                           variant="link"
                           className="p-0 text-start"
+                          data-work-id={work.id}
                           disabled={busy}
                           onClick={() => {
                             void showWork(work.id);
@@ -168,7 +190,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
                 </tbody>
               </Table>
               {repertoire.pageCount > 1 && (
-                <nav ref={pager} aria-label={t("repertoire.pages")}>
+                <nav aria-label={t("repertoire.pages")}>
                   <Pagination className="flex-wrap">
                     <Pagination.Item
                       disabled={repertoire.page === 1}
@@ -179,7 +201,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
                     >
                       {t("repertoire.previousPage")}
                     </Pagination.Item>
-                    <Pagination.Item active activeLabel="" aria-current="page" tabIndex={-1}>
+                    <Pagination.Item active activeLabel="" aria-current="page">
                       {t("repertoire.pageOf", {
                         page: repertoire.page,
                         pageCount: repertoire.pageCount,

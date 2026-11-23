@@ -442,7 +442,10 @@ in the Repertoire view. Returning from a work refreshes the same
 repertoire page. The Repertoire view keeps the server order, shows the
 number of matching works and, when there is more than one page, a
 react-bootstrap pager (Previous, "Page n of N", Next) in a navigation
-landmark; a new search or another choir returns to page 1. The UI sorts
+landmark; a new search or another choir returns to page 1. After a page
+change, focus moves to the results heading (the number of matching works),
+so the next Tab reaches the first work; returning from a work restores
+focus to its button, or to the results heading if it is no longer listed. The UI sorts
 choir names with the host language, displays sung languages by
 their localized names and formats the score size with `Intl.NumberFormat`.
 
