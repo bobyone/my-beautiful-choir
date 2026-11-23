@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import type { ToolResult } from "../../host/useHost";
+import type { DownloadableFile, ToolResult } from "../../host/useHost";
 import { nonnegativeInteger, parseList, record, resultData, textOrNull } from "../viewData";
 
 export interface WorkInfo {
@@ -55,6 +55,15 @@ export function parseScore(value: unknown): ScoreInfo | undefined {
   )
     return undefined;
   return { id, label, format, size };
+}
+
+/** The score file a tool returned as an embedded resource, if any. */
+export function scoreFile(result: ToolResult): DownloadableFile | undefined {
+  if (result.isError === true) return undefined;
+  return result.content.find(
+    (item): item is Extract<DownloadableFile, { type: "resource" }> =>
+      item.type === "resource" && "blob" in item.resource && typeof item.resource.blob === "string",
+  );
 }
 
 export function parseWorkResult(result: ToolResult): WorkResult | undefined {

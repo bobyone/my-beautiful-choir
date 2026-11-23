@@ -54,6 +54,16 @@ async def test_deleting_a_missing_file_does_nothing(storage: LocalFileStorage) -
 
 
 @pytest.mark.anyio
+async def test_a_bounded_read_stops_one_byte_after_the_limit(storage: LocalFileStorage) -> None:
+    await storage.store(KEY, b"0123456789")
+    assert await storage.read(KEY, maximum_size=4) == b"01234"
+    assert await storage.read(KEY, maximum_size=10) == b"0123456789"
+    assert await storage.read(KEY, maximum_size=0) == b"0"
+    with pytest.raises(StorageError):
+        await storage.read("choirs/c1/scores/missing", maximum_size=4)
+
+
+@pytest.mark.anyio
 async def test_reading_a_missing_file_raises_a_storage_error(storage: LocalFileStorage) -> None:
     with pytest.raises(StorageError) as raised:
         await storage.read(KEY)

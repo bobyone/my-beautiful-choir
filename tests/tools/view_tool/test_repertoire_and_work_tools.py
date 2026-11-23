@@ -16,6 +16,9 @@ from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations impo
 from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.scores.errors import InvalidScoreError, UnsupportedScoreFormatError
 from my_beautiful_choir.scores.sources.uploaded_score_source import UploadedScoreSource
+from my_beautiful_choir.tools.scores.errors import ScoreTooLargeToReturnError
+from my_beautiful_choir.tools.scores.get_score_file_tool import CONVERSATION_FILE_MAXIMUM_SIZE
+from my_beautiful_choir.tools.tool_file import ToolFile
 from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
     ConfirmDeletionArguments,
     ConfirmDeletionTool,
@@ -23,6 +26,10 @@ from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import (
     ShowRepertoireArguments,
     ShowRepertoireTool,
+)
+from my_beautiful_choir.tools.view_tool.work.download_score_tool import (
+    DownloadScoreArguments,
+    DownloadScoreTool,
 )
 from my_beautiful_choir.tools.view_tool.work.preview_deletion_from_work_view_tool import (
     PreviewDeletionFromWorkViewArguments,
@@ -36,6 +43,7 @@ from my_beautiful_choir.tools.view_tool.work.upload_score_tool import (
 from tests import score_samples
 from tests.doubles import DenyingAuthorization, StubView, tool_context
 from tests.repertoire_world import RepertoireWorld
+from tests.score_doubles import StubScoreSource
 
 VIEW = StubView(uri="ui://my-beautiful-choir/work.html")
 
@@ -181,3 +189,53 @@ async def test_views_preserve_service_authorization() -> None:
             PreviewDeletionFromWorkViewArguments(target_id=work.id), tool_context()
         )
     assert (await world.repertoire().get_work(work.id))[1] == work
+
+
+@pytest.mark.anyio
+async def test_download_gives_the_view_a_score_above_the_conversation_limit() -> None:
+    world = RepertoireWorld()
+    await world.choir("Lyon")
+    work = await world.work("Lyon", "Étoile")
+    scores = world.scores()
+    content = score_samples.pdf() + b"0" * CONVERSATION_FILE_MAXIMUM_SIZE
+    _, score = await scores.add_score(work.id, StubScoreSource(content, "Full.pdf"), "Full")
+    download = DownloadScoreTool(VIEW, scores)
+    assert download.name == "download_score"
+    assert download.app_only
+    assert download.view is VIEW
+    assert download.arguments_model is DownloadScoreArguments
+    result = await download.execute(
+        DownloadScoreArguments(score_id=score.id), tool_context(client_shows_views=True)
+    )
+    assert result.files == (ToolFile("Full.pdf", "application/pdf", content),)
+    assert world.opener.opened == []
+
+
+@pytest.mark.anyio
+async def test_download_keeps_the_conversation_limit_for_clients_without_views() -> None:
+    world = RepertoireWorld()
+    await world.choir("Lyon")
+    work = await world.work("Lyon", "Étoile")
+    scores = world.scores()
+    content = score_samples.pdf() + b"0" * CONVERSATION_FILE_MAXIMUM_SIZE
+    _, large = await scores.add_score(work.id, StubScoreSource(content, "Full.pdf"), "Full")
+    small = await world.score(work, "Alto")
+    download = DownloadScoreTool(VIEW, scores)
+    with pytest.raises(ScoreTooLargeToReturnError):
+        await download.execute(DownloadScoreArguments(score_id=large.id), tool_context())
+    result = await download.execute(DownloadScoreArguments(score_id=small.id), tool_context())
+    assert len(result.files) == 1
+    assert world.storage.reads[-1] == (small.storage_key, CONVERSATION_FILE_MAXIMUM_SIZE)
+
+
+@pytest.mark.anyio
+async def test_download_requires_the_right_to_consult_the_repertoire() -> None:
+    world = RepertoireWorld()
+    await world.choir("Lyon")
+    work = await world.work("Lyon", "Étoile")
+    score = await world.score(work, "Alto")
+    denied = world.scores(DenyingAuthorization(Permission.CONSULT_REPERTOIRE))
+    with pytest.raises(AccessDeniedError):
+        await DownloadScoreTool(VIEW, denied).execute(
+            DownloadScoreArguments(score_id=score.id), tool_context()
+        )

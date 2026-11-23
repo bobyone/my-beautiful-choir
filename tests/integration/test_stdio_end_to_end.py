@@ -6,7 +6,7 @@
 import json
 import subprocess
 import sys
-from base64 import b64encode
+from base64 import b64decode, b64encode
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -166,7 +166,12 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     work_uri = "ui://my-beautiful-choir/work.html"
     assert tools["show_repertoire"]["_meta"]["ui"]["resourceUri"] == repertoire_uri
     assert tools["show_work"]["_meta"]["ui"]["resourceUri"] == work_uri
-    for name in ("upload_score", "preview_score_deletion", "preview_work_deletion"):
+    for name in (
+        "upload_score",
+        "download_score",
+        "preview_score_deletion",
+        "preview_work_deletion",
+    ):
         assert tools[name]["_meta"]["ui"] == {"resourceUri": work_uri, "visibility": ["app"]}
     for index, uri in enumerate((repertoire_uri, work_uri), start=13):
         [view] = session.request(index, "resources/read", {"uri": uri})["contents"]
@@ -187,6 +192,30 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
         content=b64encode(score_samples.pdf()).decode(),
     )
     score_id = uploaded["structuredContent"]["score"]["id"]
+    returned = _tool_result(session, 170, "get_score_file", score_id=score_id)
+    [_, file] = returned["content"]
+    assert file["type"] == "resource"
+    assert file["resource"]["uri"] == "file:///Alto.pdf"
+    assert file["resource"]["mimeType"] == "application/pdf"
+    assert b64decode(file["resource"]["blob"]) == score_samples.pdf()
+    downloaded = _tool_result(session, 171, "download_score", score_id=score_id)
+    assert downloaded["content"][1]["resource"] == file["resource"]
+    # This client declares no MCP Apps support: the conversation limit applies.
+    large = _tool_result(
+        session,
+        172,
+        "upload_score",
+        work_id=work_id,
+        file_name="Full.pdf",
+        content=b64encode(score_samples.pdf() + b"0" * 2 * 1024 * 1024).decode(),
+    )["structuredContent"]["score"]["id"]
+    for request_id, tool in ((173, "download_score"), (174, "get_score_file")):
+        call = {"name": tool, "arguments": {"score_id": large}}
+        refused = session.request(request_id, "tools/call", call)
+        assert refused["isError"]
+        assert "too large to be returned in the conversation" in refused["content"][0]["text"]
+    deleted = _tool_result(session, 175, "preview_score_deletion", target_id=large)
+    _tool_result(session, 176, "confirm_deletion", token=deleted["structuredContent"]["token"])
     repertoire = _tool_result(session, 18, "show_repertoire", search="etoile")["structuredContent"]
     assert repertoire["choir"] == "Lyon"
     [work_row] = repertoire["works"]

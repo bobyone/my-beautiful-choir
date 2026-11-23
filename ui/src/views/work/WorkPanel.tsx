@@ -7,6 +7,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useTranslation } from "react-i18next";
 
+import type { DownloadFile } from "../../host/useHost";
 import { type DeletionInfo, parseDeletionInfo } from "../deletion/deletionInfo";
 import { CONFIRM_TOOL } from "../deletion/DeletionApp";
 import { DeletionSummaryView } from "../deletion/DeletionView";
@@ -14,10 +15,10 @@ import { type CallTool, resultData } from "../viewData";
 import { readScoreFile } from "./readScoreFile";
 import { ScoreTable } from "./ScoreTable";
 import { WorkDetails } from "./WorkDetails";
-import { parseScore, type ScoreInfo, type WorkResult } from "./workInfo";
+import { parseScore, type ScoreInfo, scoreFile, type WorkResult } from "./workInfo";
 
-type Action = "upload" | "open" | "prepare-delete" | "delete";
-type Outcome = { action: Action; state: "waiting" | "done" | "failed" };
+type Action = "upload" | "open" | "download" | "prepare-delete" | "delete";
+type Outcome = { action: Action; state: "waiting" | "done" | "cancelled" | "failed" };
 type Deletion = {
   id: string;
   preview: Extract<DeletionInfo, { status: "pending" }>;
@@ -27,10 +28,13 @@ type Deletion = {
 export function WorkPanel({
   data,
   callTool,
+  downloadFile,
   onBack,
 }: {
   data: WorkResult;
   callTool: CallTool;
+  /** Asks the host to save a file; without it, scores cannot be downloaded. */
+  downloadFile?: DownloadFile | undefined;
   onBack?: () => void;
 }) {
   const { t } = useTranslation();
@@ -41,11 +45,14 @@ export function WorkPanel({
   const fileInput = useRef<HTMLInputElement>(null);
   const busy = outcome?.state === "waiting";
 
-  async function perform(action: Action, task: () => Promise<void>): Promise<void> {
+  async function perform(
+    action: Action,
+    task: () => Promise<undefined | "done" | "cancelled">,
+  ): Promise<void> {
     setOutcome({ action, state: "waiting" });
     try {
-      await task();
-      setOutcome({ action, state: "done" });
+      const state = await task();
+      setOutcome({ action, state: state ?? "done" });
     } catch {
       setOutcome({ action, state: "failed" });
     }
@@ -71,6 +78,16 @@ export function WorkPanel({
       if (reply.isError === true) throw new Error("The score could not be opened.");
     });
   };
+
+  const downloadScore =
+    downloadFile &&
+    ((score: ScoreInfo) => {
+      void perform("download", async () => {
+        const file = scoreFile(await callTool("download_score", { score_id: score.id }));
+        if (file === undefined) throw new Error("The score file was not returned.");
+        return downloadFile(file);
+      });
+    });
 
   async function prepareDeletion(target: "work" | "score", id: string) {
     setOutcome({ action: "prepare-delete", state: "waiting" });
@@ -125,6 +142,7 @@ export function WorkPanel({
             scores={scores}
             busy={busy}
             onOpen={openScore}
+            onDownload={downloadScore}
             onDelete={(score) => {
               void prepareDeletion("score", score.id);
             }}
@@ -200,13 +218,18 @@ function WorkFeedback({ outcome }: { outcome: Outcome }) {
       </p>
     );
   }
+  if (outcome.state === "cancelled") {
+    return <Alert variant="info">{t("work.downloadCancelled")}</Alert>;
+  }
   if (outcome.state === "failed") {
     const message =
       outcome.action === "upload"
         ? t("work.uploadError")
         : outcome.action === "open"
           ? t("work.openError")
-          : t("deletion.failed");
+          : outcome.action === "download"
+            ? t("work.downloadError")
+            : t("deletion.failed");
     return <Alert variant="danger">{message}</Alert>;
   }
   const message =
@@ -214,6 +237,8 @@ function WorkFeedback({ outcome }: { outcome: Outcome }) {
       ? t("work.uploaded")
       : outcome.action === "open"
         ? t("work.opened")
-        : t("deletion.done");
+        : outcome.action === "download"
+          ? t("work.downloaded")
+          : t("deletion.done");
   return <Alert variant="success">{message}</Alert>;
 }

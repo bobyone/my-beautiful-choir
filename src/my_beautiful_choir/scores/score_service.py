@@ -15,7 +15,11 @@ from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmati
 from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.repertoire.work import Work
-from my_beautiful_choir.scores.errors import InvalidScoreSizeError, ScoreFileMissingError
+from my_beautiful_choir.scores.errors import (
+    InvalidScoreSizeError,
+    ScoreAboveLimitError,
+    ScoreFileMissingError,
+)
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.opening.score_opener import ScoreOpener
 from my_beautiful_choir.scores.score import Score
@@ -30,7 +34,7 @@ from my_beautiful_choir.storage.file_storage import FileStorage
 
 
 class ScoreService(Deleter):
-    """Adds, lists, opens and deletes the scores of the works."""
+    """Adds, lists, reads, opens and deletes the scores of the works."""
 
     def __init__(
         self,
@@ -110,6 +114,36 @@ class ScoreService(Deleter):
             self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
             return await unit_of_work.scores.list(work_id)
 
+    async def read_score(
+        self, score_id: UUID, maximum_size: int | None = None
+    ) -> tuple[Work, Score, bytes]:
+        """The score, its work and its stored content, exactly as stored.
+
+        Reading never changes the repertoire. With ``maximum_size``, a score
+        whose recorded size exceeds it is refused before anything is read,
+        and at most ``maximum_size + 1`` bytes are read to refuse a stored
+        content larger than its record.
+
+        Raises:
+            ScoreNotFoundError: if no score has this id.
+            WorkNotFoundError: if its work no longer exists.
+            AccessDeniedError: if the user may not consult the repertoire of its choir.
+            ScoreAboveLimitError: if the recorded or the stored size exceeds ``maximum_size``.
+            ScoreFileMissingError: if its content is missing from the storage.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            score = await unit_of_work.scores.get(score_id)
+            work = await unit_of_work.works.get(score.work_id)
+            self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
+        if maximum_size is not None and score.size > maximum_size:
+            raise ScoreAboveLimitError(score.id, score.label, maximum_size)
+        if not await self._file_storage.exists(score.storage_key):
+            raise ScoreFileMissingError(score.id, score.label)
+        content = await self._file_storage.read(score.storage_key, maximum_size)
+        if maximum_size is not None and len(content) > maximum_size:
+            raise ScoreAboveLimitError(score.id, score.label, maximum_size)
+        return work, score, content
+
     async def open_score(self, score_id: UUID) -> tuple[Work, Score]:
         """Open the score in the application of the user's computer that opens its format.
 
@@ -118,13 +152,7 @@ class ScoreService(Deleter):
             ScoreFileMissingError: if its content is missing from the storage.
             ScoreOpenError: if it cannot be opened.
         """
-        async with self._unit_of_work() as unit_of_work:
-            score = await unit_of_work.scores.get(score_id)
-            work = await unit_of_work.works.get(score.work_id)
-            self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
-        if not await self._file_storage.exists(score.storage_key):
-            raise ScoreFileMissingError(score.id, score.label)
-        content = await self._file_storage.read(score.storage_key)
+        work, score, content = await self.read_score(score_id)
         await self._opener.open(score, content)
         return work, score
 

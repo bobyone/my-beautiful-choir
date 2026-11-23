@@ -24,6 +24,22 @@ class ScoreFormat(StrEnum):
         """Usual file extension, with its dot."""
         return f".{self.value}"
 
+    @property
+    def media_type(self) -> str:
+        """Media type of a file of this format.
+
+        MuseScore has no registered media type: the unregistered one used in
+        practice is given.
+        """
+        return _MEDIA_TYPES[self]
+
+
+_MEDIA_TYPES = {
+    ScoreFormat.PDF: "application/pdf",
+    ScoreFormat.MUSICXML: "application/vnd.recordare.musicxml+xml",
+    ScoreFormat.COMPRESSED_MUSICXML: "application/vnd.recordare.musicxml",
+    ScoreFormat.MUSESCORE: "application/x-musescore",
+}
 
 _DISPLAY_NAMES = {
     ScoreFormat.PDF: "PDF",

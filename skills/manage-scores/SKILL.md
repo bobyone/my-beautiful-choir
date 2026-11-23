@@ -1,6 +1,6 @@
 ---
 name: manage-scores
-description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to open or delete a score, in personal mode.
+description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to open, receive in the conversation or delete a score, in personal mode.
 ---
 
 <!--
@@ -21,6 +21,7 @@ personal mode. A score belongs to a work: find the work's id first (use the
 | Add a score from a file of the user's computer | `add_score_from_file(work_id, path, label?)` |
 | Add a score from a public Google Drive link | `add_score_from_google_drive(work_id, link, label?)` |
 | Open a score | `open_score(score_id)` |
+| Send a score to the user in the conversation | `get_score_file(score_id)` |
 | Delete a score | `delete_score(score_id)` |
 
 ## Rules to follow
@@ -44,6 +45,15 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - The same file may be added twice, for instance with two labels.
 - `open_score` opens a **copy** in the default application of the computer:
   changes made there do not change the score of the repertoire.
+- `get_score_file` gives the file back in the conversation, up to 2 MB.
+  Whether the user can save it depends on the client. The file is named by
+  its download name: the original name without its extension (otherwise the
+  label), with characters that file systems refuse replaced by `_`, followed
+  by the extension of the detected format (for instance `Alto.mscz` holding a
+  PDF is given as `Alto.pdf`). The original name stays in the repertoire.
+  Above 2 MB, or when the client does not show the file, use `open_score`, or
+  open the Work view with `show_work(work_id)`: when the client can save
+  files, the user downloads a score of any size with **Download**.
 
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.

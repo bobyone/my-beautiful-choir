@@ -24,7 +24,11 @@ export function RepertoireApp({ i18n }: { i18n: I18n }) {
         <ViewStatus kind="error" />
       ) : (
         <main>
-          <RepertoirePanel data={data} callTool={host.callTool} />
+          <RepertoirePanel
+            data={data}
+            callTool={host.callTool}
+            downloadFile={host.canDownload ? host.downloadFile : undefined}
+          />
         </main>
       )}
     </I18nextProvider>

@@ -251,6 +251,64 @@ describe("repertoire and work views", () => {
     expect(await screen.findByText(/Could not open the score/)).toBeDefined();
   });
 
+  it("hides Download when the host cannot save files", async () => {
+    await show(WorkApp, result(workResult));
+    expect(screen.getByRole("button", { name: "Open" })).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Download" })).toBeNull();
+  });
+
+  it("downloads a score through the host and reports each outcome", async () => {
+    const file = {
+      type: "resource",
+      resource: { uri: "file:///Soprano.pdf", mimeType: "application/pdf", blob: "UERG" },
+    } as const;
+    host.capabilities = { downloadFile: {} };
+    host.answerToolCall = () => ({ content: [{ type: "text", text: "Here is the file" }, file] });
+    const { container } = await show(WorkApp, result(workResult));
+    const download = screen.getByRole("button", { name: "Download" });
+    expect(download.getAttribute("aria-describedby")).toBe(`score-${score.id}`);
+    expect(await accessibilityViolations(container)).toEqual([]);
+
+    fireEvent.click(download);
+    expect(screen.getByRole("status")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Download" }).hasAttribute("disabled")).toBe(true);
+    expect(await screen.findByText("Score downloaded.")).toBeDefined();
+    expect(host.toolCalls).toEqual([{ name: "download_score", arguments: { score_id: score.id } }]);
+    expect(host.downloads).toEqual([[file]]);
+
+    host.downloadAnswer = { isError: true };
+    fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    expect(await screen.findByText("Download cancelled.")).toBeDefined();
+
+    host.downloadAnswer = new Error("lost");
+    fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    expect(await screen.findByText(/Could not download the score/)).toBeDefined();
+
+    host.answerToolCall = () => error;
+    fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    await waitFor(() => {
+      expect(host.toolCalls).toHaveLength(4);
+    });
+    expect(await screen.findByText(/It may have been deleted/)).toBeDefined();
+    expect(host.downloads).toHaveLength(3);
+
+    host.answerToolCall = () => ({ content: [{ type: "text", text: "No file" }] });
+    fireEvent.click(screen.getByRole("button", { name: "Download" }));
+    await waitFor(() => {
+      expect(host.toolCalls).toHaveLength(5);
+    });
+    expect(await screen.findByText(/Could not download the score/)).toBeDefined();
+    expect(host.downloads).toHaveLength(3);
+  });
+
+  it("offers Download in a work opened from the repertoire", async () => {
+    host.capabilities = { downloadFile: {} };
+    host.answerToolCall = () => result(workResult);
+    await show(RepertoireApp, result(repertoire));
+    fireEvent.click(screen.getByRole("button", { name: work.title }));
+    expect(await screen.findByRole("button", { name: "Download" })).toBeDefined();
+  });
+
   it("sends only the chosen file and updates the score table", async () => {
     const uploaded = { id: "new", label: "Alto", format: "mxl", size: 3 };
     host.answerToolCall = () => result({ score: uploaded });

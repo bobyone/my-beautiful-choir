@@ -72,7 +72,7 @@ code and the process exit code.
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`, `counts_of_works(work_ids)` (number of scores of each given work with scores). |
 | `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
-| `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
+| `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key, maximum_size=None)` (with a maximum size, reads at most one byte more, so that a larger content is detected without being loaded), `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
 | `ScoreFormatDetector` | `scores.formats` | `detect(content) -> ScoreFormat`: tries its signatures in order and gives the format of the first one that matches; raises `UnsupportedScoreFormatError`, listing the accepted formats. |
 | `ScoreSource` | `scores.sources` | `origin` (`ScoreOrigin`) and `link` (`None` by default), recorded with the score; `async fetch(limit) -> ScoreContent`: gives the content of a score being added and its original file name, of at most `limit` bytes; stops as soon as the content exceeds the limit and raises `InvalidScoreSizeError`; raises a `ScoreSourceError` when the content cannot be obtained. An empty content is returned as is: the score service refuses it. One source is built per request, from the tool arguments. |
@@ -94,11 +94,16 @@ and `/uc?id=` and raises `UnsupportedLinkError` otherwise; `url`, the
 canonical sharing link kept with the score; `download_url`),
 `ScoreContent` (`scores.sources`: `original_name`, metadata only and never
 used as a path, `content`, `size`), `ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
-`display_name` and `extension`),
+`display_name`, `extension` and `media_type`: `application/pdf`,
+`application/vnd.recordare.musicxml+xml`, `application/vnd.recordare.musicxml`
+and the unregistered `application/x-musescore`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
-(`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
-a tool can use during one call), `MetricsExport` (`monitoring`).
+(`tools`: `text`, `structured`, `files`), `ToolFile` (`tools`: `name`,
+metadata only and never a path, `media_type`, `content`, kept out of its
+representation so it never reaches a log), `ToolContext` (`tools`: `confirmation`, and
+`client_shows_views`, whether the client declared MCP Apps support for the
+call; what a tool can use during one call), `MetricsExport` (`monitoring`).
 
 ## Implementations
 
@@ -170,7 +175,8 @@ migration fails.
 Each key is a file under `root`; its segments are subdirectories, created
 when needed. Writing goes through a temporary file in the same directory,
 then a rename, so that a stored file is never left half written. File
-system calls run in a worker thread. An `OSError` becomes a `StorageError`
+system calls run in a worker thread. A read with a maximum size reads at
+most that size plus one byte. An `OSError` becomes a `StorageError`
 naming the key. Limits: the whole content is held in memory (scores are at
 most 50 MB); no locking between processes.
 
@@ -270,7 +276,7 @@ their id. The structured content describes the work (`work_data`).
 |---|---|---|---|
 | `unit_of_work` | `UnitOfWorkFactory` | required | One unit of work per operation. |
 | `clock` | `Clock` | required | Date added. |
-| `authorization` | `Authorization` | required | `manage_repertoire` to add, `consult_repertoire` to list and open. |
+| `authorization` | `Authorization` | required | `manage_repertoire` to add, `consult_repertoire` to list, read and open. |
 | `file_storage` | `FileStorage` | required | Content of the scores. |
 | `format_detector` | `ScoreFormatDetector` | required | Format recognized from the content. |
 | `opener` | `ScoreOpener` | required | Opens the scores. |
@@ -283,12 +289,29 @@ their id. The structured content describes the work (`work_data`).
   characters, at most 100 characters (`InvalidScoreError`); by default the
   original name without its extension, or the format name; original name at
   most 255 characters; storage key `choirs/<choir id>/scores/<score id>`.
+  `download_name(original, label, format)` gives the file name proposed for
+  a download: the original name without a trailing extension (the
+  extension of a score format, whatever its case, such as `.musicxml`;
+  otherwise a dot, a letter, then at most four letters or digits, and a
+  score format extension that this reveals, so `Alto.pdf.bak` gives
+  `Alto.pdf`), otherwise the label, with
+  control characters and `<>:"/\|?*` replaced by `_`, leading and trailing
+  dots and spaces removed, `_` put before a name Windows reserves (`CON`,
+  `NUL`, `COM1`...), cut to 255 characters, then the extension of the
+  detected format; `score` when nothing is left.
   The content is stored, then the score saved; if saving fails (the work
   was deleted meanwhile, for instance), the stored content is removed, and
   a failed removal is logged.
 - `list_scores(work_id)`.
-- `open_score(score_id)`: raises `ScoreFileMissingError` when the content is
-  missing from the storage, then gives the content to the opener.
+- `read_score(score_id, maximum_size=None) -> (Work, Score, bytes)`: checks
+  the right on the work's choir; with a maximum size, raises
+  `ScoreAboveLimitError` when the recorded size exceeds it, before reading
+  anything; raises `ScoreFileMissingError` when the content is missing from
+  the storage; reads at most the maximum size plus one byte and raises
+  `ScoreAboveLimitError` when the stored content exceeds it; returns the
+  content exactly as stored. It changes nothing.
+- `open_score(score_id)`: reads the score with `read_score`, then gives the
+  content to the opener.
 - Deletion (`Deleter`): a score, then its stored content.
 
 ### `SqlScoreRepository` (`scores.sql`)
@@ -318,8 +341,26 @@ launch that succeeds does not prove that an application showed the file.
 
 Text tools: `add_score_from_file(work_id, path, label?)`,
 `add_score_from_google_drive(work_id, link, label?)` (receives a factory of
-Google Drive sources) and `open_score(score_id)`. Scores are named by their
-id. The structured content gives the `work_id` and the score (`score_data`).
+Google Drive sources), `open_score(score_id)` and `get_score_file(score_id)`.
+Scores are named by their id. The structured content gives the `work_id` and
+the score (`score_data`).
+
+`GetScoreFileTool(service, maximum_size=CONVERSATION_FILE_MAXIMUM_SIZE)`
+reads the score with `ScoreService.read_score` and returns it with
+`score_file_result`: a text describing it and one `ToolFile` named by its
+download name (`download_name`), with the media type of its format; the
+structured content keeps the original name unchanged.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `service` | `ScoreService` | required | Reads the score. |
+| `maximum_size` | `int` | 2 MiB | Largest score returned, in bytes: a returned file may enter the model context. |
+
+It reads the score with its limit and turns `ScoreAboveLimitError` into
+`ScoreTooLargeToReturnError`: a recorded size above the limit is refused
+before the file is read, and a stored file larger than its record after
+reading at most the limit plus one byte. The message points to `open_score`
+and to Download in the Work view.
 
 ### Score format signatures (`scores.formats.signatures`)
 
@@ -457,6 +498,23 @@ passes the bytes to `UploadedScoreSource` and the regular score service.
 The service checks the decoded size and recognizes the format from the
 content. The original name is metadata. The file storage key uses UUIDs.
 
+`DownloadScoreTool(view, service, conversation_maximum_size=2 MiB)` is
+app-only: `download_score(score_id)` reads the score with
+`ScoreService.read_score` and returns it with `score_file_result`. A client
+that does not show views may ignore the app-only visibility and let its model
+call the tool, so the conversation limit is lifted only when
+`ToolContext.client_shows_views` is true; otherwise a larger score raises
+`ScoreTooLargeToReturnError` before it is read. With views, the score limit
+bounds it. When the host advertises the MCP Apps `downloadFile`
+capability (`useHost().canDownload`), the Work panel shows **Download** next
+to **Open** for each score: it calls `download_score`, takes the embedded
+resource of the result and asks the host to save it with `App.downloadFile`
+(`useHost().downloadFile`). The view shows the download in progress, then
+"Score downloaded.", "Download cancelled." when the host answers `isError`
+(a cancellation and a refusal look the same), or an error saying that the
+score may have been deleted. Without the capability, the button is not
+shown.
+
 `PreviewDeletionFromWorkViewTool(view, deleter, pending)` registers
 `preview_work_deletion` and `preview_score_deletion` with visibility
 `["app"]` and a required UUID `target_id`. The Work panel loads the preview
@@ -538,13 +596,22 @@ only code that imports the SDK.
   validation message;
 - each call receives a `ToolContext` whose confirmation is an
   `ElicitationConfirmation` on the SDK request context, passed through a
-  reserved parameter (`mbc_request_context`, refused as an argument name);
+  reserved parameter (`mbc_request_context`, refused as an argument name),
+  and whose `client_shows_views` is the SDK's `client_supports_apps`: the
+  client declared the `io.modelcontextprotocol/ui` extension with the
+  `text/html;profile=mcp-app` media type;
 - a `ConfirmationInputRequired` ends the call with its input request;
 - a `DomainError` is returned to the model as an error result with its
   message; any other exception is logged with its stack trace and
   returned as a generic error, without technical details;
 - a missing view raises `ViewNotFoundError` during the build, hence at
   startup.
+- each `ToolFile` of a result follows its text as an `EmbeddedResource`
+  holding a `BlobResourceContents`: `uri` `file:///<name>` with every
+  reserved character percent-encoded, `/` and `\` included, so the name
+  stays the last segment, where hosts take the file name from; the media
+  type; the content in base64 (see
+  [ADR 0019](decisions/0019-return-score-files-as-embedded-resources.md)).
 
 ### `StdioTransport` (`transport.stdio`)
 

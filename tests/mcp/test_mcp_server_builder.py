@@ -3,12 +3,15 @@
 
 """Integration tests of the MCP adapter, through the SDK in-memory client."""
 
+from base64 import b64decode
 from collections.abc import Sequence
 from typing import Annotated, Any, Self
 
 import pytest
 from mcp.client import Client
-from mcp.types import TextContent
+from mcp.client.extension import ClientExtension, advertise
+from mcp.server.apps import APP_MIME_TYPE, EXTENSION_ID
+from mcp.types import BlobResourceContents, EmbeddedResource, TextContent
 from pydantic import BaseModel, Field, model_validator
 
 from my_beautiful_choir.application.application_info import ApplicationInfo
@@ -18,9 +21,11 @@ from my_beautiful_choir.mcp.mcp_server_builder import (
     CONTEXT_PARAMETER,
     UNEXPECTED_ERROR_TEXT,
     McpServerBuilder,
+    file_uri,
 )
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
+from my_beautiful_choir.tools.tool_file import ToolFile
 from my_beautiful_choir.tools.tool_result import ToolResult
 from my_beautiful_choir.views.errors import ViewNotFoundError
 from my_beautiful_choir.views.view import View
@@ -245,3 +250,77 @@ async def test_app_only_tool_is_published_for_the_view_only() -> None:
 def test_app_only_tool_without_view_fails_the_build() -> None:
     with pytest.raises(ValueError, match="hidden"):
         McpServerBuilder(INFO, [StubTool(name="hidden", app_only=True)]).build()
+
+
+class _FileTool(StubTool):
+    def __init__(self, files: Sequence[ToolFile]) -> None:
+        super().__init__(name="file")
+        self._files = files
+
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
+        return ToolResult(text="here is the file", files=self._files)
+
+
+@pytest.mark.anyio
+async def test_files_are_returned_as_embedded_resources_after_the_text() -> None:
+    content = bytes(range(256)) * 3
+    files = [
+        ToolFile("Ave/verum\\alto 100%.pdf", "application/pdf", content),
+        ToolFile("Gloria.mxl", "application/vnd.recordare.musicxml", b""),
+    ]
+    async with _client([_FileTool(files)]) as client:
+        result = await client.call_tool("file", {"title": "x"})
+    assert not result.is_error
+    text, first, second = result.content
+    assert _text(text) == "here is the file"
+    assert isinstance(first, EmbeddedResource)
+    assert isinstance(first.resource, BlobResourceContents)
+    assert first.resource.uri == "file:///Ave%2Fverum%5Calto%20100%25.pdf"
+    assert first.resource.mime_type == "application/pdf"
+    assert b64decode(first.resource.blob) == content
+    assert isinstance(second, EmbeddedResource)
+    assert isinstance(second.resource, BlobResourceContents)
+    assert second.resource.uri == "file:///Gloria.mxl"
+    assert second.resource.blob == ""
+
+
+def test_file_uri_keeps_the_name_in_one_segment() -> None:
+    assert file_uri("a/b\\c?d#e") == "file:///a%2Fb%5Cc%3Fd%23e"
+    assert file_uri("Chœur.pdf") == "file:///Ch%C5%93ur.pdf"
+
+
+@pytest.mark.anyio
+async def test_result_without_files_has_only_its_text() -> None:
+    async with _client([StubTool()]) as client:
+        result = await client.call_tool("stub", {"title": "x"})
+    assert len(result.content) == 1
+
+
+class _ContextSpyTool(StubTool):
+    def __init__(self) -> None:
+        super().__init__(name="spy")
+        self.contexts: list[ToolContext] = []
+
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
+        self.contexts.append(context)
+        return ToolResult(text="seen")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("extensions", "shows_views"),
+    [
+        ([], False),
+        ([advertise(EXTENSION_ID, {"mimeTypes": [APP_MIME_TYPE]})], True),
+        ([advertise(EXTENSION_ID, {})], False),
+    ],
+)
+async def test_the_context_tells_whether_the_client_shows_views(
+    extensions: list[ClientExtension], shows_views: bool
+) -> None:
+    tool = _ContextSpyTool()
+    server = McpServerBuilder(INFO, [tool]).build()
+    async with Client(server, raise_exceptions=False, extensions=extensions) as client:
+        await client.call_tool("spy", {"title": "x"})
+    [context] = tool.contexts
+    assert context.client_shows_views is shows_views

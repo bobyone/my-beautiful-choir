@@ -18,10 +18,12 @@ interface ScoreTableProps {
   scores: ScoreInfo[];
   busy: boolean;
   onOpen: (score: ScoreInfo) => void;
+  /** Without it, the Download action is not shown. */
+  onDownload?: ((score: ScoreInfo) => void) | undefined;
   onDelete: (score: ScoreInfo) => void;
 }
 
-export function ScoreTable({ scores, busy, onOpen, onDelete }: ScoreTableProps) {
+export function ScoreTable({ scores, busy, onOpen, onDownload, onDelete }: ScoreTableProps) {
   const { t, i18n } = useTranslation();
   const bytes = new Intl.NumberFormat(i18n.language, {
     style: "unit",
@@ -63,6 +65,18 @@ export function ScoreTable({ scores, busy, onOpen, onDelete }: ScoreTableProps) 
                 >
                   {t("work.openScore")}
                 </Button>
+                {onDownload !== undefined && (
+                  <Button
+                    variant="outline-primary"
+                    disabled={busy}
+                    aria-describedby={`score-${score.id}`}
+                    onClick={() => {
+                      onDownload(score);
+                    }}
+                  >
+                    {t("work.downloadScore")}
+                  </Button>
+                )}
                 <Button
                   variant="outline-danger"
                   disabled={busy}
