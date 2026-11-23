@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -23,6 +23,14 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
   const busy = state === "loading";
   const collator = new Intl.Collator(i18n.language);
   const totals = new Intl.NumberFormat(i18n.language);
+  const pager = useRef<HTMLElement>(null);
+  const focusCurrentPage = useRef(false);
+
+  useEffect(() => {
+    if (!focusCurrentPage.current) return;
+    focusCurrentPage.current = false;
+    pager.current?.querySelector<HTMLElement>('[aria-current="page"]')?.focus();
+  }, [repertoire]);
 
   async function searchRepertoire(choir: string, text: string, page?: number): Promise<void> {
     setState("loading");
@@ -35,6 +43,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
       );
       const updated = parseRepertoire(reply);
       if (!updated) throw new Error("The repertoire reply was invalid.");
+      focusCurrentPage.current = page !== undefined;
       setRepertoire(updated);
       setState("idle");
     } catch {
@@ -159,26 +168,28 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
                 </tbody>
               </Table>
               {repertoire.pageCount > 1 && (
-                <nav aria-label={t("repertoire.pages")}>
+                <nav ref={pager} aria-label={t("repertoire.pages")}>
                   <Pagination className="flex-wrap">
                     <Pagination.Item
-                      disabled={busy || repertoire.page === 1}
+                      disabled={repertoire.page === 1}
                       onClick={() => {
-                        void searchRepertoire(choir, repertoire.search, repertoire.page - 1);
+                        if (!busy)
+                          void searchRepertoire(choir, repertoire.search, repertoire.page - 1);
                       }}
                     >
                       {t("repertoire.previousPage")}
                     </Pagination.Item>
-                    <Pagination.Item active activeLabel="" aria-current="page">
+                    <Pagination.Item active activeLabel="" aria-current="page" tabIndex={-1}>
                       {t("repertoire.pageOf", {
                         page: repertoire.page,
                         pageCount: repertoire.pageCount,
                       })}
                     </Pagination.Item>
                     <Pagination.Item
-                      disabled={busy || repertoire.page === repertoire.pageCount}
+                      disabled={repertoire.page === repertoire.pageCount}
                       onClick={() => {
-                        void searchRepertoire(choir, repertoire.search, repertoire.page + 1);
+                        if (!busy)
+                          void searchRepertoire(choir, repertoire.search, repertoire.page + 1);
                       }}
                     >
                       {t("repertoire.nextPage")}

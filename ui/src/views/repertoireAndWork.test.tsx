@@ -145,7 +145,7 @@ describe("repertoire and work views", () => {
     expect(within(pages).queryByRole("button", { name: "Previous" })).toBeNull();
     expect(await accessibilityViolations(container)).toEqual([]);
     fireEvent.click(within(pages).getByRole("button", { name: "Next" }));
-    expect(await screen.findByText("Page 2 of 3")).toBeDefined();
+    expect(await screen.findByText("Page 2 of 3")).toBe(document.activeElement);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Page 3 of 3")).toBeDefined();
     expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
