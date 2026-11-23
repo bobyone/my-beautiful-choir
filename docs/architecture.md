@@ -94,7 +94,9 @@ and `/uc?id=` and raises `UnsupportedLinkError` otherwise; `url`, the
 canonical sharing link kept with the score; `download_url`),
 `ScoreContent` (`scores.sources`: `original_name`, metadata only and never
 used as a path, `content`, `size`), `ScoreFormat` (`scores.formats`: `pdf`, `musicxml`, `mxl`, `mscz`, with
-`display_name` and `extension`),
+`display_name`, `extension` and `media_type`: `application/pdf`,
+`application/vnd.recordare.musicxml+xml`, `application/vnd.recordare.musicxml`
+and the unregistered `application/x-musescore`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
 (`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
@@ -270,7 +272,7 @@ their id. The structured content describes the work (`work_data`).
 |---|---|---|---|
 | `unit_of_work` | `UnitOfWorkFactory` | required | One unit of work per operation. |
 | `clock` | `Clock` | required | Date added. |
-| `authorization` | `Authorization` | required | `manage_repertoire` to add, `consult_repertoire` to list and open. |
+| `authorization` | `Authorization` | required | `manage_repertoire` to add, `consult_repertoire` to list, read and open. |
 | `file_storage` | `FileStorage` | required | Content of the scores. |
 | `format_detector` | `ScoreFormatDetector` | required | Format recognized from the content. |
 | `opener` | `ScoreOpener` | required | Opens the scores. |
@@ -287,8 +289,12 @@ their id. The structured content describes the work (`work_data`).
   was deleted meanwhile, for instance), the stored content is removed, and
   a failed removal is logged.
 - `list_scores(work_id)`.
-- `open_score(score_id)`: raises `ScoreFileMissingError` when the content is
-  missing from the storage, then gives the content to the opener.
+- `read_score(score_id) -> (Work, Score, bytes)`: checks the right on the
+  work's choir, raises `ScoreFileMissingError` when the content is missing
+  from the storage, and returns the content exactly as stored. It changes
+  nothing.
+- `open_score(score_id)`: reads the score with `read_score`, then gives the
+  content to the opener.
 - Deletion (`Deleter`): a score, then its stored content.
 
 ### `SqlScoreRepository` (`scores.sql`)

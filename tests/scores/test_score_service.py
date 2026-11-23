@@ -247,6 +247,39 @@ async def test_list_scores_of_a_missing_work_or_without_right(fixture: _Fixture)
 
 
 @pytest.mark.anyio
+async def test_read_gives_the_stored_content_without_changing_anything(fixture: _Fixture) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, score = await service.add_score(work.id, StubScoreSource(score_samples.pdf()), "Alto")
+    stored = dict(fixture.storage.files)
+    assert await service.read_score(score.id) == (work, score, score_samples.pdf())
+    assert fixture.storage.files == stored
+    assert await service.list_scores(work.id) == [score]
+    assert fixture.opener.opened == []
+
+
+@pytest.mark.anyio
+async def test_read_a_missing_score_or_a_missing_file(fixture: _Fixture) -> None:
+    service = fixture.service()
+    with pytest.raises(ScoreNotFoundError):
+        await service.read_score(uuid4())
+    work = await fixture.work()
+    _, score = await service.add_score(work.id, StubScoreSource(score_samples.pdf()), "Alto")
+    fixture.storage.files.clear()
+    with pytest.raises(ScoreFileMissingError):
+        await service.read_score(score.id)
+
+
+@pytest.mark.anyio
+async def test_read_requires_the_right_to_consult_the_repertoire(fixture: _Fixture) -> None:
+    work = await fixture.work()
+    _, score = await fixture.service().add_score(work.id, StubScoreSource(score_samples.pdf()))
+    denied = fixture.service(DenyingAuthorization(Permission.CONSULT_REPERTOIRE))
+    with pytest.raises(AccessDeniedError):
+        await denied.read_score(score.id)
+
+
+@pytest.mark.anyio
 async def test_open_gives_the_stored_content_to_the_opener(fixture: _Fixture) -> None:
     work = await fixture.work()
     service = fixture.service()

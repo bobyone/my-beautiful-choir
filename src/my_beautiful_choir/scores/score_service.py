@@ -30,7 +30,7 @@ from my_beautiful_choir.storage.file_storage import FileStorage
 
 
 class ScoreService(Deleter):
-    """Adds, lists, opens and deletes the scores of the works."""
+    """Adds, lists, reads, opens and deletes the scores of the works."""
 
     def __init__(
         self,
@@ -110,13 +110,16 @@ class ScoreService(Deleter):
             self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
             return await unit_of_work.scores.list(work_id)
 
-    async def open_score(self, score_id: UUID) -> tuple[Work, Score]:
-        """Open the score in the application of the user's computer that opens its format.
+    async def read_score(self, score_id: UUID) -> tuple[Work, Score, bytes]:
+        """The score, its work and its stored content, exactly as stored.
+
+        Reading never changes the repertoire.
 
         Raises:
             ScoreNotFoundError: if no score has this id.
+            WorkNotFoundError: if its work no longer exists.
+            AccessDeniedError: if the user may not consult the repertoire of its choir.
             ScoreFileMissingError: if its content is missing from the storage.
-            ScoreOpenError: if it cannot be opened.
         """
         async with self._unit_of_work() as unit_of_work:
             score = await unit_of_work.scores.get(score_id)
@@ -125,6 +128,17 @@ class ScoreService(Deleter):
         if not await self._file_storage.exists(score.storage_key):
             raise ScoreFileMissingError(score.id, score.label)
         content = await self._file_storage.read(score.storage_key)
+        return work, score, content
+
+    async def open_score(self, score_id: UUID) -> tuple[Work, Score]:
+        """Open the score in the application of the user's computer that opens its format.
+
+        Raises:
+            ScoreNotFoundError: if no score has this id.
+            ScoreFileMissingError: if its content is missing from the storage.
+            ScoreOpenError: if it cannot be opened.
+        """
+        work, score, content = await self.read_score(score_id)
         await self._opener.open(score, content)
         return work, score
 

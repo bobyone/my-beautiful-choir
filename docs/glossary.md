@@ -31,6 +31,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
+| Original name | Name of the file of a score when it was added; metadata only, never used as a path, given back as the file name of a download. | `Score.original_name` | | original name | nom d'origine |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
 | Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | `glossary.repertoire` | Repertoire | Répertoire |
 | Repertoire page | Ordered slice of the works of a choir matching a search, with its number, its size (10 works by default, at most 100) and the number of matching works. | `RepertoirePage` | `repertoire.pages` | Repertoire pages | Pages du répertoire |
