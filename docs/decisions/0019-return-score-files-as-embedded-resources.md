@@ -62,4 +62,7 @@ costly for large files.
   embedded resources to the model.
 - A download from the view moves up to about 67 MB of base64 between the
   view and the host, like the existing upload.
-- The file name given to hosts is the original name; hosts sanitize it.
+- The file name given to hosts is the download name: the original name
+  made safe, with the extension of the detected format, so a saved file
+  opens with the application of its real format. The original name stays
+  unchanged in the score's metadata.

@@ -7,7 +7,7 @@ from collections.abc import Mapping
 
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.scores.score import Score
-from my_beautiful_choir.scores.score_rules import LABEL_LENGTH
+from my_beautiful_choir.scores.score_rules import LABEL_LENGTH, download_name
 from my_beautiful_choir.tools.repertoire.work_data import work_label
 from my_beautiful_choir.tools.tool_file import ToolFile
 from my_beautiful_choir.tools.tool_result import ToolResult
@@ -37,15 +37,15 @@ def score_data(score: Score) -> Mapping[str, object]:
 
 
 def score_file_result(work: Work, score: Score, content: bytes) -> ToolResult:
-    """Result of a tool giving back the file of a score, named by its original name."""
+    """Result of a tool giving back the file of a score, named by its download name."""
+    name = download_name(score.original_name, score.label, score.format)
     return ToolResult(
         text=(
             f"Here is the file of the score {score.label!r} ({score.format.display_name}, "
-            f"{len(content)} bytes) of the work {work_label(work)}, named "
-            f"{score.original_name!r}."
+            f"{len(content)} bytes) of the work {work_label(work)}, named {name!r}."
         ),
         structured={"work_id": str(work.id), "score": score_data(score)},
-        files=(ToolFile(score.original_name, score.format.media_type, content),),
+        files=(ToolFile(name, score.format.media_type, content),),
     )
 
 

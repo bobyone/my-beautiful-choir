@@ -25,6 +25,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
 | Deletion preview | Summary and record state covered by a deletion confirmation. | `DeletionPreview` | | deletion preview | aperçu de suppression |
 | Download | Saving of a copy of a score on the user's device through the client; the repertoire is not changed. | `download` | `work.downloadScore` | Download | Télécharger |
+| Download name | File name proposed for a download: the original name without its extension, otherwise the score label, made safe for common file systems, followed by the extension of the score format. | `download_name` | | download name | nom de téléchargement |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
@@ -32,7 +33,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
-| Original name | Name of the file of a score when it was added; metadata only, never used as a path, given back as the file name of a download. | `Score.original_name` | | original name | nom d'origine |
+| Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
 | Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | `glossary.repertoire` | Repertoire | Répertoire |
 | Repertoire page | Ordered slice of the works of a choir matching a search, with its number, its size (10 works by default, at most 100) and the number of matching works. | `RepertoirePage` | `repertoire.pages` | Repertoire pages | Pages du répertoire |

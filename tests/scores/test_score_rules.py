@@ -11,10 +11,45 @@ from my_beautiful_choir.scores.errors import InvalidScoreError
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.score_rules import (
     MAXIMUM_SIZE,
+    download_name,
     original_name,
     score_label,
     storage_key,
 )
+
+
+@pytest.mark.parametrize(
+    ("original", "score_format", "expected"),
+    [
+        ("Alto.pdf", ScoreFormat.PDF, "Alto.pdf"),
+        ("Alto.PDF", ScoreFormat.PDF, "Alto.pdf"),
+        ("Alto", ScoreFormat.PDF, "Alto.pdf"),
+        ("Alto.mscz", ScoreFormat.PDF, "Alto.pdf"),
+        ("Alto.exe", ScoreFormat.MUSICXML, "Alto.musicxml"),
+        ("Gloria.tar.gz", ScoreFormat.COMPRESSED_MUSICXML, "Gloria.tar.mxl"),
+        ("Symphony No.5", ScoreFormat.PDF, "Symphony No.5.pdf"),
+        ("Op. 3 No. 2", ScoreFormat.PDF, "Op. 3 No. 2.pdf"),
+        ('a/b\\c:d*e?f"g<h>i|j.pdf', ScoreFormat.PDF, "a_b_c_d_e_f_g_h_i_j.pdf"),
+        ("..hidden.pdf", ScoreFormat.PDF, "hidden.pdf"),
+        ("Chœur à 4.mxl", ScoreFormat.COMPRESSED_MUSICXML, "Chœur à 4.mxl"),
+        ("CON.pdf", ScoreFormat.PDF, "_CON.pdf"),
+        ("nul", ScoreFormat.MUSESCORE, "_nul.mscz"),
+    ],
+)
+def test_download_name(original: str, score_format: ScoreFormat, expected: str) -> None:
+    assert download_name(original, "Label", score_format) == expected
+
+
+def test_download_name_falls_back_on_the_label_then_on_a_generic_name() -> None:
+    assert download_name(".pdf", "Alto part", ScoreFormat.PDF) == "Alto part.pdf"
+    assert download_name("...", "??", ScoreFormat.PDF) == "__.pdf"
+    assert download_name("", " . ", ScoreFormat.PDF) == "score.pdf"
+
+
+def test_download_name_fits_the_name_length() -> None:
+    name = download_name("a" * 300 + ".pdf", "Label", ScoreFormat.MUSESCORE)
+    assert len(name) == 255
+    assert name.endswith("a.mscz")
 
 
 def test_the_maximum_size_is_50_megabytes() -> None:

@@ -227,3 +227,19 @@ async def test_get_a_missing_score_file(fixture: _Fixture) -> None:
         await GetScoreFileTool(fixture.service).execute(
             GetScoreFileArguments(score_id=uuid4()), tool_context()
         )
+
+
+@pytest.mark.anyio
+async def test_get_score_file_names_the_file_with_the_extension_of_its_format(
+    fixture: _Fixture,
+) -> None:
+    work = await fixture.work()
+    _, score = await fixture.service.add_score(
+        work.id, StubScoreSource(score_samples.pdf(), "Requiem.mscz"), "Requiem"
+    )
+    result = await GetScoreFileTool(fixture.service).execute(
+        GetScoreFileArguments(score_id=score.id), tool_context()
+    )
+    [file] = result.files
+    assert file.name == "Requiem.pdf"
+    assert result.structured["score"]["original_name"] == "Requiem.mscz"  # type: ignore[index]

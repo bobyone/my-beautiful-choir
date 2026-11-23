@@ -287,6 +287,13 @@ their id. The structured content describes the work (`work_data`).
   characters, at most 100 characters (`InvalidScoreError`); by default the
   original name without its extension, or the format name; original name at
   most 255 characters; storage key `choirs/<choir id>/scores/<score id>`.
+  `download_name(original, label, format)` gives the file name proposed for
+  a download: the original name without a trailing extension (a dot, a
+  letter, then at most four letters or digits), otherwise the label, with
+  control characters and `<>:"/\|?*` replaced by `_`, leading and trailing
+  dots and spaces removed, `_` put before a name Windows reserves (`CON`,
+  `NUL`, `COM1`...), cut to 255 characters, then the extension of the
+  detected format; `score` when nothing is left.
   The content is stored, then the score saved; if saving fails (the work
   was deleted meanwhile, for instance), the stored content is removed, and
   a failed removal is logged.
@@ -333,7 +340,8 @@ the score (`score_data`).
 `GetScoreFileTool(service, maximum_size=CONVERSATION_FILE_MAXIMUM_SIZE)`
 reads the score with `ScoreService.read_score` and returns it with
 `score_file_result`: a text describing it and one `ToolFile` named by its
-original name, with the media type of its format.
+download name (`download_name`), with the media type of its format; the
+structured content keeps the original name unchanged.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
