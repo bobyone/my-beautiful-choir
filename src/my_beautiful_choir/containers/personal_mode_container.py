@@ -57,6 +57,7 @@ from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import Delete
 from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import ShowRepertoireTool
+from my_beautiful_choir.tools.view_tool.work.download_score_tool import DownloadScoreTool
 from my_beautiful_choir.tools.view_tool.work.preview_deletion_from_work_view_tool import (
     PreviewDeletionFromWorkViewTool,
 )
@@ -186,6 +187,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             service=score_service,
             source_factory=uploaded_score_source.provider,
         ),
+        _metered(DownloadScoreTool, metrics, view=work_view, service=score_service),
         _metered(
             PreviewDeletionFromWorkViewTool,
             metrics,

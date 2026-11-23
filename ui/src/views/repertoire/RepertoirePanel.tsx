@@ -9,12 +9,21 @@ import Pagination from "react-bootstrap/Pagination";
 import Table from "react-bootstrap/Table";
 import { useTranslation } from "react-i18next";
 
+import type { DownloadFile } from "../../host/useHost";
 import type { CallTool } from "../viewData";
 import { parseWorkResult, type WorkResult } from "../work/workInfo";
 import { WorkPanel } from "../work/WorkPanel";
 import { parseRepertoire, type RepertoireInfo } from "./repertoireInfo";
 
-export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; callTool: CallTool }) {
+export function RepertoirePanel({
+  data,
+  callTool,
+  downloadFile,
+}: {
+  data: RepertoireInfo;
+  callTool: CallTool;
+  downloadFile?: DownloadFile | undefined;
+}) {
   const { t, i18n } = useTranslation();
   const [repertoire, setRepertoire] = useState(data);
   const [search, setSearch] = useState(data.search);
@@ -89,6 +98,7 @@ export function RepertoirePanel({ data, callTool }: { data: RepertoireInfo; call
         key={selectedWork.work.id}
         data={selectedWork}
         callTool={callTool}
+        downloadFile={downloadFile}
         onBack={() => {
           setSelectedWork(undefined);
           if (choir !== null)

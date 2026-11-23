@@ -24,7 +24,12 @@ export function WorkApp({ i18n }: { i18n: I18n }) {
         <ViewStatus kind="error" />
       ) : (
         <main>
-          <WorkPanel key={data.work.id} data={data} callTool={host.callTool} />
+          <WorkPanel
+            key={data.work.id}
+            data={data}
+            callTool={host.callTool}
+            downloadFile={host.canDownload ? host.downloadFile : undefined}
+          />
         </main>
       )}
     </I18nextProvider>

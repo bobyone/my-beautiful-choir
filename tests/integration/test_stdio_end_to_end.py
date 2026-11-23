@@ -166,7 +166,12 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     work_uri = "ui://my-beautiful-choir/work.html"
     assert tools["show_repertoire"]["_meta"]["ui"]["resourceUri"] == repertoire_uri
     assert tools["show_work"]["_meta"]["ui"]["resourceUri"] == work_uri
-    for name in ("upload_score", "preview_score_deletion", "preview_work_deletion"):
+    for name in (
+        "upload_score",
+        "download_score",
+        "preview_score_deletion",
+        "preview_work_deletion",
+    ):
         assert tools[name]["_meta"]["ui"] == {"resourceUri": work_uri, "visibility": ["app"]}
     for index, uri in enumerate((repertoire_uri, work_uri), start=13):
         [view] = session.request(index, "resources/read", {"uri": uri})["contents"]
@@ -193,6 +198,8 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     assert file["resource"]["uri"] == "file:///Alto.pdf"
     assert file["resource"]["mimeType"] == "application/pdf"
     assert b64decode(file["resource"]["blob"]) == score_samples.pdf()
+    downloaded = _tool_result(session, 171, "download_score", score_id=score_id)
+    assert downloaded["content"][1]["resource"] == file["resource"]
     repertoire = _tool_result(session, 18, "show_repertoire", search="etoile")["structuredContent"]
     assert repertoire["choir"] == "Lyon"
     [work_row] = repertoire["works"]

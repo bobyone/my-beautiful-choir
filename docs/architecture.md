@@ -480,6 +480,19 @@ passes the bytes to `UploadedScoreSource` and the regular score service.
 The service checks the decoded size and recognizes the format from the
 content. The original name is metadata. The file storage key uses UUIDs.
 
+`DownloadScoreTool(view, service)` is app-only: `download_score(score_id)`
+reads the score with `ScoreService.read_score` and returns it with
+`score_file_result`, without the conversation limit of `get_score_file`; the
+score limit bounds it. When the host advertises the MCP Apps `downloadFile`
+capability (`useHost().canDownload`), the Work panel shows **Download** next
+to **Open** for each score: it calls `download_score`, takes the embedded
+resource of the result and asks the host to save it with `App.downloadFile`
+(`useHost().downloadFile`). The view shows the download in progress, then
+"Score downloaded.", "Download cancelled." when the host answers `isError`
+(a cancellation and a refusal look the same), or an error saying that the
+score may have been deleted. Without the capability, the button is not
+shown.
+
 `PreviewDeletionFromWorkViewTool(view, deleter, pending)` registers
 `preview_work_deletion` and `preview_score_deletion` with visibility
 `["app"]` and a required UUID `target_id`. The Work panel loads the preview

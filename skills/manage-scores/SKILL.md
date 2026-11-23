@@ -48,7 +48,8 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - `get_score_file` gives the file back in the conversation, up to 2 MB, named
   by its original name. Whether the user can save it depends on the client.
   Above 2 MB, or when the client does not show the file, use `open_score`, or
-  open the Work view with `show_work(work_id)`.
+  open the Work view with `show_work(work_id)`: when the client can save
+  files, the user downloads a score of any size with **Download**.
 
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.

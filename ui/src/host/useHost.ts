@@ -3,6 +3,7 @@
 
 import type {
   App,
+  McpUiDownloadFileRequest,
   McpUiHostContext,
   McpUiToolResultNotification,
 } from "@modelcontextprotocol/ext-apps";
@@ -13,6 +14,12 @@ export type ToolResult = McpUiToolResultNotification["params"];
 
 /** Result of a tool called by the view. */
 export type CalledToolResult = Awaited<ReturnType<App["callServerTool"]>>;
+
+/** A file the view asks the host to save: an embedded resource or a resource link. */
+export type DownloadableFile = McpUiDownloadFileRequest["params"]["contents"][number];
+
+/** Asks the host to save a file; resolves to "cancelled" when the user or the host refused. */
+export type DownloadFile = (file: DownloadableFile) => Promise<"done" | "cancelled">;
 
 export interface HostState {
   /** True once the view is connected to the host. */
@@ -25,6 +32,10 @@ export interface HostState {
   toolResult: ToolResult | undefined;
   /** Calls a tool of the server, such as an app-only tool; rejects when not connected. */
   callTool: (name: string, args: Record<string, unknown>) => Promise<CalledToolResult>;
+  /** True when the host advertises that it can save a file for the view. */
+  canDownload: boolean;
+  /** Asks the host to save a file; rejects when not connected or when the request fails. */
+  downloadFile: DownloadFile;
 }
 
 /**
@@ -64,11 +75,24 @@ export function useHost(viewName: string, version: string): HostState {
     [app],
   );
 
+  const downloadFile = useCallback(
+    async (file: DownloadableFile): Promise<"done" | "cancelled"> => {
+      if (app === null) {
+        throw new Error("The view is not connected to the host.");
+      }
+      const reply = await app.downloadFile({ contents: [file] });
+      return reply.isError === true ? "cancelled" : "done";
+    },
+    [app],
+  );
+
   return {
     connected: isConnected,
     connectionFailed: error !== null,
     hostContext: hostContext ?? initialContext,
     toolResult,
     callTool,
+    canDownload: isConnected && app?.getHostCapabilities()?.downloadFile !== undefined,
+    downloadFile,
   };
 }

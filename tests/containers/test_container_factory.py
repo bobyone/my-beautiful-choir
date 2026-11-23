@@ -141,6 +141,7 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
         "show_repertoire",
         "show_work",
         "upload_score",
+        "download_score",
         "preview_work_deletion",
         "preview_score_deletion",
         "delete_choir",
