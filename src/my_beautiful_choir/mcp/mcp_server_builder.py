@@ -9,12 +9,21 @@ that knows the MCP SDK: a breaking change of the SDK is absorbed here.
 
 import inspect
 import logging
+from base64 import b64encode
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Annotated, Any, cast
+from urllib.parse import quote
 
 from mcp.server.apps import Apps
 from mcp.server.mcpserver import Context, MCPServer
-from mcp.types import CallToolResult, InputRequiredResult, TextContent
+from mcp.types import (
+    BlobResourceContents,
+    CallToolResult,
+    ContentBlock,
+    EmbeddedResource,
+    InputRequiredResult,
+    TextContent,
+)
 from pydantic import Field, ValidationError
 from pydantic.fields import FieldInfo
 
@@ -26,6 +35,7 @@ from my_beautiful_choir.confirmation.mcp.elicitation_confirmation import (
 from my_beautiful_choir.errors import DomainError
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
+from my_beautiful_choir.tools.tool_file import ToolFile
 from my_beautiful_choir.tools.tool_result import ToolResult
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,9 +56,31 @@ def _text_result(text: str, is_error: bool = False) -> CallToolResult:
     return CallToolResult(content=[TextContent(type="text", text=text)], is_error=is_error)
 
 
+def file_uri(name: str) -> str:
+    """URI carrying the file name of an embedded file, every reserved character encoded.
+
+    Hosts take the file name from the last segment of the URI, as in the MCP
+    Apps examples; ``/`` and ``\\`` are encoded so the name stays one segment.
+    """
+    return f"file:///{quote(name, safe='')}"
+
+
+def _embedded(file: ToolFile) -> EmbeddedResource:
+    return EmbeddedResource(
+        type="resource",
+        resource=BlobResourceContents(
+            uri=file_uri(file.name),
+            mime_type=file.media_type,
+            blob=b64encode(file.content).decode("ascii"),
+        ),
+    )
+
+
 def _to_call_tool_result(result: ToolResult) -> CallToolResult:
+    content: list[ContentBlock] = [TextContent(type="text", text=result.text)]
+    content.extend(_embedded(file) for file in result.files)
     return CallToolResult(
-        content=[TextContent(type="text", text=result.text)],
+        content=content,
         structured_content=dict(result.structured) if result.structured else None,
     )
 

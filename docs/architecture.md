@@ -99,7 +99,9 @@ used as a path, `content`, `size`), `ScoreFormat` (`scores.formats`: `pdf`, `mus
 and the unregistered `application/x-musescore`),
 `Settings` and `WebSettings` (`configuration`, immutable),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
-(`tools`: `text`, `structured`), `ToolContext` (`tools`: `confirmation`, what
+(`tools`: `text`, `structured`, `files`), `ToolFile` (`tools`: `name`,
+metadata only and never a path, `media_type`, `content`, kept out of its
+representation so it never reaches a log), `ToolContext` (`tools`: `confirmation`, what
 a tool can use during one call), `MetricsExport` (`monitoring`).
 
 ## Implementations
@@ -551,6 +553,12 @@ only code that imports the SDK.
   returned as a generic error, without technical details;
 - a missing view raises `ViewNotFoundError` during the build, hence at
   startup.
+- each `ToolFile` of a result follows its text as an `EmbeddedResource`
+  holding a `BlobResourceContents`: `uri` `file:///<name>` with every
+  reserved character percent-encoded, `/` and `\` included, so the name
+  stays the last segment, where hosts take the file name from; the media
+  type; the content in base64 (see
+  [ADR 0019](decisions/0019-return-score-files-as-embedded-resources.md)).
 
 ### `StdioTransport` (`transport.stdio`)
 
