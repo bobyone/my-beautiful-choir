@@ -92,3 +92,30 @@ async def test_deleting_a_choir_deletes_its_works(database: SqlDatabase) -> None
         await unit_of_work.works.add(_work("Ave regina", choir=OTHER))
         await unit_of_work.choirs.delete(OTHER.id)
         assert await unit_of_work.works.count(OTHER.id) == 0
+
+
+@pytest.mark.anyio
+async def test_pages_are_ordered_and_counted(database: SqlDatabase) -> None:
+    works = [
+        _work("Ave verum", "Mozart"),
+        _work("ave María", "Bach"),
+        _work("Ave Maria"),
+        _work("Égloga", "Encina"),
+        _work("Zadok", "Händel"),
+        _work("Ave regina", choir=OTHER),
+    ]
+    async with database.unit_of_work() as unit_of_work:
+        for work in works:
+            await unit_of_work.works.add(work)
+
+        async def labels(text: str | None, offset: int, limit: int) -> list[str]:
+            page = await unit_of_work.works.search_page(CHOIR.id, text, offset, limit)
+            return [f"{w.title}/{w.details.composer}" for w in page]
+
+        assert await labels(None, 0, 3) == ["Ave Maria/None", "ave María/Bach", "Ave verum/Mozart"]
+        assert await labels(None, 3, 3) == ["Égloga/Encina", "Zadok/Händel"]
+        assert await labels(None, 6, 3) == []
+        assert await labels("ave", 1, 1) == ["ave María/Bach"]
+        assert await unit_of_work.works.count_matching(CHOIR.id) == 5
+        assert await unit_of_work.works.count_matching(CHOIR.id, "AVE") == 3
+        assert await unit_of_work.works.count_matching(OTHER.id, "zadok") == 0

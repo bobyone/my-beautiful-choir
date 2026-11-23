@@ -14,6 +14,7 @@ from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.choirs.errors import ChoirNotFoundError, NoChoirError
 from my_beautiful_choir.repertoire.errors import InvalidWorkError, WorkNotFoundError
+from my_beautiful_choir.repertoire.repertoire_page import PageRequest
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work import WorkChanges, WorkDetails
 from tests.doubles import DenyingAuthorization, FakeClock
@@ -143,3 +144,23 @@ async def test_permissions_are_required(
         await consulting.search(None)
     with pytest.raises(AccessDeniedError):
         await consulting.get_work(work.id)
+
+
+@pytest.mark.anyio
+async def test_search_page_with_score_counts(
+    service: RepertoireService, choirs: ChoirService, database: InMemoryDatabase
+) -> None:
+    for title in ["Delta", "alpha", "Écho", "Bravo", "Charlie"]:
+        await service.add_work(None, WorkDetails(title=title))
+    await service.add_work("Ensemble", WorkDetails(title="Alpha"))
+    first = await service.search_page_with_score_counts(None, None, PageRequest(1, 2))
+    assert first.choir.name == "Chœur"
+    assert [w.title for w in first.works] == ["alpha", "Bravo"]
+    assert (first.number, first.size, first.work_count, first.page_count) == (1, 2, 5, 3)
+    assert first.score_counts == {w.id: 0 for w in first.works}
+    last = await service.search_page_with_score_counts(None, None, PageRequest(9, 2))
+    assert ([w.title for w in last.works], last.number) == (["Écho"], 3)
+    found = await service.search_page_with_score_counts(None, "ECHO", PageRequest())
+    assert ([w.title for w in found.works], found.page_count) == (["Écho"], 1)
+    empty = await service.search_page_with_score_counts(None, "absent", PageRequest(4))
+    assert (empty.works, empty.number, empty.work_count, empty.page_count) == ((), 1, 0, 1)

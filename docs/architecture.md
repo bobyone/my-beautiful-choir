@@ -68,7 +68,7 @@ code and the process exit code.
 | `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
 | `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`, `scores`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
-| `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `update`, `delete`, `count(choir_id)`. |
+| `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `count_matching(choir_id, text=None)`, `search_page(choir_id, text, offset, limit)` (the same works ordered by title, then composer with no composer first, then id), `update`, `delete`, `count(choir_id)`. |
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`. |
 | `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
@@ -242,6 +242,12 @@ with a work); `manage_repertoire` to change,
 - `edit_work(work_id, changes)`: `None` keeps an attribute, an empty value
   clears it; updates the modification date.
 - `get_work(work_id)`, `search(choir, text=None)`.
+- `search_page_with_score_counts(choir, text, request)`: one repertoire page
+  (`RepertoirePage`: choir, works, score counts, number, size, work count,
+  page count) read in one snapshot. `PageRequest(number=1, size=10)` raises
+  `InvalidRepertoirePageError` for a number below 1 or a size outside 1 to
+  100 (`DEFAULT_PAGE_SIZE`, `MAXIMUM_PAGE_SIZE`). A number past the last page
+  returns the last page; an empty search has one empty page.
 - Deletion (`Deleter`, receives the `file_storage`): a work with its scores
   and their stored contents.
 
@@ -249,7 +255,8 @@ with a work); `manage_repertoire` to change,
 
 Table `works`; `title_search` and `composer_search` hold the case-folded
 text without accents (`search_text`), computed on every write; searching
-uses `LIKE` on them with `%` and `_` escaped.
+uses `LIKE` on them with `%` and `_` escaped. Repertoire pages are ordered
+on the same columns with `OFFSET` and `LIMIT` (ADR 0018).
 
 ### Work tools (`tools.repertoire`)
 
@@ -417,7 +424,10 @@ user's language.
 ### Repertoire and Work views (`tools.view_tool`, `ui/src/views`)
 
 `ShowRepertoireTool(view, repertoire, choirs)` accepts the optional
-`choir` name and optional `search` text. It selects the default choir when
+`choir` name, optional `search` text, `page` (integer from 1, default 1)
+and `page_size` (integer from 1 to 100, default 10). It returns one
+repertoire page with `page`, `page_size`, `page_count` and `work_count`;
+the model receives only the works of that page. It selects the default choir when
 the name is omitted, returns the chooser's choir names and searches titles
 and composers without accents or case. The repertoire service obtains
 score counts grouped by work for the selected choir in one SQL query

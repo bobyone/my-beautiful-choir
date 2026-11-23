@@ -6,7 +6,7 @@
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Row, delete, func, insert, or_, select, update
+from sqlalchemy import ColumnElement, Row, delete, func, insert, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from my_beautiful_choir.persistence.sql.tables import works
@@ -60,6 +60,21 @@ def _escape_like(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def _matching(choir_id: UUID, text: str | None) -> list[ColumnElement[bool]]:
+    """Conditions selecting the works of the choir whose title or composer contains ``text``."""
+    conditions = [works.c.choir_id == choir_id]
+    normalized = search_text(text)
+    if normalized:
+        pattern = f"%{_escape_like(normalized)}%"
+        conditions.append(
+            or_(
+                works.c.title_search.like(pattern, escape="\\"),
+                works.c.composer_search.like(pattern, escape="\\"),
+            )
+        )
+    return conditions
+
+
 class SqlWorkRepository(WorkRepository):
     """Stores the works in the ``works`` table, within the connection of a unit of work.
 
@@ -87,17 +102,31 @@ class SqlWorkRepository(WorkRepository):
 
     async def search(self, choir_id: UUID, text: str | None = None) -> list[Work]:
         """Works of the choir matching ``text`` on the normalized columns."""
-        query = select(*_COLUMNS).where(works.c.choir_id == choir_id)
-        normalized = search_text(text)
-        if normalized:
-            pattern = f"%{_escape_like(normalized)}%"
-            query = query.where(
-                or_(
-                    works.c.title_search.like(pattern, escape="\\"),
-                    works.c.composer_search.like(pattern, escape="\\"),
-                )
+        rows = await self._connection.execute(select(*_COLUMNS).where(*_matching(choir_id, text)))
+        return [_work(row) for row in rows]
+
+    async def count_matching(self, choir_id: UUID, text: str | None = None) -> int:
+        """Number of works of the choir matching ``text``."""
+        result = await self._connection.execute(
+            select(func.count()).select_from(works).where(*_matching(choir_id, text))
+        )
+        return int(result.scalar_one())
+
+    async def search_page(
+        self, choir_id: UUID, text: str | None, offset: int, limit: int
+    ) -> list[Work]:
+        """One page of the matching works, ordered on the normalized columns."""
+        rows = await self._connection.execute(
+            select(*_COLUMNS)
+            .where(*_matching(choir_id, text))
+            .order_by(
+                works.c.title_search,
+                works.c.composer_search.asc().nulls_first(),
+                works.c.id,
             )
-        rows = await self._connection.execute(query)
+            .offset(offset)
+            .limit(limit)
+        )
         return [_work(row) for row in rows]
 
     async def update(self, work: Work) -> None:
