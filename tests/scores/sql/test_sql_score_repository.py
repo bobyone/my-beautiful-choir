@@ -112,10 +112,11 @@ async def test_storage_keys_of_a_work_and_a_choir(database: SqlDatabase) -> None
             [first.storage_key, second.storage_key]
         )
         assert await unit_of_work.scores.storage_keys_of_choir(OTHER.id) == [other.storage_key]
-        counts = await unit_of_work.scores.counts_of_choir(CHOIR.id)
+        counts = await unit_of_work.scores.counts_of_works([WORK.id, SECOND_WORK.id])
         assert counts == {WORK.id: 1, SECOND_WORK.id: 1}
-        assert await unit_of_work.scores.counts_of_choir(OTHER.id) == {OTHER_WORK.id: 1}
-        assert await unit_of_work.scores.counts_of_choir(uuid4()) == {}
+        assert await unit_of_work.scores.counts_of_works({OTHER_WORK.id}) == {OTHER_WORK.id: 1}
+        assert await unit_of_work.scores.counts_of_works([uuid4()]) == {}
+        assert await unit_of_work.scores.counts_of_works([]) == {}
 
 
 @pytest.mark.anyio

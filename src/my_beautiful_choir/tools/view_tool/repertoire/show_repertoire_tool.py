@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.choirs.errors import NoChoirError
-from my_beautiful_choir.repertoire.repertoire_page import (
+from my_beautiful_choir.repertoire.page_request import (
     DEFAULT_PAGE_SIZE,
     MAXIMUM_PAGE_SIZE,
     PageRequest,

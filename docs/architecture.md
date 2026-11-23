@@ -69,7 +69,7 @@ code and the process exit code.
 | `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`, `scores`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `count_matching(choir_id, text=None)`, `search_page(choir_id, text, offset, limit)` (the same works ordered by title, then composer with no composer first, then id), `update`, `delete`, `count(choir_id)`. |
-| `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`. |
+| `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`, `counts_of_works(work_ids)` (number of scores of each given work with scores). |
 | `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
@@ -430,7 +430,7 @@ repertoire page with `page`, `page_size`, `page_count` and `work_count`;
 the model receives only the works of that page. It selects the default choir when
 the name is omitted, returns the chooser's choir names and searches titles
 and composers without accents or case. The repertoire service obtains
-score counts grouped by work for the selected choir in one SQL query
+score counts of the works of the page, grouped by work, in one SQL query
 within the same unit of work. A choir with no matches has an empty work
 list. A new installation has no selected choir and the view explains how
 to create one.

@@ -5,6 +5,7 @@
 
 import builtins
 import copy
+from collections.abc import Collection
 from dataclasses import dataclass, field, replace
 from types import TracebackType
 from typing import Self
@@ -154,10 +155,10 @@ class InMemoryScoreRepository(ScoreRepository):
             if self._data.works[score.work_id].choir_id == choir_id
         ]
 
-    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
+    async def counts_of_works(self, work_ids: Collection[UUID]) -> dict[UUID, int]:
         counts: dict[UUID, int] = {}
         for score in self._data.scores.values():
-            if self._data.works[score.work_id].choir_id == choir_id:
+            if score.work_id in work_ids:
                 counts[score.work_id] = counts.get(score.work_id, 0) + 1
         return counts
 

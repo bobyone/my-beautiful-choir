@@ -14,7 +14,7 @@ from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.choirs.errors import ChoirNotFoundError, NoChoirError
 from my_beautiful_choir.repertoire.errors import InvalidWorkError, WorkNotFoundError
-from my_beautiful_choir.repertoire.repertoire_page import PageRequest
+from my_beautiful_choir.repertoire.page_request import PageRequest
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work import WorkChanges, WorkDetails
 from tests.doubles import DenyingAuthorization, FakeClock

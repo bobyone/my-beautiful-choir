@@ -4,6 +4,7 @@
 """Score repository on an SQL database."""
 
 import builtins
+from collections.abc import Collection
 from typing import Any
 from uuid import UUID
 
@@ -95,12 +96,13 @@ class SqlScoreRepository(ScoreRepository):
         )
         return [_score(row) for row in rows]
 
-    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
-        """Number of scores per work of the choir, in one query."""
+    async def counts_of_works(self, work_ids: Collection[UUID]) -> dict[UUID, int]:
+        """Number of scores of each given work, in one query."""
+        if not work_ids:
+            return {}
         rows = await self._connection.execute(
             select(scores.c.work_id, func.count())
-            .join(works, works.c.id == scores.c.work_id)
-            .where(works.c.choir_id == choir_id)
+            .where(scores.c.work_id.in_(work_ids))
             .group_by(scores.c.work_id)
         )
         return {work_id: count for work_id, count in rows}

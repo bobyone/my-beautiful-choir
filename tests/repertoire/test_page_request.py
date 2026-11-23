@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2026 bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""Tests of the repertoire page bounds."""
+"""Tests of the requested repertoire page bounds."""
 
 import pytest
 
 from my_beautiful_choir.repertoire.errors import InvalidRepertoirePageError
-from my_beautiful_choir.repertoire.repertoire_page import (
+from my_beautiful_choir.repertoire.page_request import (
     DEFAULT_PAGE_SIZE,
     MAXIMUM_PAGE_SIZE,
     PageRequest,

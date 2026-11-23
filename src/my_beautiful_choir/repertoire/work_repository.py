@@ -29,7 +29,7 @@ class WorkRepository(ABC):
         """Works of the choir whose title or composer contains ``text``.
 
         ``text`` is compared ignoring case and accents; None returns every work.
-        The order is unspecified: the user interface sorts by language.
+        The order is unspecified; ``search_page`` returns ordered pages.
         """
 
     @abstractmethod

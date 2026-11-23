@@ -5,6 +5,7 @@
 
 import builtins
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 from uuid import UUID
 
 from my_beautiful_choir.scores.score import Score
@@ -34,8 +35,8 @@ class ScoreRepository(ABC):
         """All scores of the choir."""
 
     @abstractmethod
-    async def counts_of_choir(self, choir_id: UUID) -> dict[UUID, int]:
-        """Number of scores per work of the choir. Omit works without scores."""
+    async def counts_of_works(self, work_ids: Collection[UUID]) -> dict[UUID, int]:
+        """Number of scores of each given work. Omit works without scores."""
 
     @abstractmethod
     async def delete(self, score_id: UUID) -> None:

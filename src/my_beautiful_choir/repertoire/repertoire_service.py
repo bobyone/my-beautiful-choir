@@ -17,7 +17,8 @@ from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
-from my_beautiful_choir.repertoire.repertoire_page import PageRequest, RepertoirePage, page_count
+from my_beautiful_choir.repertoire.page_request import PageRequest, page_count
+from my_beautiful_choir.repertoire.repertoire_page import RepertoirePage
 from my_beautiful_choir.repertoire.work import Work, WorkChanges, WorkDetails
 from my_beautiful_choir.repertoire.work_rules import apply_work_changes, clean_work_details
 from my_beautiful_choir.storage.file_storage import FileStorage
@@ -112,7 +113,7 @@ class RepertoireService(Deleter):
             works = await unit_of_work.works.search_page(
                 target.id, text, offset=(number - 1) * request.size, limit=request.size
             )
-            counts = await unit_of_work.scores.counts_of_choir(target.id)
+            counts = await unit_of_work.scores.counts_of_works([work.id for work in works])
         return RepertoirePage(
             target,
             tuple(works),
