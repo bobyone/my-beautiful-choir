@@ -290,8 +290,11 @@ their id. The structured content describes the work (`work_data`).
   original name without its extension, or the format name; original name at
   most 255 characters; storage key `choirs/<choir id>/scores/<score id>`.
   `download_name(original, label, format)` gives the file name proposed for
-  a download: the original name without a trailing extension (a dot, a
-  letter, then at most four letters or digits), otherwise the label, with
+  a download: the original name without a trailing extension (the
+  extension of a score format, whatever its case, such as `.musicxml`;
+  otherwise a dot, a letter, then at most four letters or digits, and a
+  score format extension that this reveals, so `Alto.pdf.bak` gives
+  `Alto.pdf`), otherwise the label, with
   control characters and `<>:"/\|?*` replaced by `_`, leading and trailing
   dots and spaces removed, `_` put before a name Windows reserves (`CON`,
   `NUL`, `COM1`...), cut to 255 characters, then the extension of the

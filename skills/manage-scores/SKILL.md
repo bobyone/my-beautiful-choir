@@ -45,8 +45,12 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - The same file may be added twice, for instance with two labels.
 - `open_score` opens a **copy** in the default application of the computer:
   changes made there do not change the score of the repertoire.
-- `get_score_file` gives the file back in the conversation, up to 2 MB, named
-  by its original name. Whether the user can save it depends on the client.
+- `get_score_file` gives the file back in the conversation, up to 2 MB.
+  Whether the user can save it depends on the client. The file is named by
+  its download name: the original name without its extension (otherwise the
+  label), with characters that file systems refuse replaced by `_`, followed
+  by the extension of the detected format (for instance `Alto.mscz` holding a
+  PDF is given as `Alto.pdf`). The original name stays in the repertoire.
   Above 2 MB, or when the client does not show the file, use `open_score`, or
   open the Work view with `show_work(work_id)`: when the client can save
   files, the user downloads a score of any size with **Download**.
