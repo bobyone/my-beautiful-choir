@@ -125,9 +125,13 @@ class StubConfirmation(ConfirmationRequester):
         return self.outcome
 
 
-def tool_context(confirmation: ConfirmationRequester | None = None) -> ToolContext:
+def tool_context(
+    confirmation: ConfirmationRequester | None = None, client_shows_views: bool = False
+) -> ToolContext:
     """Context of a tool call in tests; confirmations are accepted by default."""
-    return ToolContext(confirmation=confirmation or StubConfirmation())
+    return ToolContext(
+        confirmation=confirmation or StubConfirmation(), client_shows_views=client_shows_views
+    )
 
 
 class FakeClock(Clock):

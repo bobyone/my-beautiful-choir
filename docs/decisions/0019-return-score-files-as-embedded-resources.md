@@ -36,8 +36,12 @@ costly for large files.
 - `get_score_file(score_id)`, called by the model, returns the score as
   such a file, up to 2 MiB of content; above, it refuses and points to
   `open_score` and to the Work view.
-- `download_score(score_id)` is app-only: the Work view calls it, without
-  the 2 MiB limit, and gives the embedded resource to `App.downloadFile`.
+- `download_score(score_id)` is app-only: the Work view calls it and gives
+  the embedded resource to `App.downloadFile`. The 2 MiB limit is lifted
+  only for a call whose client declared MCP Apps support
+  (`io.modelcontextprotocol/ui` with the `text/html;profile=mcp-app` media
+  type), which keeps app-only tools away from the model; a client without
+  it may expose the tool to its model, so the limit applies.
   The Download button is shown only when the host advertises
   `downloadFile`.
 
@@ -62,6 +66,9 @@ costly for large files.
   embedded resources to the model.
 - A download from the view moves up to about 67 MB of base64 between the
   view and the host, like the existing upload.
+- The capability is declared by the client, not proven: it guards against a
+  client exposing app-only tools to its model by mistake, not against a
+  client that lies about its capabilities.
 - The file name given to hosts is the download name: the original name
   made safe, with the extension of the detected format, so a saved file
   opens with the application of its real format. The original name stays

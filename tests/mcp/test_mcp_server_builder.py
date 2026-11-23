@@ -9,6 +9,8 @@ from typing import Annotated, Any, Self
 
 import pytest
 from mcp.client import Client
+from mcp.client.extension import ClientExtension, advertise
+from mcp.server.apps import APP_MIME_TYPE, EXTENSION_ID
 from mcp.types import BlobResourceContents, EmbeddedResource, TextContent
 from pydantic import BaseModel, Field, model_validator
 
@@ -292,3 +294,33 @@ async def test_result_without_files_has_only_its_text() -> None:
     async with _client([StubTool()]) as client:
         result = await client.call_tool("stub", {"title": "x"})
     assert len(result.content) == 1
+
+
+class _ContextSpyTool(StubTool):
+    def __init__(self) -> None:
+        super().__init__(name="spy")
+        self.contexts: list[ToolContext] = []
+
+    async def execute(self, arguments: StubArguments, context: ToolContext) -> ToolResult:
+        self.contexts.append(context)
+        return ToolResult(text="seen")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("extensions", "shows_views"),
+    [
+        ([], False),
+        ([advertise(EXTENSION_ID, {"mimeTypes": [APP_MIME_TYPE]})], True),
+        ([advertise(EXTENSION_ID, {})], False),
+    ],
+)
+async def test_the_context_tells_whether_the_client_shows_views(
+    extensions: list[ClientExtension], shows_views: bool
+) -> None:
+    tool = _ContextSpyTool()
+    server = McpServerBuilder(INFO, [tool]).build()
+    async with Client(server, raise_exceptions=False, extensions=extensions) as client:
+        await client.call_tool("spy", {"title": "x"})
+    [context] = tool.contexts
+    assert context.client_shows_views is shows_views
