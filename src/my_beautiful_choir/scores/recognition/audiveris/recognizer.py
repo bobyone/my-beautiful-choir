@@ -23,24 +23,30 @@ from my_beautiful_choir.scores.score_rules import MAXIMUM_SIZE
 class AudiverisRecognizer(ScoreRecognizer):
     """Run Audiveris in a disposable directory and return its single uncompressed export."""
 
-    def __init__(self, installation: AudiverisInstallation, timeout_seconds: int) -> None:
+    def __init__(
+        self, installation: AudiverisInstallation, timeout_seconds: int, cache_directory: Path
+    ) -> None:
         self._installation = installation
         self._timeout = timeout_seconds
+        self._cache_directory = cache_directory
 
     async def transcribe(self, pdf: bytes) -> bytes:
         """Transcribe a PDF with a locally installed Audiveris."""
-        command = await self._installation.command()
-        with TemporaryDirectory(prefix="mbc-transcription-") as directory:
+        launch = await self._installation.discover()
+        workspace_parent = None
+        if launch.flatpak_app_id is not None:
+            workspace_parent = self._cache_directory
+            workspace_parent.mkdir(parents=True, exist_ok=True)
+        with TemporaryDirectory(prefix="mbc-transcription-", dir=workspace_parent) as directory:
             workspace = Path(directory)
             source = workspace / "source.pdf"
             source.write_bytes(pdf)
             output = workspace / "output"
             output.mkdir()
-            if len(command) == 3 and command[1] == "run":
-                command = (*command[:2], f"--filesystem={workspace}", command[2])
             await self._run(
-                *command,
+                *launch.command(workspace),
                 "-batch",
+                "-save",
                 "-constant",
                 "org.audiveris.omr.sheet.BookManager.useCompression=false",
                 "-constant",

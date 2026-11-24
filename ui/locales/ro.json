@@ -36,6 +36,7 @@
     "scoreSize": "Dimensiune",
     "sungLanguage": "Limba cântată",
     "title": "Titlu",
+    "transcription": "Transcriere",
     "voicing": "Distribuție vocală",
     "webMode": "Mod web",
     "work": "Lucrare"
@@ -68,10 +69,10 @@
     "opened": "Partitură deschisă.",
     "openError": "Partitura nu a putut fi deschisă. Verificați dacă este instalată o aplicație compatibilă.",
     "openScore": "Deschide",
-    "transcribeScore": "Recunoaște partitura",
+    "transcribeScore": "Transcrie partitura",
     "transcriptionDone": "Transcrierea este disponibilă.",
     "transcriptionFailed": "Transcrierea a eșuat. Verifică PDF-ul și încearcă din nou.",
-    "transcriptionInstall": "Instalează Audiveris pentru a recunoaște partitura.",
+    "transcriptionInstall": "Instalează Audiveris.",
     "transcriptionUnavailable": "Verifică instalarea Audiveris și încearcă din nou.",
     "uploaded": "Partitură adăugată.",
     "uploadError": "Încărcarea a eșuat. Alegeți o partitură compatibilă de până la 50 MB și încercați din nou."

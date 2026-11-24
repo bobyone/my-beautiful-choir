@@ -36,6 +36,7 @@
     "scoreSize": "Daqs",
     "sungLanguage": "Lingwa tal-kant",
     "title": "Titlu",
+    "transcription": "Traskrizzjoni",
     "voicing": "Tqassim tal-vuċijiet",
     "webMode": "Modalità web",
     "work": "Xogħol"
@@ -68,10 +69,10 @@
     "opened": "Il-partitura nfetħet.",
     "openError": "Il-partitura ma setgħetx tinfetaħ. Iċċekkja li hemm applikazzjoni kompatibbli installata.",
     "openScore": "Iftaħ",
-    "transcribeScore": "Agħraf il-partitura",
+    "transcribeScore": "Ittraskrivi l-partitura",
     "transcriptionDone": "It-traskrizzjoni hija disponibbli.",
     "transcriptionFailed": "It-traskrizzjoni falliet. Iċċekkja l-PDF u erġa’ pprova.",
-    "transcriptionInstall": "Installa Audiveris biex tagħraf il-partitura.",
+    "transcriptionInstall": "Installa Audiveris.",
     "transcriptionUnavailable": "Iċċekkja l-installazzjoni ta’ Audiveris u erġa’ pprova.",
     "uploaded": "Il-partitura żdiedet.",
     "uploadError": "It-tlugħ falla. Agħżel partitura appoġġata sa 50 MB u erġa’ pprova."

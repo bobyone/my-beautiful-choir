@@ -73,7 +73,9 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - Read the score with `read_musicxml_score(score_id, offset?, length?)`,
   following the returned `next_offset` for more text. To verify the score
   when the user asks, use `read_score_source_page(score_id, page)` on
-  the returned source score id. Compare with the actual pages, report
+  the returned source score id if it is available. If the source was
+  deleted, report that the comparison is unavailable. Otherwise, compare
+  with the actual pages, report
   differences and identify any passages you could not check.
 - Use `add_musicxml_score(work_id, xml, label?)` to add the actual XML
   text when the user asks you to save it.

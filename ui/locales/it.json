@@ -36,6 +36,7 @@
     "scoreSize": "Dimensione",
     "sungLanguage": "Lingua cantata",
     "title": "Titolo",
+    "transcription": "Trascrizione",
     "voicing": "Organico vocale",
     "webMode": "Modalità web",
     "work": "Opera"
@@ -68,10 +69,10 @@
     "opened": "Partitura aperta.",
     "openError": "Impossibile aprire la partitura. Verifica che sia installata un’applicazione compatibile.",
     "openScore": "Apri",
-    "transcribeScore": "Riconosci la partitura",
+    "transcribeScore": "Trascrivi la partitura",
     "transcriptionDone": "La trascrizione è disponibile.",
     "transcriptionFailed": "Trascrizione non riuscita. Controlla il PDF e riprova.",
-    "transcriptionInstall": "Installa Audiveris per riconoscere la partitura.",
+    "transcriptionInstall": "Installa Audiveris.",
     "transcriptionUnavailable": "Controlla l’installazione di Audiveris e riprova.",
     "uploaded": "Partitura aggiunta.",
     "uploadError": "Caricamento non riuscito. Scegli una partitura compatibile di massimo 50 MB e riprova."

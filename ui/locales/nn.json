@@ -36,6 +36,7 @@
     "scoreSize": "Storleik",
     "sungLanguage": "Songmål",
     "title": "Tittel",
+    "transcription": "Transkripsjon",
     "voicing": "Stemmefordeling",
     "webMode": "Nettmodus",
     "work": "Verk"
@@ -68,10 +69,10 @@
     "opened": "Partitur opna.",
     "openError": "Partituret kunne ikkje opnast. Kontroller at eit eigna program er installert.",
     "openScore": "Opne",
-    "transcribeScore": "Kjenn att partituret",
+    "transcribeScore": "Transkriber partituret",
     "transcriptionDone": "Transkripsjonen er tilgjengeleg.",
     "transcriptionFailed": "Transkripsjonen mislukkast. Kontroller PDF-fila og prøv på nytt.",
-    "transcriptionInstall": "Installer Audiveris for å kjenne att partituret.",
+    "transcriptionInstall": "Installer Audiveris.",
     "transcriptionUnavailable": "Kontroller installasjonen av Audiveris og prøv på nytt.",
     "uploaded": "Partitur lagt til.",
     "uploadError": "Opplastinga mislukkast. Vel eit støtta partitur på opptil 50 MB og prøv på nytt."

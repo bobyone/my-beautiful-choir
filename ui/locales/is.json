@@ -36,6 +36,7 @@
     "scoreSize": "Stærð",
     "sungLanguage": "Söngmál",
     "title": "Titill",
+    "transcription": "Umritun",
     "voicing": "Raddskipan",
     "webMode": "Vefhamur",
     "work": "Verk"
@@ -68,10 +69,10 @@
     "opened": "Nótur opnaðar.",
     "openError": "Ekki tókst að opna nóturnar. Athugaðu hvort samhæft forrit sé uppsett.",
     "openScore": "Opna",
-    "transcribeScore": "Þekkja nótnaskrána",
+    "transcribeScore": "Umrita nótnaskrána",
     "transcriptionDone": "Umritunin er tiltæk.",
     "transcriptionFailed": "Umritun mistókst. Athugaðu PDF-skrána og reyndu aftur.",
-    "transcriptionInstall": "Settu upp Audiveris til að þekkja nótnaskrána.",
+    "transcriptionInstall": "Settu upp Audiveris.",
     "transcriptionUnavailable": "Athugaðu uppsetningu Audiveris og reyndu aftur.",
     "uploaded": "Nótum bætt við.",
     "uploadError": "Upphleðsla mistókst. Veldu nótur á studdu sniði, allt að 50 MB, og reyndu aftur."

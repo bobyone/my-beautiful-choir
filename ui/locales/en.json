@@ -36,6 +36,7 @@
     "scoreSize": "Size",
     "sungLanguage": "Sung language",
     "title": "Title",
+    "transcription": "Transcription",
     "voicing": "Voicing",
     "webMode": "Web mode",
     "work": "Work"
@@ -68,10 +69,10 @@
     "opened": "Score opened.",
     "openError": "Could not open the score. Check that an application for its format is installed.",
     "openScore": "Open",
-    "transcribeScore": "Recognize the score",
+    "transcribeScore": "Transcribe the score",
     "transcriptionDone": "Transcription available.",
     "transcriptionFailed": "Transcription failed. Check the PDF and try again.",
-    "transcriptionInstall": "Install Audiveris to recognize the score.",
+    "transcriptionInstall": "Install Audiveris.",
     "transcriptionUnavailable": "Check your Audiveris installation and try again.",
     "uploaded": "Score added.",
     "uploadError": "Upload failed. Choose a supported score up to 50 MB and try again."

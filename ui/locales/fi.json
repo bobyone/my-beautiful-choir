@@ -36,6 +36,7 @@
     "scoreSize": "Koko",
     "sungLanguage": "Laulukieli",
     "title": "Nimi",
+    "transcription": "Nuotinnos",
     "voicing": "Äänijako",
     "webMode": "Verkkotila",
     "work": "Teos"
@@ -68,10 +69,10 @@
     "opened": "Nuotti avattu.",
     "openError": "Nuottia ei voitu avata. Tarkista, että sopiva sovellus on asennettu.",
     "openScore": "Avaa",
-    "transcribeScore": "Tunnista nuotit",
+    "transcribeScore": "Nuotinna partituuri",
     "transcriptionDone": "Nuotinnos on saatavilla.",
     "transcriptionFailed": "Nuotintaminen epäonnistui. Tarkista PDF ja yritä uudelleen.",
-    "transcriptionInstall": "Asenna Audiveris nuottien tunnistamista varten.",
+    "transcriptionInstall": "Asenna Audiveris.",
     "transcriptionUnavailable": "Tarkista Audiverisin asennus ja yritä uudelleen.",
     "uploaded": "Nuotti lisätty.",
     "uploadError": "Lataus epäonnistui. Valitse enintään 50 Mt:n tuettu nuottitiedosto ja yritä uudelleen."

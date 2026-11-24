@@ -36,6 +36,7 @@
     "scoreSize": "Méid",
     "sungLanguage": "Teanga an amhráin",
     "title": "Teideal",
+    "transcription": "Tras-scríobh",
     "voicing": "Roinnt na nguthanna",
     "webMode": "Mód gréasáin",
     "work": "Saothar"
@@ -68,10 +69,10 @@
     "opened": "Osclaíodh an scór.",
     "openError": "Níorbh fhéidir an scór a oscailt. Seiceáil go bhfuil feidhmchlár comhoiriúnach suiteáilte.",
     "openScore": "Oscail",
-    "transcribeScore": "Aithin an scór",
+    "transcribeScore": "Tras-scríobh an scór",
     "transcriptionDone": "Tá an tras-scríobh ar fáil.",
     "transcriptionFailed": "Theip ar an tras-scríobh. Seiceáil an PDF agus bain triail eile as.",
-    "transcriptionInstall": "Suiteáil Audiveris chun an scór a aithint.",
+    "transcriptionInstall": "Suiteáil Audiveris.",
     "transcriptionUnavailable": "Seiceáil suiteáil Audiveris agus bain triail eile as.",
     "uploaded": "Cuireadh an scór leis.",
     "uploadError": "Theip ar an uaslódáil. Roghnaigh scór tacaithe suas le 50 MB agus bain triail eile as."

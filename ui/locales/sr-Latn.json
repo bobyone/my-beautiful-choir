@@ -36,6 +36,7 @@
     "scoreSize": "Veličina",
     "sungLanguage": "Jezik pevanja",
     "title": "Naslov",
+    "transcription": "Transkripcija",
     "voicing": "Glasovni sastav",
     "webMode": "Veb režim rada",
     "work": "Kompozicija"
@@ -68,10 +69,10 @@
     "opened": "Partitura je otvorena.",
     "openError": "Partitura ne može da se otvori. Proverite da li je instalirana odgovarajuća aplikacija.",
     "openScore": "Otvori",
-    "transcribeScore": "Prepoznaj partituru",
+    "transcribeScore": "Transkribuj partituru",
     "transcriptionDone": "Transkripcija je dostupna.",
     "transcriptionFailed": "Transkripcija nije uspela. Proverite PDF i pokušajte ponovo.",
-    "transcriptionInstall": "Instalirajte Audiveris za prepoznavanje partiture.",
+    "transcriptionInstall": "Instalirajte Audiveris.",
     "transcriptionUnavailable": "Proverite instalaciju Audiverisa i pokušajte ponovo.",
     "uploaded": "Partitura je dodata.",
     "uploadError": "Otpremanje nije uspelo. Izaberite podržanu partituru do 50 MB i pokušajte ponovo."

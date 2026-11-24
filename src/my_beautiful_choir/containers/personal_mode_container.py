@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from dependency_injector import containers, providers
+from platformdirs import user_cache_path
 
 from my_beautiful_choir.authorization.local.local_user_authorization import LocalUserAuthorization
 from my_beautiful_choir.choirs.choir_service import ChoirService
@@ -175,6 +176,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         AudiverisRecognizer,
         installation=recognition_installation,
         timeout_seconds=settings.provided.recognition.timeout_seconds,
+        cache_directory=providers.Callable(user_cache_path, "my-beautiful-choir"),
     )
     transcriptions = providers.Singleton(
         TranscriptionService,

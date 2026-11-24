@@ -21,9 +21,9 @@ from my_beautiful_choir.scores.recognition.errors import EngineNotFoundError, En
 @pytest.mark.anyio
 async def test_missing_engine_and_invalid_override(tmp_path: Path) -> None:
     with pytest.raises(EngineNotFoundError, match=r"https://audiveris\.github\.io"):
-        await AudiverisInstallation(None, "unknown", {"PATH": str(tmp_path)}, tmp_path).command()
+        await AudiverisInstallation(None, "unknown", {"PATH": str(tmp_path)}, tmp_path).discover()
     with pytest.raises(EngineUnavailableError, match=r"https://audiveris\.github\.io"):
-        await AudiverisInstallation(tmp_path / "missing.exe", "win32", {}, tmp_path).command()
+        await AudiverisInstallation(tmp_path / "missing.exe", "win32", {}, tmp_path).discover()
 
 
 @pytest.mark.anyio
@@ -59,8 +59,9 @@ async def test_windows_registry_tracks_a_custom_location(
     monkeypatch.setattr(installation, "sys", SimpleNamespace(platform="win32"))
     assert executable in list(installation._windows_registry())
     monkeypatch.setattr(installation, "_executable", Path.is_file)
-    command = await AudiverisInstallation(None, "win32", {}, tmp_path).command()
-    assert command == (str(executable.resolve()),)
+    command = await AudiverisInstallation(None, "win32", {}, tmp_path).discover()
+    assert command.executable == executable.resolve()
+    assert command.flatpak_app_id is None
 
 
 @pytest.mark.anyio
@@ -74,8 +75,9 @@ async def test_mac_native_bundle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 
     monkeypatch.setattr(installation, "_mac_indexed_paths", indexed)
     monkeypatch.setattr(installation, "_executable", Path.is_file)
-    command = await AudiverisInstallation(None, "darwin", {}, tmp_path).command()
-    assert command == (str(executable.resolve()),)
+    command = await AudiverisInstallation(None, "darwin", {}, tmp_path).discover()
+    assert command.executable == executable.resolve()
+    assert command.flatpak_app_id is None
 
 
 @pytest.mark.anyio
@@ -87,5 +89,6 @@ async def test_linux_flatpak(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
         lambda name, **options: str(executable) if name == "flatpak" else None,
     )
     monkeypatch.setattr(installation, "_flatpak_installed", lambda path: path == executable)
-    command = await AudiverisInstallation(None, "linux", {}, tmp_path).command()
-    assert command == (str(executable), "run", "org.audiveris.audiveris")
+    command = await AudiverisInstallation(None, "linux", {}, tmp_path).discover()
+    assert command.executable == executable
+    assert command.flatpak_app_id == "org.audiveris.audiveris"

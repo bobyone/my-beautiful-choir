@@ -8,7 +8,8 @@ SPDX-License-Identifier: GPL-2.0-or-later
 In personal mode the work view and standalone MCP tools share the
 transcription service. It runs the injected local recognition engine,
 persists a MusicXML score through the score service, and records its
-source PDF. The separate PDF rendering adapter provides page images on
+source PDF. For Flatpak, only the private job directory in the application
+cache is shared with Audiveris. The separate PDF rendering adapter provides page images on
 request. See [local score recognition](decisions/0021-run-local-score-recognition.md)
 and [score verification](decisions/0022-exchange-score-contents-for-verification.md).
 

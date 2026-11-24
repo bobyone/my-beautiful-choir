@@ -153,12 +153,13 @@ describe("repertoire and work views", () => {
         ? result({ state: "pending", job_id: "job" })
         : result({ state: "done", score: recognized });
     await show(WorkApp, result({ ...workResult, supports_transcription: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Recognize the score" }));
+    fireEvent.click(screen.getByRole("button", { name: "Transcribe the score" }));
+    expect(screen.getByRole("status", { name: "Transcription" })).toBeDefined();
     expect(
       await screen.findByText("Transcription available.", {}, { timeout: 3000 }),
     ).toBeDefined();
     expect(screen.getByRole("rowheader", { name: "Transcription" })).toBeDefined();
-    expect(screen.getAllByRole("button", { name: "Recognize the score" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Transcribe the score" })).toHaveLength(1);
     expect(host.toolCalls).toEqual([
       { name: "transcribe_score", arguments: { score_id: score.id } },
       { name: "get_transcription_status", arguments: { job_id: "job" } },
@@ -173,7 +174,7 @@ describe("repertoire and work views", () => {
         install_url: "https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/",
       });
     await show(WorkApp, result({ ...workResult, supports_transcription: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Recognize the score" }));
+    fireEvent.click(screen.getByRole("button", { name: "Transcribe the score" }));
     const link = await screen.findByRole("link", { name: "Audiveris" });
     expect(link.getAttribute("href")).toContain("audiveris.github.io");
   });

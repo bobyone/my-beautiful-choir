@@ -9,6 +9,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.scores.errors import ScoreNotFoundError
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.musicxml.errors import InvalidMusicXmlError
 from my_beautiful_choir.scores.musicxml.musicxml_document import musicxml_text
@@ -41,7 +42,7 @@ class ReadMusicXmlScoreTool(Tool[ReadMusicXmlScoreArguments]):
         return (
             "Read MusicXML directly as text. Continue at next_offset until the score is read. "
             "For verification, use read_score_source_page with the returned source_score_id "
-            "and report any unavailable pages."
+            "when the source is available, and report any unavailable pages."
         )
 
     @property
@@ -60,13 +61,26 @@ class ReadMusicXmlScoreTool(Tool[ReadMusicXmlScoreArguments]):
         end = min(arguments.offset + arguments.length, len(xml))
         portion = xml[arguments.offset : end]
         next_offset = end if end < len(xml) else None
-        source = str(score.source_score_id) if score.source_score_id else None
+        source = None
+        source_available = None
+        source_description = "No source PDF is recorded."
+        if score.source_score_id is not None:
+            try:
+                await self._scores.describe_score(score.source_score_id)
+            except ScoreNotFoundError:
+                source_available = False
+                source_description = "The source PDF is no longer available."
+            else:
+                source_available = True
+                source = str(score.source_score_id)
+                source_description = f"Source PDF: {source}."
         return ToolResult(
             f"MusicXML of {score.id}, characters {arguments.offset}-{end} of {len(xml)}. "
-            f"Source PDF: {source}. Next offset: {next_offset}.\n\n{portion}",
+            f"{source_description} Next offset: {next_offset}.\n\n{portion}",
             {
                 "score_id": str(score.id),
                 "source_score_id": source,
+                "source_available": source_available,
                 "xml": portion,
                 "offset": arguments.offset,
                 "next_offset": next_offset,

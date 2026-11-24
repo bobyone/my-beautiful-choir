@@ -99,6 +99,7 @@ async def test_local_transcription_and_musicxml_text_tools(tmp_path: Path) -> No
         assert recognizer.calls == 1
         chunk = await _call(client, "read_musicxml_score", score_id=xml_id, length=20)
         assert chunk["source_score_id"] == str(pdf.id)
+        assert chunk["source_available"] is True
         assert chunk["xml"] == score_samples.musicxml_text()[:20]
         read = await client.call_tool(
             "read_musicxml_score", {"score_id": xml_id, "offset": chunk["next_offset"]}
@@ -117,6 +118,7 @@ async def test_local_transcription_and_musicxml_text_tools(tmp_path: Path) -> No
         added = await _call(client, "read_musicxml_score", score_id=imported["score"]["id"])
         assert added["xml"] == score_samples.musicxml_text()
         assert added["source_score_id"] is None
+        assert added["source_available"] is None
         recognizer.missing = True
         failure = await _finish(
             client, await _call(client, "transcribe_score", score_id=str(pdf.id), recompute=True)
@@ -135,3 +137,14 @@ async def test_local_transcription_and_musicxml_text_tools(tmp_path: Path) -> No
         )
         assert str(existing.id) == xml_id
         assert len(await scores.list_scores(work.id)) == 3
+
+        await scores.delete(await scores.describe_deletion(pdf.id))
+        unavailable = await client.call_tool("read_musicxml_score", {"score_id": xml_id})
+        assert isinstance(unavailable.content[0], TextContent)
+        assert "The source PDF is no longer available." in unavailable.content[0].text
+        assert unavailable.structured_content is not None
+        assert unavailable.structured_content["source_available"] is False
+        assert unavailable.structured_content["source_score_id"] is None
+        assert unavailable.structured_content["xml"] == score_samples.musicxml_text()
+        _, stored = await scores.describe_score(existing.id)
+        assert stored.source_score_id == pdf.id

@@ -36,6 +36,7 @@
     "scoreSize": "Розмір",
     "sungLanguage": "Мова співу",
     "title": "Назва",
+    "transcription": "Транскрипція",
     "voicing": "Склад голосів",
     "webMode": "Вебрежим",
     "work": "Твір"
@@ -68,10 +69,10 @@
     "opened": "Партитуру відкрито.",
     "openError": "Не вдалося відкрити партитуру. Перевірте, чи встановлено сумісну програму.",
     "openScore": "Відкрити",
-    "transcribeScore": "Розпізнати партитуру",
+    "transcribeScore": "Транскрибувати партитуру",
     "transcriptionDone": "Транскрипція доступна.",
     "transcriptionFailed": "Не вдалося виконати транскрипцію. Перевірте PDF і спробуйте ще раз.",
-    "transcriptionInstall": "Установіть Audiveris для розпізнавання партитури.",
+    "transcriptionInstall": "Установіть Audiveris.",
     "transcriptionUnavailable": "Перевірте встановлення Audiveris і спробуйте ще раз.",
     "uploaded": "Партитуру додано.",
     "uploadError": "Не вдалося завантажити. Виберіть підтримувану партитуру розміром до 50 МБ і спробуйте ще раз."

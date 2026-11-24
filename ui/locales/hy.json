@@ -36,6 +36,7 @@
     "scoreSize": "Չափ",
     "sungLanguage": "Երգեցողության լեզու",
     "title": "Վերնագիր",
+    "transcription": "Վերծանում",
     "voicing": "Ձայների կազմ",
     "webMode": "Վեբ ռեժիմ",
     "work": "Ստեղծագործություն"
@@ -68,10 +69,10 @@
     "opened": "Պարտիտուրը բացվեց։",
     "openError": "Չհաջողվեց բացել պարտիտուրը։ Ստուգեք՝ տեղադրված է արդյոք համատեղելի ծրագիր։",
     "openScore": "Բացել",
-    "transcribeScore": "Ճանաչել պարտիտուրը",
+    "transcribeScore": "Վերծանել պարտիտուրը",
     "transcriptionDone": "Վերծանումը հասանելի է։",
     "transcriptionFailed": "Վերծանումը ձախողվեց։ Ստուգեք PDF-ը և կրկին փորձեք։",
-    "transcriptionInstall": "Տեղադրեք Audiveris-ը՝ պարտիտուրը ճանաչելու համար։",
+    "transcriptionInstall": "Տեղադրեք Audiveris-ը։",
     "transcriptionUnavailable": "Ստուգեք Audiveris-ի տեղադրումը և կրկին փորձեք։",
     "uploaded": "Պարտիտուրն ավելացվեց։",
     "uploadError": "Վերբեռնումը չհաջողվեց։ Ընտրեք աջակցվող ձևաչափով մինչև 50 ՄԲ պարտիտուր և կրկին փորձեք։"

@@ -12,6 +12,7 @@ from collections.abc import Callable, Iterable, Mapping
 from functools import partial
 from pathlib import Path
 
+from my_beautiful_choir.scores.recognition.audiveris.launch import AudiverisLaunch
 from my_beautiful_choir.scores.recognition.errors import (
     EngineNotFoundError,
     EngineUnavailableError,
@@ -31,16 +32,16 @@ class AudiverisInstallation:
         self._environment = environment
         self._home = home
 
-    async def command(self) -> tuple[str, ...]:
-        """Return the executable and fixed arguments for a discovered installation."""
-        return await asyncio.to_thread(self._command)
+    async def discover(self) -> AudiverisLaunch:
+        """Return a launch description for a discovered installation."""
+        return await asyncio.to_thread(self._discover)
 
-    def _command(self) -> tuple[str, ...]:
+    def _discover(self) -> AudiverisLaunch:
         if self._override is not None:
             candidate = self._override.expanduser()
             if not candidate.is_absolute() or not _executable(candidate):
                 raise EngineUnavailableError()
-            return (str(candidate),)
+            return AudiverisLaunch(candidate)
 
         path = self._environment.get("PATH", os.defpath)
         candidates = list(self._native_paths())
@@ -49,11 +50,11 @@ class AudiverisInstallation:
                 candidates.append(Path(found))
         for candidate in candidates:
             if _executable(candidate):
-                return (str(candidate.resolve()),)
+                return AudiverisLaunch(candidate.resolve())
         if self._platform.startswith("linux"):
             flatpak = shutil.which("flatpak", path=path)
             if flatpak and Path(flatpak).is_absolute() and _flatpak_installed(Path(flatpak)):
-                return (flatpak, "run", _FLATPAK_ID)
+                return AudiverisLaunch(Path(flatpak), flatpak_app_id=_FLATPAK_ID)
         if any(candidate.exists() for candidate in candidates):
             raise EngineUnavailableError()
         raise EngineNotFoundError()

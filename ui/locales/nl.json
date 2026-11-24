@@ -36,6 +36,7 @@
     "scoreSize": "Grootte",
     "sungLanguage": "Zangtaal",
     "title": "Titel",
+    "transcription": "Transcriptie",
     "voicing": "Stemverdeling",
     "webMode": "Webmodus",
     "work": "Werk"
@@ -68,10 +69,10 @@
     "opened": "Partituur geopend.",
     "openError": "De partituur kon niet worden geopend. Controleer of een geschikte toepassing is geïnstalleerd.",
     "openScore": "Openen",
-    "transcribeScore": "Partituur herkennen",
+    "transcribeScore": "Partituur transcriberen",
     "transcriptionDone": "De transcriptie is beschikbaar.",
     "transcriptionFailed": "De transcriptie is mislukt. Controleer de pdf en probeer het opnieuw.",
-    "transcriptionInstall": "Installeer Audiveris om de partituur te herkennen.",
+    "transcriptionInstall": "Installeer Audiveris.",
     "transcriptionUnavailable": "Controleer de installatie van Audiveris en probeer het opnieuw.",
     "uploaded": "Partituur toegevoegd.",
     "uploadError": "Upload mislukt. Kies een ondersteunde partituur van maximaal 50 MB en probeer het opnieuw."

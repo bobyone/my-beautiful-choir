@@ -158,7 +158,11 @@ export function WorkPanel({
         {data.work.title}
       </h1>
       {outcome && <WorkFeedback outcome={outcome} />}
-      {transcription?.state === "pending" && <p role="status">{t("view.loading")}</p>}
+      {transcription?.state === "pending" && (
+        <p role="status" aria-label={t("glossary.transcription")}>
+          {t("view.loading")}
+        </p>
+      )}
       {transcription?.state === "done" && (
         <Alert variant="success">{t("work.transcriptionDone")}</Alert>
       )}

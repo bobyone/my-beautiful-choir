@@ -10,7 +10,7 @@ SPDX-License-Identifier: GPL-2.0-or-later
    on the computer that runs the MCP server. The application discovers it
    automatically. See the [configuration reference](../configuration.md)
    for a custom installation.
-2. Open a work with a stored PDF score and select **Recognize the score** on
+2. Open a work with a stored PDF score and select **Transcribe the score** on
    its row. You can also ask the assistant to transcribe the named PDF of
    the work without opening the view.
 3. Wait for the result. Recognition adds one MusicXML score to the work and
@@ -20,7 +20,8 @@ SPDX-License-Identifier: GPL-2.0-or-later
 4. Ask the assistant to verify the transcription against the PDF. The
    assistant can read the XML text and obtain individual page images if its
    MCP client supports them. Ask it to identify any pages it could not
-   inspect.
+   inspect. If the source PDF has been deleted, the assistant can still
+   read the MusicXML and reports that the source is unavailable.
 
 The desktop registration commands install the optional PDF rendering
 dependencies. For a manual package-based personal installation, use
@@ -32,6 +33,21 @@ The assistant can also save supplied MusicXML text as a new score of a
 work. To rerun recognition when a transcription exists, ask explicitly
 for a new transcription. Each successful recalculation adds a score.
 If recognition fails, check the PDF or follow the engine installation link.
+
+## Test against an installed Audiveris
+
+Set `MBC_TEST_AUDIVERIS_PDF` to the path of a printed music PDF with at
+least two pages and one continuous score. The test discovers Audiveris
+automatically. To use a custom executable, also set
+`MBC_TEST_AUDIVERIS_EXECUTABLE` to its absolute path.
+
+```sh
+uv run --frozen --extra personal-ocr pytest -q tests/integration/test_audiveris_recognition.py
+```
+
+The test skips when the score is unspecified or automatic discovery
+finds no Audiveris installation. With an explicit executable, launch errors fail
+the test.
 
 ## Rolling back
 
