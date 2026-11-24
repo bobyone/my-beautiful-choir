@@ -20,8 +20,10 @@ advice.
 - **Personal mode**: the server stores the repertoire on the user's
   computer. The MCP client handles tool calls and results. The user can
   request an import from Google Drive, which then receives the computer's
-  IP address and the file id. See entries P1 and P2 in the records of
-  processing.
+  IP address and the file id. PDF transcription runs locally. When the
+  user requests verification, the MCP client can receive MusicXML text
+  and PDF page images and may pass them to its model provider. See
+  entries P1 through P3 in the records of processing.
 - **Web mode**: the organization operating the instance is the controller.
   For any request about an account on an instance, the user contacts that
   organization; the project does not hold their data.

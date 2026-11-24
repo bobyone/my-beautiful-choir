@@ -86,4 +86,6 @@ scores = Table(
     Column("link", String(LINK_LENGTH)),
     Column("storage_key", String(200), nullable=False, unique=True),
     Column("added_at", UtcDateTime, nullable=False),
+    Column("source_score_id", Uuid),
+    Column("content_origin", String(20)),
 )

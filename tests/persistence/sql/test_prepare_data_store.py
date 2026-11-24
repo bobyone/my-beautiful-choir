@@ -24,7 +24,7 @@ async def test_creates_the_directory_and_migrates(tmp_path: Path) -> None:
     step = PrepareDataStore(data_dir, database)
     await step.run()
     assert step.name == "prepare data store"
-    assert await database.current_revision() == "0001"
+    assert await database.current_revision() == "0002"
     assert [path.name for path in data_dir.iterdir()] == ["my-beautiful-choir.sqlite3"]
 
 

@@ -36,6 +36,7 @@
     "scoreSize": "Mida",
     "sungLanguage": "Llengua cantada",
     "title": "Títol",
+    "transcription": "Transcripció",
     "voicing": "Distribució vocal",
     "webMode": "Mode web",
     "work": "Obra"
@@ -68,6 +69,11 @@
     "opened": "S’ha obert la partitura.",
     "openError": "No s’ha pogut obrir la partitura. Comproveu que hi hagi una aplicació compatible instal·lada.",
     "openScore": "Obre",
+    "transcribeScore": "Transcriu la partitura",
+    "transcriptionDone": "La transcripció està disponible.",
+    "transcriptionFailed": "La transcripció ha fallat. Revisa el PDF i torna-ho a provar.",
+    "transcriptionInstall": "Instal·la Audiveris.",
+    "transcriptionUnavailable": "Revisa la instal·lació d’Audiveris i torna-ho a provar.",
     "uploaded": "S’ha afegit la partitura.",
     "uploadError": "No s’ha pogut carregar. Trieu una partitura compatible de fins a 50 MB i torneu-ho a provar."
   }

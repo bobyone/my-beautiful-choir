@@ -36,6 +36,7 @@
     "scoreSize": "Taille",
     "sungLanguage": "Langue chantée",
     "title": "Titre",
+    "transcription": "Transcription",
     "voicing": "Effectif vocal",
     "webMode": "Mode web",
     "work": "Œuvre"
@@ -68,6 +69,11 @@
     "opened": "Partition ouverte.",
     "openError": "La partition n’a pas pu être ouverte. Vérifiez qu’une application compatible est installée.",
     "openScore": "Ouvrir",
+    "transcribeScore": "Transcrire la partition",
+    "transcriptionDone": "La transcription est disponible.",
+    "transcriptionFailed": "La transcription a échoué. Vérifiez le PDF et réessayez.",
+    "transcriptionInstall": "Installez Audiveris.",
+    "transcriptionUnavailable": "Vérifiez votre installation d’Audiveris et réessayez.",
     "uploaded": "Partition ajoutée.",
     "uploadError": "L’ajout a échoué. Choisissez une partition dans un format accepté, de 50 Mo maximum, puis réessayez."
   }

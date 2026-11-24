@@ -27,10 +27,17 @@ class ShowWorkArguments(BaseModel):
 class ShowWorkTool(ViewTool[ShowWorkArguments]):
     """Show the details and scores of a work."""
 
-    def __init__(self, view: View, repertoire: RepertoireService, scores: ScoreService) -> None:
+    def __init__(
+        self,
+        view: View,
+        repertoire: RepertoireService,
+        scores: ScoreService,
+        supports_transcription: bool = False,
+    ) -> None:
         super().__init__(view)
         self._repertoire = repertoire
         self._scores = scores
+        self._supports_transcription = supports_transcription
 
     @property
     def name(self) -> str:
@@ -53,6 +60,7 @@ class ShowWorkTool(ViewTool[ShowWorkArguments]):
             "choir": choir.name,
             "work": work_data(work),
             "scores": list(map(score_data, scores)),
+            "supports_transcription": self._supports_transcription,
         }
 
     def _describe(self, data: Mapping[str, object]) -> str:

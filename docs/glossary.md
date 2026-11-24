@@ -31,9 +31,9 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
-| Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
+| Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
 | Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | `glossary.repertoire` | Repertoire | Répertoire |
 | Repertoire page | Ordered slice of the works of a choir matching a search, with its number, its size (10 works by default, at most 100) and the number of matching works. | `RepertoirePage` | `repertoire.pages` | Repertoire pages | Pages du répertoire |
@@ -41,12 +41,15 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | `glossary.score` | Score | Partition |
 | Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | `glossary.scoreFormat` | Format | Format |
 | Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | `glossary.scoreLabel` | Label | Libellé |
-| Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
+| Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file on the user's computer, a public Google Drive link, MusicXML text submitted by the model, or a transcription. | `ScoreOrigin` | | origin | origine |
 | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
-| Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Server registration | Settings that tell a client how to start the local MCP server. | `ClientRegistration` | | server registration | inscription du serveur |
+| Source score | Existing PDF score of a work used to generate a transcription. | `source_score_id` | | source score | partition source |
+| Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Sung language | Langue chantée |
 | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |
+| Transcription | MusicXML score produced by optical recognition of every page of a source score. | `TranscriptionJob` | `glossary.transcription` | Transcription | Transcription |
+| Verification | Comparison of a transcription with its source score to identify differences and report the passages inspected. | | | verification | vérification |
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |

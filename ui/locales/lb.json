@@ -36,6 +36,7 @@
     "scoreSize": "Gréisst",
     "sungLanguage": "Sprooch vum Gesank",
     "title": "Titel",
+    "transcription": "Transkriptioun",
     "voicing": "Stëmmeverdeelung",
     "webMode": "Webmodus",
     "work": "Wierk"
@@ -68,6 +69,11 @@
     "opened": "Partitur opgemaach.",
     "openError": "D’Partitur konnt net opgemaach ginn. Kontrolléiert ob eng passend App installéiert ass.",
     "openScore": "Opmaachen",
+    "transcribeScore": "Partitur transkribéieren",
+    "transcriptionDone": "D’Transkriptioun ass disponibel.",
+    "transcriptionFailed": "D’Transkriptioun ass feelgeschloen. Kontrolléiert de PDF a probéiert nach eng Kéier.",
+    "transcriptionInstall": "Installéiert Audiveris.",
+    "transcriptionUnavailable": "Kontrolléiert d’Installatioun vun Audiveris a probéiert nach eng Kéier.",
     "uploaded": "Partitur derbäigesat.",
     "uploadError": "Eropluede feelgeschloen. Wielt eng ënnerstëtzt Partitur vu bis zu 50 MB a probéiert et nach eng Kéier."
   }

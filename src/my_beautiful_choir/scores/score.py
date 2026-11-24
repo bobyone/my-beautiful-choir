@@ -30,3 +30,4 @@ class Score:
     storage_key: str
     """Key of the content in the file storage."""
     added_at: datetime
+    source_score_id: UUID | None = None

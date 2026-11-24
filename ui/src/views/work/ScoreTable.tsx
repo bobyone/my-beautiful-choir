@@ -21,9 +21,17 @@ interface ScoreTableProps {
   /** Without it, the Download action is not shown. */
   onDownload?: ((score: ScoreInfo) => void) | undefined;
   onDelete: (score: ScoreInfo) => void;
+  onTranscribe?: ((score: ScoreInfo) => void) | undefined;
 }
 
-export function ScoreTable({ scores, busy, onOpen, onDownload, onDelete }: ScoreTableProps) {
+export function ScoreTable({
+  scores,
+  busy,
+  onOpen,
+  onDownload,
+  onDelete,
+  onTranscribe,
+}: ScoreTableProps) {
   const { t, i18n } = useTranslation();
   const bytes = new Intl.NumberFormat(i18n.language, {
     style: "unit",
@@ -75,6 +83,18 @@ export function ScoreTable({ scores, busy, onOpen, onDownload, onDelete }: Score
                     }}
                   >
                     {t("work.downloadScore")}
+                  </Button>
+                )}
+                {onTranscribe !== undefined && score.format === "pdf" && (
+                  <Button
+                    variant="outline-primary"
+                    disabled={busy}
+                    aria-describedby={`score-${score.id}`}
+                    onClick={() => {
+                      onTranscribe(score);
+                    }}
+                  >
+                    {t("work.transcribeScore")}
                   </Button>
                 )}
                 <Button

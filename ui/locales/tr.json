@@ -36,6 +36,7 @@
     "scoreSize": "Boyut",
     "sungLanguage": "Söylenen dil",
     "title": "Başlık",
+    "transcription": "Transkripsiyon",
     "voicing": "Ses dağılımı",
     "webMode": "Web modu",
     "work": "Eser"
@@ -68,6 +69,11 @@
     "opened": "Partisyon açıldı.",
     "openError": "Partisyon açılamadı. Uyumlu bir uygulamanın yüklü olduğunu kontrol edin.",
     "openScore": "Aç",
+    "transcribeScore": "Partitürü transkribe et",
+    "transcriptionDone": "Transkripsiyon hazır.",
+    "transcriptionFailed": "Transkripsiyon başarısız oldu. PDF dosyasını kontrol edip yeniden deneyin.",
+    "transcriptionInstall": "Audiveris’i yükleyin.",
+    "transcriptionUnavailable": "Audiveris kurulumunu kontrol edip yeniden deneyin.",
     "uploaded": "Partisyon eklendi.",
     "uploadError": "Yükleme başarısız. 50 MB veya daha küçük, desteklenen bir partisyon seçip yeniden deneyin."
   }

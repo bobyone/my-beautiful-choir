@@ -31,6 +31,8 @@ invalid key with the expected value on stderr and exits with code 2 (see
 | `MBC_MODE` | `personal` \| `web` | `personal` | no | Running mode: personal mode over stdio, or web mode over HTTP. |
 | `MBC_LOG_LEVEL` | `DEBUG` \| `INFO` \| `WARNING` \| `ERROR` \| `CRITICAL` | `INFO` | no | Minimum level of the logs written to stderr. |
 | `MBC_DATA_DIR` | directory path | the user data directory of the platform (`%LOCALAPPDATA%\my-beautiful-choir` on Windows, `~/Library/Application Support/my-beautiful-choir` on macOS, `~/.local/share/my-beautiful-choir` on Linux) | no | Personal mode: directory of the database and the scores; created at startup if needed. |
+| `MBC_RECOGNITION__AUDIVERIS_EXECUTABLE` | absolute executable path | automatic discovery | no | Personal mode: override for a custom Audiveris installation. |
+| `MBC_RECOGNITION__TIMEOUT_SECONDS` | integer from 1 to 3600 | `600` | no | Personal mode: maximum duration of one recognition process. |
 | `MBC_WEB__HOST` | IP address or host name | `127.0.0.1` | no | Web mode: address to listen on. Use `0.0.0.0` in a container. |
 | `MBC_WEB__PORT` | integer from 1 to 65535 | `9000` | no | Web mode: port to listen on. |
 | `MBC_WEB__ALLOWED_HOSTS` | comma-separated list of `host:port` | empty | no | Web mode: `Host` header values accepted, as a protection against DNS rebinding. Empty means the local host only. Required when listening on `0.0.0.0`. |

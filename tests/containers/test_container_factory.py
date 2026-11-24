@@ -128,6 +128,12 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
     names = [tool.name for tool in container.tools()]
     assert names == [
         "show_about",
+        "find_score_sources",
+        "transcribe_score",
+        "get_transcription_status",
+        "add_musicxml_score",
+        "read_musicxml_score",
+        "read_score_source_page",
         "list_choirs",
         "create_choir",
         "rename_choir",

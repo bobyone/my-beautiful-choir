@@ -15,5 +15,8 @@ class ScoreOrigin(StrEnum):
     LOCAL_FILE = "local_file"
     """Read from a file of the user's computer, named by its path."""
 
+    MUSICXML_TEXT = "musicxml_text"
+    TRANSCRIPTION = "transcription"
+
     GOOGLE_DRIVE = "google_drive"
     """Downloaded from a public Google Drive link, which is kept with the score."""

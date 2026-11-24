@@ -36,6 +36,7 @@
     "scoreSize": "Størrelse",
     "sungLanguage": "Sangsprog",
     "title": "Titel",
+    "transcription": "Transskription",
     "voicing": "Stemmefordeling",
     "webMode": "Webtilstand",
     "work": "Værk"
@@ -68,6 +69,11 @@
     "opened": "Partitur åbnet.",
     "openError": "Partituret kunne ikke åbnes. Kontrollér, at et kompatibelt program er installeret.",
     "openScore": "Åbn",
+    "transcribeScore": "Transskriber partituret",
+    "transcriptionDone": "Transskriptionen er klar.",
+    "transcriptionFailed": "Transskriptionen mislykkedes. Kontrollér PDF-filen og prøv igen.",
+    "transcriptionInstall": "Installér Audiveris.",
+    "transcriptionUnavailable": "Kontrollér installationen af Audiveris og prøv igen.",
     "uploaded": "Partitur tilføjet.",
     "uploadError": "Upload mislykkedes. Vælg et understøttet partitur på højst 50 MB, og prøv igen."
   }

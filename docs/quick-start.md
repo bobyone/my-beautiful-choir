@@ -89,6 +89,9 @@ Read the logs with `docker compose logs`, stop with `docker compose down`.
 
 ## Plugin skills
 
+In personal mode, [transcribe a stored PDF score](how-to/transcribe-a-score.md)
+from a Work view or ask the assistant to do it directly.
+
 See [how to install the plugin in Codex](how-to/install-the-plugin-in-codex.md)
 to use the application's skills from Codex.
 

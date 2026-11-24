@@ -49,6 +49,18 @@ as described in P2.
 | Retention | The application keeps the records until the user deletes them. A confirmed deletion removes the affected records and score files. Deletion previews and tokens are held in server memory, valid for up to ten minutes, and cleared on restart. The user manages the retention of separately made backups. |
 | Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Opening a score creates a copy in a private temporary directory. Score uploads have content and size validation, and destructive actions require confirmation. |
 
+### P3. Local transcription and verification (implemented)
+
+| Item | Description |
+|---|---|
+| Purpose | Generate a transcription from a PDF score, and let the user ask the model to compare the transcription with the source. |
+| Legal basis | Same as P2. |
+| Data subjects and categories | Same as P2. A transcription also stores the identifier of its source score. |
+| Recipients and processors | The local engine reads a temporary PDF copy. When requested, the selected MCP client receives MusicXML text or rendered PDF pages and may pass them to its model provider. |
+| Transfers outside the EU | None by recognition itself. The chosen MCP client's configuration and terms govern its handling of requested tool results. |
+| Retention | Transcriptions remain in the repertoire until deleted. Temporary recognition files are removed at the end of a normal run. Flatpak receives access to the per-job directory in the application cache only. The server keeps up to 32 recent job statuses in memory. |
+| Security measures | Local batch execution, private temporary workspace, bounded score and tool response sizes, authorization through the score service and XML parsing without fetching external resources. |
+
 ## Web mode
 
 ### 0. Technical logs and metrics (implemented)

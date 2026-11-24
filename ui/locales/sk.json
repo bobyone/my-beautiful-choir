@@ -36,6 +36,7 @@
     "scoreSize": "Veľkosť",
     "sungLanguage": "Spievaný jazyk",
     "title": "Názov",
+    "transcription": "Prepis",
     "voicing": "Hlasové obsadenie",
     "webMode": "Webový režim",
     "work": "Skladba"
@@ -68,6 +69,11 @@
     "opened": "Partitúra bola otvorená.",
     "openError": "Partitúru nemožno otvoriť. Skontrolujte, či je nainštalovaná vhodná aplikácia.",
     "openScore": "Otvoriť",
+    "transcribeScore": "Prepísať partitúru",
+    "transcriptionDone": "Prepis je dostupný.",
+    "transcriptionFailed": "Prepis zlyhal. Skontrolujte PDF a skúste to znova.",
+    "transcriptionInstall": "Nainštalujte Audiveris.",
+    "transcriptionUnavailable": "Skontrolujte inštaláciu Audiveris a skúste to znova.",
     "uploaded": "Partitúra bola pridaná.",
     "uploadError": "Nahrávanie sa nepodarilo. Vyberte podporovanú partitúru do 50 MB a skúste to znova."
   }

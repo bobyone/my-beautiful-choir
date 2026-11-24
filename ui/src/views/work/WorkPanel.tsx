@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2026 bobyone
+// SPDX-FileContributor: bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 import { useRef, useState } from "react";
@@ -12,6 +13,7 @@ import { type DeletionInfo, parseDeletionInfo } from "../deletion/deletionInfo";
 import { CONFIRM_TOOL } from "../deletion/DeletionApp";
 import { DeletionSummaryView } from "../deletion/DeletionView";
 import { type CallTool, resultData } from "../viewData";
+import { requestTranscription, type TranscriptionOutcome } from "./requestTranscription";
 import { readScoreFile } from "./readScoreFile";
 import { ScoreTable } from "./ScoreTable";
 import { WorkDetails } from "./WorkDetails";
@@ -42,13 +44,15 @@ export function WorkPanel({
   const [removed, setRemoved] = useState(false);
   const [deletion, setDeletion] = useState<Deletion | null>(null);
   const [outcome, setOutcome] = useState<Outcome>();
+  const [transcription, setTranscription] = useState<TranscriptionOutcome>();
   const fileInput = useRef<HTMLInputElement>(null);
-  const busy = outcome?.state === "waiting";
+  const busy = outcome?.state === "waiting" || transcription?.state === "pending";
 
   async function perform(
     action: Action,
     task: () => Promise<undefined | "done" | "cancelled">,
   ): Promise<void> {
+    setTranscription(undefined);
     setOutcome({ action, state: "waiting" });
     try {
       const state = await task();
@@ -89,7 +93,27 @@ export function WorkPanel({
       });
     });
 
+  async function transcribe(score: ScoreInfo) {
+    setOutcome(undefined);
+    setTranscription({ state: "pending" });
+    try {
+      const result = await requestTranscription(callTool, score.id);
+      if (result.state === "done") {
+        const recognized = result.score;
+        setScores((previous) =>
+          previous.some((entry) => entry.id === recognized.id)
+            ? previous
+            : [...previous, recognized],
+        );
+      }
+      setTranscription(result);
+    } catch {
+      setTranscription({ state: "failed" });
+    }
+  }
+
   async function prepareDeletion(target: "work" | "score", id: string) {
+    setTranscription(undefined);
     setOutcome({ action: "prepare-delete", state: "waiting" });
     try {
       const reply = await callTool(`preview_${target}_deletion`, { target_id: id });
@@ -134,6 +158,31 @@ export function WorkPanel({
         {data.work.title}
       </h1>
       {outcome && <WorkFeedback outcome={outcome} />}
+      {transcription?.state === "pending" && (
+        <p role="status" aria-label={t("glossary.transcription")}>
+          {t("view.loading")}
+        </p>
+      )}
+      {transcription?.state === "done" && (
+        <Alert variant="success">{t("work.transcriptionDone")}</Alert>
+      )}
+      {transcription?.state === "failed" && (
+        <Alert variant="danger">
+          {transcription.errorKey === "work.transcriptionInstall"
+            ? t("work.transcriptionInstall")
+            : transcription.errorKey === "work.transcriptionUnavailable"
+              ? t("work.transcriptionUnavailable")
+              : t("work.transcriptionFailed")}
+          {transcription.installUrl && (
+            <>
+              {" "}
+              <Alert.Link href={transcription.installUrl} target="_blank" rel="noopener noreferrer">
+                Audiveris
+              </Alert.Link>
+            </>
+          )}
+        </Alert>
+      )}
       {!removed && (
         <>
           <WorkDetails data={data} />
@@ -143,6 +192,9 @@ export function WorkPanel({
             busy={busy}
             onOpen={openScore}
             onDownload={downloadScore}
+            onTranscribe={
+              data.supportsTranscription ? (score) => void transcribe(score) : undefined
+            }
             onDelete={(score) => {
               void prepareDeletion("score", score.id);
             }}

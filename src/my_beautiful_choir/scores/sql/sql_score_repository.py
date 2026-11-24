@@ -29,6 +29,8 @@ _COLUMNS = (
     scores.c.link,
     scores.c.storage_key,
     scores.c.added_at,
+    scores.c.source_score_id,
+    scores.c.content_origin,
 )
 
 
@@ -40,10 +42,11 @@ def _score(row: Row[*tuple[Any, ...]]) -> Score:
         format=ScoreFormat(row.format),
         size=row.size,
         original_name=row.original_name,
-        origin=ScoreOrigin(row.origin),
+        origin=ScoreOrigin(row.content_origin or row.origin),
         link=row.link,
         storage_key=row.storage_key,
         added_at=row.added_at,
+        source_score_id=row.source_score_id,
     )
 
 
@@ -63,7 +66,18 @@ class SqlScoreRepository(ScoreRepository):
                 format=score.format.value,
                 size=score.size,
                 original_name=score.original_name,
-                origin=score.origin.value,
+                # Keep the legacy column readable by the previous application.
+                origin=(
+                    ScoreOrigin.LOCAL_FILE.value
+                    if score.origin is ScoreOrigin.TRANSCRIPTION
+                    else ScoreOrigin.FILE_PICKER.value
+                    if score.origin is ScoreOrigin.MUSICXML_TEXT
+                    else score.origin.value
+                ),
+                content_origin=score.origin.value
+                if score.origin in (ScoreOrigin.TRANSCRIPTION, ScoreOrigin.MUSICXML_TEXT)
+                else None,
+                source_score_id=score.source_score_id,
                 link=score.link,
                 storage_key=score.storage_key,
                 added_at=score.added_at,

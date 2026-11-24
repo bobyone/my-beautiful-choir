@@ -47,7 +47,7 @@ async def test_migration_creates_the_schema_of_the_tables(database: SqlDatabase)
     def differences(connection: Connection) -> list[object]:
         return list(compare_metadata(MigrationContext.configure(connection), metadata))
 
-    assert await database.current_revision() == "0001"
+    assert await database.current_revision() == "0002"
     async with database.engine.connect() as connection:
         assert await connection.run_sync(differences) == []
 
@@ -64,7 +64,7 @@ async def test_downgrade_removes_everything(database: SqlDatabase) -> None:
 @pytest.mark.anyio
 async def test_migrating_twice_changes_nothing(database: SqlDatabase) -> None:
     await database.migrate()
-    assert await database.current_revision() == "0001"
+    assert await database.current_revision() == "0002"
 
 
 @pytest.mark.anyio

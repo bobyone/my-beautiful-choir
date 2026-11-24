@@ -36,6 +36,7 @@
     "scoreSize": "Velikost",
     "sungLanguage": "Zpívaný jazyk",
     "title": "Název",
+    "transcription": "Přepis",
     "voicing": "Hlasové obsazení",
     "webMode": "Webový režim",
     "work": "Skladba"
@@ -68,6 +69,11 @@
     "opened": "Partitura otevřena.",
     "openError": "Partituru nelze otevřít. Ověřte, zda je nainstalována vhodná aplikace.",
     "openScore": "Otevřít",
+    "transcribeScore": "Přepsat partituru",
+    "transcriptionDone": "Přepis je k dispozici.",
+    "transcriptionFailed": "Přepis se nezdařil. Zkontrolujte PDF a zkuste to znovu.",
+    "transcriptionInstall": "Nainstalujte Audiveris.",
+    "transcriptionUnavailable": "Zkontrolujte instalaci Audiveris a zkuste to znovu.",
     "uploaded": "Partitura přidána.",
     "uploadError": "Nahrávání se nezdařilo. Vyberte podporovanou partituru do 50 MB a zkuste to znovu."
   }

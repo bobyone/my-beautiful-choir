@@ -36,6 +36,7 @@
     "scoreSize": "Madhësi",
     "sungLanguage": "Gjuha e kënduar",
     "title": "Titull",
+    "transcription": "Transkriptim",
     "voicing": "Ndarja e zërave",
     "webMode": "Modaliteti ueb",
     "work": "Vepër"
@@ -68,6 +69,11 @@
     "opened": "Partitura u hap.",
     "openError": "Partitura nuk u hap. Kontrolloni nëse është instaluar një aplikacion i përshtatshëm.",
     "openScore": "Hap",
+    "transcribeScore": "Transkripto partiturën",
+    "transcriptionDone": "Transkriptimi është i disponueshëm.",
+    "transcriptionFailed": "Transkriptimi dështoi. Kontrollo PDF-në dhe provo përsëri.",
+    "transcriptionInstall": "Instalo Audiveris.",
+    "transcriptionUnavailable": "Kontrollo instalimin e Audiveris dhe provo përsëri.",
     "uploaded": "Partitura u shtua.",
     "uploadError": "Ngarkimi dështoi. Zgjidhni një partiturë të mbështetur deri në 50 MB dhe provoni përsëri."
   }

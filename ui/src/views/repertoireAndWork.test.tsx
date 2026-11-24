@@ -146,6 +146,39 @@ describe("repertoire and work views", () => {
     });
   });
 
+  it("recognizes a stored PDF and displays the transcription", async () => {
+    const recognized = { id: "xml", label: "Transcription", format: "musicxml", size: 180 };
+    host.answerToolCall = ({ name }) =>
+      name === "transcribe_score"
+        ? result({ state: "pending", job_id: "job" })
+        : result({ state: "done", score: recognized });
+    await show(WorkApp, result({ ...workResult, supports_transcription: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Transcribe the score" }));
+    expect(screen.getByRole("status", { name: "Transcription" })).toBeDefined();
+    expect(
+      await screen.findByText("Transcription available.", {}, { timeout: 3000 }),
+    ).toBeDefined();
+    expect(screen.getByRole("rowheader", { name: "Transcription" })).toBeDefined();
+    expect(screen.getAllByRole("button", { name: "Transcribe the score" })).toHaveLength(1);
+    expect(host.toolCalls).toEqual([
+      { name: "transcribe_score", arguments: { score_id: score.id } },
+      { name: "get_transcription_status", arguments: { job_id: "job" } },
+    ]);
+  });
+
+  it("offers the official installation link when Audiveris is missing", async () => {
+    host.answerToolCall = () =>
+      result({
+        state: "failed",
+        error_code: "engine_missing",
+        install_url: "https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/",
+      });
+    await show(WorkApp, result({ ...workResult, supports_transcription: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Transcribe the score" }));
+    const link = await screen.findByRole("link", { name: "Audiveris" });
+    expect(link.getAttribute("href")).toContain("audiveris.github.io");
+  });
+
   it("pages through the repertoire", async () => {
     const paged = { ...repertoire, search: "li", page_size: 2, page_count: 3, work_count: 5 };
     host.answerToolCall = ({ arguments: args }) => result({ ...paged, page: args?.["page"] });

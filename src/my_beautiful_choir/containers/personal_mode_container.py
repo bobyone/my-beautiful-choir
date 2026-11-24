@@ -1,12 +1,17 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Assembly specific to personal mode."""
 
+import os
+import sys
 from importlib.resources.abc import Traversable
+from pathlib import Path
 from typing import Any
 
 from dependency_injector import containers, providers
+from platformdirs import user_cache_path
 
 from my_beautiful_choir.authorization.local.local_user_authorization import LocalUserAuthorization
 from my_beautiful_choir.choirs.choir_service import ChoirService
@@ -30,6 +35,10 @@ from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature impor
     MuseScoreSignature,
 )
 from my_beautiful_choir.scores.opening.system.system_score_opener import SystemScoreOpener
+from my_beautiful_choir.scores.pdf.pdfium.pdfium_page_renderer import PdfiumPageRenderer
+from my_beautiful_choir.scores.recognition.audiveris.installation import AudiverisInstallation
+from my_beautiful_choir.scores.recognition.audiveris.recognizer import AudiverisRecognizer
+from my_beautiful_choir.scores.recognition.transcription_service import TranscriptionService
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.scores.sources.google_drive.google_drive_score_source import (
     GoogleDriveScoreSource,
@@ -43,12 +52,18 @@ from my_beautiful_choir.tools.choirs.set_default_choir_tool import SetDefaultCho
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.tools.repertoire.add_work_tool import AddWorkTool
 from my_beautiful_choir.tools.repertoire.edit_work_tool import EditWorkTool
+from my_beautiful_choir.tools.scores.add_musicxml_score_tool import AddMusicXmlScoreTool
 from my_beautiful_choir.tools.scores.add_score_from_file_tool import AddScoreFromFileTool
 from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
     AddScoreFromGoogleDriveTool,
 )
+from my_beautiful_choir.tools.scores.find_score_sources_tool import FindScoreSourcesTool
 from my_beautiful_choir.tools.scores.get_score_file_tool import GetScoreFileTool
+from my_beautiful_choir.tools.scores.get_transcription_status_tool import GetTranscriptionStatusTool
 from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
+from my_beautiful_choir.tools.scores.read_musicxml_score_tool import ReadMusicXmlScoreTool
+from my_beautiful_choir.tools.scores.read_score_source_page_tool import ReadScoreSourcePageTool
+from my_beautiful_choir.tools.scores.transcribe_score_tool import TranscribeScoreTool
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
     ConfirmDeletionTool,
@@ -150,7 +165,38 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         opener=score_opener,
     )
 
+    recognition_installation = providers.Singleton(
+        AudiverisInstallation,
+        override=settings.provided.recognition.audiveris_executable,
+        platform=sys.platform,
+        environment=providers.Callable(dict, os.environ),
+        home=providers.Callable(Path.home),
+    )
+    recognizer = providers.Singleton(
+        AudiverisRecognizer,
+        installation=recognition_installation,
+        timeout_seconds=settings.provided.recognition.timeout_seconds,
+        cache_directory=providers.Callable(user_cache_path, "my-beautiful-choir"),
+    )
+    transcriptions = providers.Singleton(
+        TranscriptionService,
+        scores=score_service,
+        recognizer=recognizer,
+        authorization=authorization,
+    )
+    pdf_page_renderer = providers.Singleton(PdfiumPageRenderer)
+
     mode_tools = providers.List(
+        _metered(
+            FindScoreSourcesTool, metrics, scores=score_service, repertoire=repertoire_service
+        ),
+        _metered(TranscribeScoreTool, metrics, transcriptions=transcriptions),
+        _metered(GetTranscriptionStatusTool, metrics, transcriptions=transcriptions),
+        _metered(AddMusicXmlScoreTool, metrics, scores=score_service),
+        _metered(ReadMusicXmlScoreTool, metrics, scores=score_service),
+        _metered(
+            ReadScoreSourcePageTool, metrics, scores=score_service, renderer=pdf_page_renderer
+        ),
         _metered(ListChoirsTool, metrics, service=choir_service),
         _metered(CreateChoirTool, metrics, service=choir_service),
         _metered(RenameChoirTool, metrics, service=choir_service),
@@ -179,6 +225,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             view=work_view,
             repertoire=repertoire_service,
             scores=score_service,
+            supports_transcription=providers.Object(True),
         ),
         _metered(
             UploadScoreTool,

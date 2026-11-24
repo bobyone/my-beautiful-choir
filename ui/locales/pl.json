@@ -36,6 +36,7 @@
     "scoreSize": "Rozmiar",
     "sungLanguage": "Język śpiewu",
     "title": "Tytuł",
+    "transcription": "Transkrypcja",
     "voicing": "Obsada głosowa",
     "webMode": "Tryb webowy",
     "work": "Utwór"
@@ -68,6 +69,11 @@
     "opened": "Otwarto partyturę.",
     "openError": "Nie udało się otworzyć partytury. Sprawdź, czy zainstalowano zgodną aplikację.",
     "openScore": "Otwórz",
+    "transcribeScore": "Transkrybuj partyturę",
+    "transcriptionDone": "Transkrypcja jest dostępna.",
+    "transcriptionFailed": "Transkrypcja nie powiodła się. Sprawdź plik PDF i spróbuj ponownie.",
+    "transcriptionInstall": "Zainstaluj Audiveris.",
+    "transcriptionUnavailable": "Sprawdź instalację Audiveris i spróbuj ponownie.",
     "uploaded": "Dodano partyturę.",
     "uploadError": "Przesyłanie nie powiodło się. Wybierz obsługiwaną partyturę do 50 MB i spróbuj ponownie."
   }
