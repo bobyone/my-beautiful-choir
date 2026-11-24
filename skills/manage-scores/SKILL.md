@@ -1,6 +1,6 @@
 ---
 name: manage-scores
-description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to open, receive in the conversation or delete a score, in personal mode.
+description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to transcribe a stored PDF, add or read MusicXML text, verify a transcription against its PDF, open, receive or delete a score in personal mode.
 ---
 
 <!--
@@ -59,6 +59,24 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.
   If the deletion preview changes, review it again before confirming.
+
+## Transcribe and verify
+
+- Call `find_score_sources` with the work id or title, an optional choir
+  and an optional score label. This needs no view. Ask which work or PDF
+  to use if several match the user's request.
+- Call `transcribe_score(score_id)` directly. The Work view is optional.
+  When the result is pending, wait before calling
+  `get_transcription_status(job_id)` again. Specify `recompute: true` only
+  when the user asks for another transcription. Relay the official
+  installation link when the engine is missing or unavailable.
+- Read the score with `read_musicxml_score(score_id, offset?, length?)`,
+  following the returned `next_offset` for more text. To verify the score
+  when the user asks, use `read_score_source_page(score_id, page)` on
+  the returned source score id. Compare with the actual pages, report
+  differences and identify any passages you could not check.
+- Use `add_musicxml_score(work_id, xml, label?)` to add the actual XML
+  text when the user asks you to save it.
 
 ## Errors
 

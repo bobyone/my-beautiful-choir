@@ -68,6 +68,11 @@
     "opened": "Partition ouverte.",
     "openError": "La partition n’a pas pu être ouverte. Vérifiez qu’une application compatible est installée.",
     "openScore": "Ouvrir",
+    "transcribeScore": "Reconnaître la partition",
+    "transcriptionDone": "La transcription est disponible.",
+    "transcriptionFailed": "La transcription a échoué. Vérifiez le PDF et réessayez.",
+    "transcriptionInstall": "Installez Audiveris pour reconnaître la partition.",
+    "transcriptionUnavailable": "Vérifiez votre installation d’Audiveris et réessayez.",
     "uploaded": "Partition ajoutée.",
     "uploadError": "L’ajout a échoué. Choisissez une partition dans un format accepté, de 50 Mo maximum, puis réessayez."
   }

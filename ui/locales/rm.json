@@ -68,6 +68,11 @@
     "opened": "Partitura averta.",
     "openError": "I n’è betg reussì d’avrir la partitura. Verifitgai ch’ina applicaziun cumpatibla saja installada.",
     "openScore": "Avrir",
+    "transcribeScore": "Renconuscher la partitura",
+    "transcriptionDone": "La transcripziun è disponibla.",
+    "transcriptionFailed": "La transcripziun n’è betg reussida. Controllai il PDF ed empruvai anc ina giada.",
+    "transcriptionInstall": "Installai Audiveris per renconuscher la partitura.",
+    "transcriptionUnavailable": "Controllai l’installaziun dad Audiveris ed empruvai anc ina giada.",
     "uploaded": "Partitura agiuntada.",
     "uploadError": "La chargiada n’è betg reussida. Tschernei ina partitura sustegnida da maximalmain 50 MB ed empruvai anc ina giada."
   }

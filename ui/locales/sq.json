@@ -68,6 +68,11 @@
     "opened": "Partitura u hap.",
     "openError": "Partitura nuk u hap. Kontrolloni nëse është instaluar një aplikacion i përshtatshëm.",
     "openScore": "Hap",
+    "transcribeScore": "Njih partiturën",
+    "transcriptionDone": "Transkriptimi është i disponueshëm.",
+    "transcriptionFailed": "Transkriptimi dështoi. Kontrollo PDF-në dhe provo përsëri.",
+    "transcriptionInstall": "Instalo Audiveris për të njohur partiturën.",
+    "transcriptionUnavailable": "Kontrollo instalimin e Audiveris dhe provo përsëri.",
     "uploaded": "Partitura u shtua.",
     "uploadError": "Ngarkimi dështoi. Zgjidhni një partiturë të mbështetur deri në 50 MB dhe provoni përsëri."
   }

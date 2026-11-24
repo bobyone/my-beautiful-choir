@@ -51,6 +51,6 @@ def test_verification_precedes_registration(
             installer.install(tmp_path, client, lambda: False, {})
         assert client.launcher is None
     assert len(commands) == 3
-    assert commands[0][1:] == ["sync", "--frozen"]
+    assert commands[0][1:] == ["sync", "--frozen", "--extra", "personal-ocr"]
     assert commands[1][-3:] == ["nox", "-s", "ui"]
     assert commands[2][-9:] == list(Launcher(tmp_path / "uv", tmp_path).command)

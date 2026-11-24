@@ -41,6 +41,12 @@ Homepage = "https://github.com/bobyone/my-beautiful-choir"
 Issues = "https://github.com/bobyone/my-beautiful-choir/issues"
 Changelog = "https://github.com/bobyone/my-beautiful-choir/blob/main/CHANGELOG.md"
 
+[project.optional-dependencies]
+personal-ocr = [
+    "pillow>=13.0.0",
+    "pypdfium2>=5.15.2",
+]
+
 [dependency-groups]
 dev = [
     "mypy",
@@ -88,6 +94,10 @@ python_version = "3.13"
 files = ["src", "tests", "scripts", "noxfile.py", "tools/assistant_hooks"]
 mypy_path = ["src", "."]
 explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = "pypdfium2"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

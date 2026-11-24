@@ -68,6 +68,11 @@
     "opened": "Nuotti avattu.",
     "openError": "Nuottia ei voitu avata. Tarkista, että sopiva sovellus on asennettu.",
     "openScore": "Avaa",
+    "transcribeScore": "Tunnista nuotit",
+    "transcriptionDone": "Nuotinnos on saatavilla.",
+    "transcriptionFailed": "Nuotintaminen epäonnistui. Tarkista PDF ja yritä uudelleen.",
+    "transcriptionInstall": "Asenna Audiveris nuottien tunnistamista varten.",
+    "transcriptionUnavailable": "Tarkista Audiverisin asennus ja yritä uudelleen.",
     "uploaded": "Nuotti lisätty.",
     "uploadError": "Lataus epäonnistui. Valitse enintään 50 Mt:n tuettu nuottitiedosto ja yritä uudelleen."
   }

@@ -68,6 +68,11 @@
     "opened": "Partitūra atidaryta.",
     "openError": "Partitūros atidaryti nepavyko. Patikrinkite, ar įdiegta tinkama programa.",
     "openScore": "Atidaryti",
+    "transcribeScore": "Atpažinti partitūrą",
+    "transcriptionDone": "Transkripcija pasiekiama.",
+    "transcriptionFailed": "Transkripcija nepavyko. Patikrinkite PDF ir bandykite dar kartą.",
+    "transcriptionInstall": "Įdiekite „Audiveris“, kad atpažintumėte partitūrą.",
+    "transcriptionUnavailable": "Patikrinkite „Audiveris“ diegimą ir bandykite dar kartą.",
     "uploaded": "Partitūra pridėta.",
     "uploadError": "Įkelti nepavyko. Pasirinkite palaikomą iki 50 MB partitūrą ir bandykite dar kartą."
   }

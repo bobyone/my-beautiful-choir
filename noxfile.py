@@ -74,7 +74,16 @@ def typecheck(session: nox.Session) -> None:
 @nox.session
 def tests(session: nox.Session) -> None:
     """Run the tests and enforce the coverage threshold."""
-    _uv_run(session, "pytest", "--cov", "--cov-report=term", "--cov-report=xml", *session.posargs)
+    _uv_run(
+        session,
+        "--extra",
+        "personal-ocr",
+        "pytest",
+        "--cov",
+        "--cov-report=term",
+        "--cov-report=xml",
+        *session.posargs,
+    )
 
 
 @nox.session
@@ -93,6 +102,8 @@ def audit(session: nox.Session) -> None:
         "--format",
         "requirements-txt",
         "--no-emit-project",
+        "--extra",
+        "personal-ocr",
         external=True,
         silent=True,
     )
@@ -112,6 +123,8 @@ def licenses(session: nox.Session) -> None:
         "--frozen",
         "--isolated",
         "--no-dev",
+        "--extra",
+        "personal-ocr",
         "--with",
         "pip-licenses",
         "pip-licenses",

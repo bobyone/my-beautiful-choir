@@ -17,8 +17,10 @@ class ToolResult:
         text: self-sufficient English text, for the model and for clients without views.
         structured: the same information as structured data, for the view.
         files: files given back to the client, after the text.
+        png_images: images delivered as visual content to clients that support it.
     """
 
     text: str
     structured: Mapping[str, object] = field(default_factory=dict)
     files: Sequence[ToolFile] = ()
+    png_images: Sequence[bytes] = ()

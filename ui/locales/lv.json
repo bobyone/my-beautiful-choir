@@ -68,6 +68,11 @@
     "opened": "Partitūra atvērta.",
     "openError": "Partitūru nevarēja atvērt. Pārbaudiet, vai ir instalēta saderīga lietotne.",
     "openScore": "Atvērt",
+    "transcribeScore": "Atpazīt partitūru",
+    "transcriptionDone": "Transkripcija ir pieejama.",
+    "transcriptionFailed": "Transkripcija neizdevās. Pārbaudiet PDF un mēģiniet vēlreiz.",
+    "transcriptionInstall": "Instalējiet Audiveris, lai atpazītu partitūru.",
+    "transcriptionUnavailable": "Pārbaudiet Audiveris instalāciju un mēģiniet vēlreiz.",
     "uploaded": "Partitūra pievienota.",
     "uploadError": "Augšupielāde neizdevās. Izvēlieties atbalstītu partitūru līdz 50 MB un mēģiniet vēlreiz."
   }

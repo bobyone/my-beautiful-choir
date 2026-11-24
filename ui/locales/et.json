@@ -68,6 +68,11 @@
     "opened": "Noodid avatud.",
     "openError": "Noote ei saanud avada. Kontrolli, kas sobiv rakendus on installitud.",
     "openScore": "Ava",
+    "transcribeScore": "Tuvasta partituur",
+    "transcriptionDone": "Transkriptsioon on saadaval.",
+    "transcriptionFailed": "Transkribeerimine ebaõnnestus. Kontrolli PDF-faili ja proovi uuesti.",
+    "transcriptionInstall": "Partituuri tuvastamiseks paigalda Audiveris.",
+    "transcriptionUnavailable": "Kontrolli Audiverise paigaldust ja proovi uuesti.",
     "uploaded": "Noodid lisatud.",
     "uploadError": "Üleslaadimine ebaõnnestus. Vali toetatud kuni 50 MB noodifail ja proovi uuesti."
   }

@@ -68,6 +68,11 @@
     "opened": "Partitura aberta.",
     "openError": "Não foi possível abrir a partitura. Verifique se existe uma aplicação compatível instalada.",
     "openScore": "Abrir",
+    "transcribeScore": "Reconhecer a partitura",
+    "transcriptionDone": "A transcrição está disponível.",
+    "transcriptionFailed": "A transcrição falhou. Verifique o PDF e tente novamente.",
+    "transcriptionInstall": "Instale o Audiveris para reconhecer a partitura.",
+    "transcriptionUnavailable": "Verifique a instalação do Audiveris e tente novamente.",
     "uploaded": "Partitura adicionada.",
     "uploadError": "O envio falhou. Escolha uma partitura compatível de até 50 MB e tente novamente."
   }

@@ -25,6 +25,7 @@ export interface WorkResult {
   choir: string;
   work: WorkInfo;
   scores: ScoreInfo[];
+  supportsTranscription?: boolean;
 }
 
 export function parseWork(value: unknown): WorkInfo | undefined {
@@ -71,5 +72,8 @@ export function parseWorkResult(result: ToolResult): WorkResult | undefined {
   if (data === undefined || typeof data["choir"] !== "string") return undefined;
   const work = parseWork(data["work"]);
   const scores = parseList(data["scores"], parseScore);
-  return work && scores ? { choir: data["choir"], work, scores } : undefined;
+  if (!work || !scores) return undefined;
+  const workResult: WorkResult = { choir: data["choir"], work, scores };
+  if (data["supports_transcription"] === true) workResult.supportsTranscription = true;
+  return workResult;
 }

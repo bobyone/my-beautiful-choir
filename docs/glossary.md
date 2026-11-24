@@ -41,7 +41,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score | File holding the written music of a work (for example PDF or MusicXML). | `Score` | `glossary.score` | Score | Partition |
 | Score format | Type of file of a score: PDF, MusicXML, compressed MusicXML or MuseScore. | `ScoreFormat` | `glossary.scoreFormat` | Format | Format |
 | Score label | Name distinguishing a score from the other scores of its work (for example "Alto part"). | `Score.label` | `glossary.scoreLabel` | Label | Libellé |
-| Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file of the user's computer, or a public Google Drive link. | `ScoreOrigin` | | origin | origine |
+| Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file on the user's computer, a public Google Drive link, MusicXML text submitted by the model, or a transcription. | `ScoreOrigin` | | origin | origine |
 | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
 | Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Server registration | Settings that tell a client how to start the local MCP server. | `ClientRegistration` | | server registration | inscription du serveur |
@@ -50,6 +50,9 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
+| Source score | Existing PDF score of a work used to generate a transcription. | `source_score_id` | | source score | partition source |
+| Transcription | MusicXML score produced by optical recognition of every page of a source score. | `TranscriptionJob` | | transcription | transcription |
+| Verification | Comparison of a transcription with its source score to identify differences and report the passages inspected. | | | verification | vérification |
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.

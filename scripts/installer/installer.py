@@ -41,7 +41,7 @@ def install(
     uv = str(launcher.uv)
     _LOGGER.info("Preparing the Python environment.")
     run_command(
-        [uv, "sync", "--frozen"],
+        [uv, "sync", "--frozen", "--extra", "personal-ocr"],
         cwd=checkout,
         env=build_environment,
         timeout=BUILD_TIMEOUT_SECONDS,

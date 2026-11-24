@@ -68,6 +68,11 @@
     "opened": "Partitura je otvorena.",
     "openError": "Partituru nije moguće otvoriti. Provjerite je li instalirana odgovarajuća aplikacija.",
     "openScore": "Otvori",
+    "transcribeScore": "Prepoznaj partituru",
+    "transcriptionDone": "Transkripcija je dostupna.",
+    "transcriptionFailed": "Transkripcija nije uspjela. Provjerite PDF i pokušajte ponovo.",
+    "transcriptionInstall": "Instalirajte Audiveris za prepoznavanje partiture.",
+    "transcriptionUnavailable": "Provjerite instalaciju Audiverisa i pokušajte ponovo.",
     "uploaded": "Partitura je dodana.",
     "uploadError": "Prijenos nije uspio. Odaberite podržanu partituru do 50 MB i pokušajte ponovo."
   }

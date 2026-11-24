@@ -68,6 +68,11 @@
     "opened": "Otwarto partyturę.",
     "openError": "Nie udało się otworzyć partytury. Sprawdź, czy zainstalowano zgodną aplikację.",
     "openScore": "Otwórz",
+    "transcribeScore": "Rozpoznaj partyturę",
+    "transcriptionDone": "Transkrypcja jest dostępna.",
+    "transcriptionFailed": "Transkrypcja nie powiodła się. Sprawdź plik PDF i spróbuj ponownie.",
+    "transcriptionInstall": "Zainstaluj Audiveris, aby rozpoznać partyturę.",
+    "transcriptionUnavailable": "Sprawdź instalację Audiveris i spróbuj ponownie.",
     "uploaded": "Dodano partyturę.",
     "uploadError": "Przesyłanie nie powiodło się. Wybierz obsługiwaną partyturę do 50 MB i spróbuj ponownie."
   }

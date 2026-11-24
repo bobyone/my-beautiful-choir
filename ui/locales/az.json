@@ -68,6 +68,11 @@
     "opened": "Partitura açıldı.",
     "openError": "Partituranı açmaq olmadı. Uyğun tətbiqin quraşdırıldığını yoxlayın.",
     "openScore": "Aç",
+    "transcribeScore": "Partituranı tanı",
+    "transcriptionDone": "Transkripsiya hazırdır.",
+    "transcriptionFailed": "Transkripsiya alınmadı. PDF faylını yoxlayıb yenidən cəhd edin.",
+    "transcriptionInstall": "Partituranı tanımaq üçün Audiveris-i quraşdırın.",
+    "transcriptionUnavailable": "Audiveris quraşdırmasını yoxlayıb yenidən cəhd edin.",
     "uploaded": "Partitura əlavə edildi.",
     "uploadError": "Yükləmə alınmadı. Dəstəklənən, ölçüsü 50 MB-dək olan partitura seçib yenidən cəhd edin."
   }

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Operations on the scores of a work (flows G, H and I of issue #7)."""
@@ -20,8 +21,10 @@ from my_beautiful_choir.scores.errors import (
     ScoreFileMissingError,
     StoredScoreTooLargeError,
 )
+from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.opening.score_opener import ScoreOpener
+from my_beautiful_choir.scores.recognition.errors import UnsupportedSourceScoreError
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_rules import (
     MAXIMUM_SIZE,
@@ -55,7 +58,13 @@ class ScoreService(Deleter):
         self._maximum_size = maximum_size
 
     async def add_score(
-        self, work_id: UUID, source: ScoreSource, label: str | None = None
+        self,
+        work_id: UUID,
+        source: ScoreSource,
+        label: str | None = None,
+        *,
+        source_score_id: UUID | None = None,
+        reuse_transcription: bool = False,
     ) -> tuple[Work, Score]:
         """Add a score to the work, with the content given by ``source``.
 
@@ -91,16 +100,40 @@ class ScoreService(Deleter):
             link=source.link,
             storage_key=storage_key(work.choir_id, score_id),
             added_at=self._clock.now(),
+            source_score_id=source_score_id,
         )
         await self._file_storage.store(score.storage_key, fetched.content)
+        existing: Score | None = None
         try:
             async with self._unit_of_work() as unit_of_work:
+                if source_score_id is not None:
+                    await unit_of_work.start_snapshot(for_update=True)
+                    source_score = await unit_of_work.scores.get(source_score_id)
+                    if (
+                        source_score.work_id != work_id
+                        or source_score.format is not ScoreFormat.PDF
+                    ):
+                        raise UnsupportedSourceScoreError("Choose an existing PDF from this work.")
+                    if reuse_transcription:
+                        siblings = await unit_of_work.scores.list(work_id)
+                        existing = next(
+                            (
+                                item
+                                for item in reversed(siblings)
+                                if item.source_score_id == source_score_id
+                            ),
+                            None,
+                        )
                 work = await unit_of_work.works.get(work_id)
-                await unit_of_work.scores.add(score)
-                await unit_of_work.commit()
+                if existing is None:
+                    await unit_of_work.scores.add(score)
+                    await unit_of_work.commit()
         except BaseException:
             await remove_stored_contents(self._file_storage, [score.storage_key])
             raise
+        if existing is not None:
+            await remove_stored_contents(self._file_storage, [score.storage_key])
+            return work, existing
         return work, score
 
     async def list_scores(self, work_id: UUID) -> list[Score]:
@@ -113,6 +146,14 @@ class ScoreService(Deleter):
             work = await unit_of_work.works.get(work_id)
             self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
             return await unit_of_work.scores.list(work_id)
+
+    async def describe_score(self, score_id: UUID) -> tuple[Work, Score]:
+        """Return metadata for a score the user may consult."""
+        async with self._unit_of_work() as unit_of_work:
+            score = await unit_of_work.scores.get(score_id)
+            work = await unit_of_work.works.get(score.work_id)
+            self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
+        return work, score
 
     async def read_score(self, score_id: UUID) -> tuple[Work, Score, bytes]:
         """The score, its work and its stored content, exactly as stored.
@@ -129,10 +170,7 @@ class ScoreService(Deleter):
             ScoreFileMissingError: if its content is missing from the storage.
             StoredScoreTooLargeError: if its recorded or stored size exceeds the maximum.
         """
-        async with self._unit_of_work() as unit_of_work:
-            score = await unit_of_work.scores.get(score_id)
-            work = await unit_of_work.works.get(score.work_id)
-            self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
+        work, score = await self.describe_score(score_id)
         if score.size > self._maximum_size:
             raise StoredScoreTooLargeError(score.id, score.label, self._maximum_size)
         if not await self._file_storage.exists(score.storage_key):

@@ -20,6 +20,9 @@ and this project adheres to
 
 ### Added
 
+- Transcribe a stored PDF into MusicXML in personal mode, from the Work
+  view or directly through MCP. Discover Audiveris automatically and allow
+  the model to add and read MusicXML text and verify against PDF pages (#20).
 - `get_score_file` gives a score back in the conversation as an embedded
   file, up to the 50 MB score maximum (#15, #18).
 - Download of scores from the Work view, in clients that can save files (#15).

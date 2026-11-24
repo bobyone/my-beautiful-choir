@@ -68,6 +68,11 @@
     "opened": "Partisyon açıldı.",
     "openError": "Partisyon açılamadı. Uyumlu bir uygulamanın yüklü olduğunu kontrol edin.",
     "openScore": "Aç",
+    "transcribeScore": "Partitürü tanı",
+    "transcriptionDone": "Transkripsiyon hazır.",
+    "transcriptionFailed": "Transkripsiyon başarısız oldu. PDF dosyasını kontrol edip yeniden deneyin.",
+    "transcriptionInstall": "Partitürü tanımak için Audiveris’i yükleyin.",
+    "transcriptionUnavailable": "Audiveris kurulumunu kontrol edip yeniden deneyin.",
     "uploaded": "Partisyon eklendi.",
     "uploadError": "Yükleme başarısız. 50 MB veya daha küçük, desteklenen bir partisyon seçip yeniden deneyin."
   }

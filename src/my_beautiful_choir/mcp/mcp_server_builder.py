@@ -21,6 +21,7 @@ from mcp.types import (
     CallToolResult,
     ContentBlock,
     EmbeddedResource,
+    ImageContent,
     InputRequiredResult,
     TextContent,
 )
@@ -79,6 +80,10 @@ def _embedded(file: ToolFile) -> EmbeddedResource:
 def _to_call_tool_result(result: ToolResult) -> CallToolResult:
     content: list[ContentBlock] = [TextContent(type="text", text=result.text)]
     content.extend(_embedded(file) for file in result.files)
+    content.extend(
+        ImageContent(type="image", data=b64encode(image).decode("ascii"), mime_type="image/png")
+        for image in result.png_images
+    )
     return CallToolResult(
         content=content,
         structured_content=dict(result.structured) if result.structured else None,

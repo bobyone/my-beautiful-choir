@@ -5,6 +5,13 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 # Architecture
 
+In personal mode the work view and standalone MCP tools share the
+transcription service. It runs the injected local recognition engine,
+persists a MusicXML score through the score service, and records its
+source PDF. The separate PDF rendering adapter provides page images on
+request. See [local score recognition](decisions/0021-run-local-score-recognition.md)
+and [score verification](decisions/0022-exchange-score-contents-for-verification.md).
+
 This document describes the architecture on three levels: overview,
 abstractions and implementations. It is completed as each notion is
 designed and implemented.

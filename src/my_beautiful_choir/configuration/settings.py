@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from my_beautiful_choir.configuration.data_dir import default_data_dir
 from my_beautiful_choir.configuration.mode import Mode
+from my_beautiful_choir.configuration.recognition_settings import RecognitionSettings
 from my_beautiful_choir.configuration.web_settings import WebSettings
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -35,3 +36,4 @@ class Settings(BaseSettings):
     log_level: LogLevel = "INFO"
     data_dir: Path = Field(default_factory=default_data_dir)
     web: WebSettings = Field(default_factory=WebSettings)
+    recognition: RecognitionSettings = Field(default_factory=RecognitionSettings)

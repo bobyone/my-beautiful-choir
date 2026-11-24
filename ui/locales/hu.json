@@ -68,6 +68,11 @@
     "opened": "Kotta megnyitva.",
     "openError": "A kotta nem nyitható meg. Ellenőrizze, hogy telepítve van-e megfelelő alkalmazás.",
     "openScore": "Megnyitás",
+    "transcribeScore": "Kotta felismerése",
+    "transcriptionDone": "Az átirat elérhető.",
+    "transcriptionFailed": "Az átírás sikertelen. Ellenőrizze a PDF-et, és próbálja újra.",
+    "transcriptionInstall": "Telepítse az Audiverist a kotta felismeréséhez.",
+    "transcriptionUnavailable": "Ellenőrizze az Audiveris telepítését, és próbálja újra.",
     "uploaded": "Kotta hozzáadva.",
     "uploadError": "A feltöltés sikertelen. Válasszon legfeljebb 50 MB-os, támogatott kottát, és próbálja újra."
   }

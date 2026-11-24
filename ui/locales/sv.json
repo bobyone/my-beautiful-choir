@@ -68,6 +68,11 @@
     "opened": "Partitur öppnat.",
     "openError": "Partituret kunde inte öppnas. Kontrollera att en lämplig app är installerad.",
     "openScore": "Öppna",
+    "transcribeScore": "Identifiera partituret",
+    "transcriptionDone": "Transkriptionen är tillgänglig.",
+    "transcriptionFailed": "Transkriptionen misslyckades. Kontrollera PDF-filen och försök igen.",
+    "transcriptionInstall": "Installera Audiveris för att identifiera partituret.",
+    "transcriptionUnavailable": "Kontrollera installationen av Audiveris och försök igen.",
     "uploaded": "Partitur tillagt.",
     "uploadError": "Uppladdningen misslyckades. Välj ett partitur i rätt format på högst 50 MB och försök igen."
   }
