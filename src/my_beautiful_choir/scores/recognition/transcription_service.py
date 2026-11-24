@@ -13,7 +13,6 @@ from my_beautiful_choir.authorization.authorization import Authorization
 from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.errors import DomainError
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
-from my_beautiful_choir.scores.musicxml.musicxml_document import musicxml_text
 from my_beautiful_choir.scores.recognition.errors import (
     RecognitionError,
     TranscriptionNotFoundError,
@@ -21,9 +20,7 @@ from my_beautiful_choir.scores.recognition.errors import (
 )
 from my_beautiful_choir.scores.recognition.score_recognizer import ScoreRecognizer
 from my_beautiful_choir.scores.recognition.transcription_job import TranscriptionJob
-from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_service import ScoreService
-from my_beautiful_choir.scores.sources.musicxml_score_source import MusicXmlScoreSource
 
 _LOGGER = logging.getLogger(__name__)
 _JOB_LIMIT = 32
@@ -52,11 +49,8 @@ class TranscriptionService:
         async with self._job_registry:
             if job := self._running.get(source.id):
                 return job
-            existing = await self._scores.list_scores(work.id) if not recompute else ()
-            if score := next(
-                (item for item in reversed(existing) if item.source_score_id == source_id), None
-            ):
-                return TranscriptionJob(uuid4(), source.id, score=score)
+            if not recompute and (scores := await self._scores.latest_transcriptions(source_id)):
+                return TranscriptionJob(uuid4(), source.id, scores=scores)
             self._make_room()
             job = TranscriptionJob(uuid4(), source.id, recompute=recompute)
             self._jobs[job.id] = job
@@ -85,18 +79,11 @@ class TranscriptionService:
     async def _transcribe(self, job: TranscriptionJob) -> None:
         try:
             async with self._worker:
-                work, _, pdf = await self._scores.read_score(job.source_id)
-                xml = await self._recognizer.transcribe(pdf)
-                await asyncio.to_thread(musicxml_text, xml)
-                score_source = MusicXmlScoreSource(
-                    xml, "Transcription.musicxml", ScoreOrigin.TRANSCRIPTION
-                )
-                _, job.score = await self._scores.add_score(
-                    work.id,
-                    score_source,
-                    source_score_id=job.source_id,
-                    reuse_transcription=not job.recompute,
-                )
+                _, _, pdf = await self._scores.read_score(job.source_id)
+                async with self._recognizer.transcribe(pdf) as movements:
+                    job.scores = await self._scores.add_transcriptions(
+                        job.source_id, movements, reuse=not job.recompute
+                    )
         except RecognitionError as error:
             job.error = error
         except DomainError:
@@ -107,9 +94,10 @@ class TranscriptionService:
             _LOGGER.error(
                 "Unexpected transcription failure", extra={"exception_type": type(error).__name__}
             )
-            job.error = RecognitionError(
-                "Transcription failed. Check the installation and try again."
-            )
+            if not job.scores:
+                job.error = RecognitionError(
+                    "Transcription failed. Check the installation and try again."
+                )
         finally:
             async with self._job_registry:
                 self._running.pop(job.source_id, None)

@@ -27,6 +27,7 @@
     "composer": "Cumadóir",
     "deletion": "Scriosadh",
     "mode": "Mód",
+    "movement": "Gluaiseacht {number, number}",
     "notes": "Nótaí",
     "personalMode": "Mód pearsanta",
     "repertoire": "Reipéartóir",

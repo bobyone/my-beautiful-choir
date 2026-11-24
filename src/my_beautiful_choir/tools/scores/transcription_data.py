@@ -18,11 +18,15 @@ def transcription_result(job: TranscriptionJob) -> ToolResult:
         if job.error.code in {"engine_missing", "engine_unavailable"}:
             status["install_url"] = AUDIVERIS_INSTALL_URL
         return ToolResult(str(job.error), status)
-    if job.score:
-        status.update(state="done", score=score_data(job.score))
+    if job.scores:
+        scores = list(map(score_data, job.scores))
+        status.update(state="done", scores=scores)
+        if len(scores) == 1:
+            status["score"] = scores[0]
+        score_ids = ", ".join(str(score.id) for score in job.scores)
         return ToolResult(
-            f"MusicXML score {job.score.id} is available from source PDF {job.source_id}. "
-            "Use read_musicxml_score to read its XML text directly.",
+            f"MusicXML results from source PDF {job.source_id}, in order: {score_ids}. "
+            "Use read_musicxml_score with each id to read its XML text directly.",
             status,
         )
     status["state"] = "pending"

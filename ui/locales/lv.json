@@ -27,6 +27,7 @@
     "composer": "Komponists",
     "deletion": "Dzēšana",
     "mode": "Režīms",
+    "movement": "Daļa {number, number}",
     "notes": "Piezīmes",
     "personalMode": "Personīgais režīms",
     "repertoire": "Repertuārs",

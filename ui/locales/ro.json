@@ -27,6 +27,7 @@
     "composer": "Compozitor",
     "deletion": "Ștergere",
     "mode": "Mod",
+    "movement": "Mișcarea {number, number}",
     "notes": "Note",
     "personalMode": "Mod personal",
     "repertoire": "Repertoriu",

@@ -31,6 +31,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
+| Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
@@ -48,11 +49,13 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Sung language | Langue chantée |
 | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |
-| Transcription | MusicXML score produced by optical recognition of every page of a source score. | `TranscriptionJob` | `glossary.transcription` | Transcription | Transcription |
+| Transcription | MusicXML score produced by optical recognition of one movement of a source score. | `TranscriptionJob` | `glossary.transcription` | Transcription | Transcription |
+| Transcription run | One completed processing of a source score, with its expected number of movements. | `TranscriptionRun` | | transcription run | lancement de transcription |
 | Verification | Comparison of a transcription with its source score to identify differences and report the passages inspected. | | | verification | vérification |
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
+| Work reference | A complete catalogue reference written in the title of a work, such as NL15.2. | `work_reference` | | work reference | référence de l'œuvre |
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.

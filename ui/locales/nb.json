@@ -27,6 +27,7 @@
     "composer": "Komponist",
     "deletion": "Sletting",
     "mode": "Modus",
+    "movement": "Sats {number, number}",
     "notes": "Notater",
     "personalMode": "Personlig modus",
     "repertoire": "Repertoar",

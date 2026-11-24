@@ -27,6 +27,7 @@
     "composer": "კომპოზიტორი",
     "deletion": "წაშლა",
     "mode": "რეჟიმი",
+    "movement": "ნაწილი {number, number}",
     "notes": "შენიშვნები",
     "personalMode": "პირადი რეჟიმი",
     "repertoire": "რეპერტუარი",

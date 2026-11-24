@@ -11,6 +11,7 @@ from my_beautiful_choir.repertoire.work_rules import (
     apply_work_changes,
     clean_work_details,
     search_text,
+    title_matches,
 )
 
 
@@ -73,3 +74,23 @@ def test_search_text_ignores_case_and_accents() -> None:
     assert search_text("  Ave MARÍA à Notre-Dame ") == "ave maria a notre-dame"
     assert search_text("Chœur") == "chœur"
     assert search_text(None) is None
+
+
+@pytest.mark.parametrize(
+    ("title", "matches"),
+    [
+        ("Adeste fideles (NL15.2)", True),
+        ("Adeste fideles, nl15.2.", True),
+        ("Adeste fideles NL15.20", False),
+        ("Adeste fideles NL15.2.1", False),
+        ("Adeste fideles XNL15.2", False),
+        ("Adeste fideles 1.NL15.2", False),
+    ],
+)
+def test_reference_requires_the_complete_code(title: str, matches: bool) -> None:
+    assert title_matches(title, " NL15.2 ", reference=True) is matches
+
+
+def test_title_lookup_matches_a_fragment_without_case_or_accents() -> None:
+    assert title_matches("Peuple fidèle", " FIDELE ", reference=False)
+    assert not title_matches("Peuple fidèle", " ", reference=False)

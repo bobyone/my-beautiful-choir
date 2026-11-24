@@ -2,12 +2,12 @@
 // SPDX-FileContributor: bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import { type CallTool, resultData } from "../viewData";
+import { type CallTool, parseList, resultData } from "../viewData";
 import { parseScore, type ScoreInfo } from "./workInfo";
 
 export type TranscriptionOutcome =
   | { state: "pending" }
-  | { state: "done"; score: ScoreInfo }
+  | { state: "done"; scores: ScoreInfo[] }
   | {
       state: "failed";
       errorKey?: "work.transcriptionInstall" | "work.transcriptionUnavailable";
@@ -24,8 +24,11 @@ export async function requestTranscription(
     await new Promise<void>((resolve) => setTimeout(resolve, 1000));
     status = resultData(await callTool("get_transcription_status", { job_id: jobId }));
   }
-  const score = status?.["state"] === "done" ? parseScore(status["score"]) : undefined;
-  if (score) return { state: "done", score };
+  if (status?.["state"] === "done") {
+    const data = status["scores"];
+    const scores = parseList(data === undefined ? [status["score"]] : data, parseScore);
+    if (scores && scores.length > 0) return { state: "done", scores };
+  }
   const installUrl = httpsLink(status?.["install_url"]);
   if (status?.["error_code"] === "engine_missing") {
     return { state: "failed", errorKey: "work.transcriptionInstall", installUrl };

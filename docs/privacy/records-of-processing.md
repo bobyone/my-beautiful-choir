@@ -55,10 +55,10 @@ as described in P2.
 |---|---|
 | Purpose | Generate a transcription from a PDF score, and let the user ask the model to compare the transcription with the source. |
 | Legal basis | Same as P2. |
-| Data subjects and categories | Same as P2. A transcription also stores the identifier of its source score. |
+| Data subjects and categories | Same as P2. A transcription also stores the identifier of its source score, its run and its movement position. |
 | Recipients and processors | The local engine reads a temporary PDF copy. When requested, the selected MCP client receives MusicXML text or rendered PDF pages and may pass them to its model provider. |
 | Transfers outside the EU | None by recognition itself. The chosen MCP client's configuration and terms govern its handling of requested tool results. |
-| Retention | Transcriptions remain in the repertoire until deleted. Temporary recognition files are removed at the end of a normal run. Flatpak receives access to the per-job directory in the application cache only. The server keeps up to 32 recent job statuses in memory. |
+| Retention | Transcriptions remain in the repertoire until deleted. A completed run and its expected movement count remain until the work is deleted. Temporary recognition files are removed at the end of a normal run. Flatpak receives access to the per-job directory in the application cache only. The server keeps up to 32 recent job statuses in memory. |
 | Security measures | Local batch execution, private temporary workspace, bounded score and tool response sizes, authorization through the score service and XML parsing without fetching external resources. |
 
 ## Web mode

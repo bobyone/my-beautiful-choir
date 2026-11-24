@@ -27,6 +27,7 @@
     "composer": "Helilooja",
     "deletion": "Kustutamine",
     "mode": "Režiim",
+    "movement": "Osa {number, number}",
     "notes": "Märkmed",
     "personalMode": "Isiklik režiim",
     "repertoire": "Repertuaar",

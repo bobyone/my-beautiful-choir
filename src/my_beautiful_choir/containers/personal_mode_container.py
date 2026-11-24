@@ -60,6 +60,7 @@ from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
 from my_beautiful_choir.tools.scores.find_score_sources_tool import FindScoreSourcesTool
 from my_beautiful_choir.tools.scores.get_score_file_tool import GetScoreFileTool
 from my_beautiful_choir.tools.scores.get_transcription_status_tool import GetTranscriptionStatusTool
+from my_beautiful_choir.tools.scores.list_scores_tool import ListScoresTool
 from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
 from my_beautiful_choir.tools.scores.read_musicxml_score_tool import ReadMusicXmlScoreTool
 from my_beautiful_choir.tools.scores.read_score_source_page_tool import ReadScoreSourcePageTool
@@ -212,6 +213,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         ),
         _metered(OpenScoreTool, metrics, service=score_service),
         _metered(GetScoreFileTool, metrics, service=score_service),
+        _metered(ListScoresTool, metrics, scores=score_service, repertoire=repertoire_service),
         _metered(
             ShowRepertoireTool,
             metrics,

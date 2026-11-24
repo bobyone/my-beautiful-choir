@@ -28,6 +28,7 @@ def score_data(score: Score) -> Mapping[str, object]:
         "work_id": str(score.work_id),
         "label": score.label,
         "format": score.format.value,
+        **({"movement_number": score.movement_number} if score.movement_number is not None else {}),
         "size": score.size,
         "original_name": score.original_name,
         "origin": score.origin.value,

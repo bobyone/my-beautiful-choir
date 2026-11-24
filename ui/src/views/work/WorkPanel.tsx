@@ -99,12 +99,10 @@ export function WorkPanel({
     try {
       const result = await requestTranscription(callTool, score.id);
       if (result.state === "done") {
-        const recognized = result.score;
-        setScores((previous) =>
-          previous.some((entry) => entry.id === recognized.id)
-            ? previous
-            : [...previous, recognized],
-        );
+        setScores((previous) => {
+          const existing = new Set(previous.map((entry) => entry.id));
+          return [...previous, ...result.scores.filter((entry) => !existing.has(entry.id))];
+        });
       }
       setTranscription(result);
     } catch {

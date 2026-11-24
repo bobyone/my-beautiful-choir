@@ -73,6 +73,15 @@ works = Table(
     Column("updated_at", UtcDateTime, nullable=False),
 )
 
+transcription_runs = Table(
+    "transcription_runs",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("work_id", Uuid, ForeignKey("works.id", ondelete="CASCADE"), nullable=False),
+    Column("source_score_id", Uuid, nullable=False, index=True),
+    Column("movement_count", Integer, nullable=False),
+)
+
 scores = Table(
     "scores",
     metadata,
@@ -88,4 +97,12 @@ scores = Table(
     Column("added_at", UtcDateTime, nullable=False),
     Column("source_score_id", Uuid),
     Column("content_origin", String(20)),
+    Column("transcription_run_id", Integer, ForeignKey("transcription_runs.id")),
+    Column("movement_number", Integer),
+)
+Index(
+    "ix_scores_transcription_run",
+    scores.c.transcription_run_id,
+    scores.c.movement_number,
+    unique=True,
 )

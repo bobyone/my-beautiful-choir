@@ -21,6 +21,10 @@ from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
 from my_beautiful_choir.repertoire.work_rules import search_text
 from my_beautiful_choir.scores.errors import ScoreNotFoundError
+from my_beautiful_choir.scores.recognition.transcription_run import TranscriptionRun
+from my_beautiful_choir.scores.recognition.transcription_run_repository import (
+    TranscriptionRunRepository,
+)
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_repository import ScoreRepository
 
@@ -32,6 +36,7 @@ class InMemoryData:
     choirs: dict[UUID, Choir] = field(default_factory=dict)
     works: dict[UUID, Work] = field(default_factory=dict)
     scores: dict[UUID, Score] = field(default_factory=dict)
+    runs: list[TranscriptionRun] = field(default_factory=list)
 
 
 class InMemoryChoirRepository(ChoirRepository):
@@ -148,6 +153,12 @@ class InMemoryScoreRepository(ScoreRepository):
             key=lambda s: (s.added_at, s.label, s.id),
         )
 
+    async def list_transcriptions(self, run_id: int) -> builtins.list[Score]:
+        return sorted(
+            (score for score in self._data.scores.values() if score.transcription_run_id == run_id),
+            key=lambda score: score.movement_number or 1,
+        )
+
     async def list_of_choir(self, choir_id: UUID) -> builtins.list[Score]:
         return [
             score
@@ -174,6 +185,26 @@ class InMemoryScoreRepository(ScoreRepository):
             for s in self._data.scores.values()
             if self._data.works[s.work_id].choir_id == choir_id
         ]
+
+
+class InMemoryTranscriptionRunRepository(TranscriptionRunRepository):
+    """Transcription runs kept in the data of a unit of work."""
+
+    def __init__(self, data: InMemoryData) -> None:
+        self._data = data
+
+    async def add(
+        self, work_id: UUID, source_score_id: UUID, movement_count: int
+    ) -> TranscriptionRun:
+        run = TranscriptionRun(len(self._data.runs) + 1, work_id, source_score_id, movement_count)
+        self._data.runs.append(run)
+        return run
+
+    async def latest(self, source_score_id: UUID) -> TranscriptionRun | None:
+        return next(
+            (run for run in reversed(self._data.runs) if run.source_score_id == source_score_id),
+            None,
+        )
 
 
 class InMemoryDatabase:
@@ -206,6 +237,10 @@ class InMemoryUnitOfWork(UnitOfWork):
     @property
     def scores(self) -> InMemoryScoreRepository:
         return InMemoryScoreRepository(self._data)
+
+    @property
+    def transcription_runs(self) -> InMemoryTranscriptionRunRepository:
+        return InMemoryTranscriptionRunRepository(self._data)
 
     async def __aenter__(self) -> Self:
         self._data = copy.deepcopy(self._database.data)

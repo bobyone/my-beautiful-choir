@@ -14,7 +14,7 @@ from sqlalchemy import Connection, insert, inspect, select, text
 from sqlalchemy.exc import IntegrityError
 
 from my_beautiful_choir.persistence.sql.sql_database import DATABASE_FILE_NAME, SqlDatabase
-from my_beautiful_choir.persistence.sql.tables import choirs, metadata
+from my_beautiful_choir.persistence.sql.tables import choirs, metadata, scores, works
 
 NOW = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)
 
@@ -47,7 +47,7 @@ async def test_migration_creates_the_schema_of_the_tables(database: SqlDatabase)
     def differences(connection: Connection) -> list[object]:
         return list(compare_metadata(MigrationContext.configure(connection), metadata))
 
-    assert await database.current_revision() == "0002"
+    assert await database.current_revision() == "0003"
     async with database.engine.connect() as connection:
         assert await connection.run_sync(differences) == []
 
@@ -64,7 +64,57 @@ async def test_downgrade_removes_everything(database: SqlDatabase) -> None:
 @pytest.mark.anyio
 async def test_migrating_twice_changes_nothing(database: SqlDatabase) -> None:
     await database.migrate()
-    assert await database.current_revision() == "0002"
+    assert await database.current_revision() == "0003"
+
+
+@pytest.mark.anyio
+async def test_legacy_transcription_migrates_and_rolls_back_without_losing_scores(
+    tmp_path: Path,
+) -> None:
+    database = SqlDatabase.in_directory(tmp_path)
+    await database.migrate("0002")
+    choir = _choir("A", is_default=True)
+    work_id, source_id, score_id = uuid4(), uuid4(), uuid4()
+    async with database.engine.begin() as connection:
+        await connection.execute(insert(choirs).values(**choir))
+        await connection.execute(
+            insert(works).values(
+                id=work_id,
+                choir_id=choir["id"],
+                title="Song",
+                title_search="song",
+                sung_languages=[],
+                created_at=NOW,
+                updated_at=NOW,
+            )
+        )
+        await connection.execute(
+            insert(scores).values(
+                id=score_id,
+                work_id=work_id,
+                label="Transcription",
+                format="musicxml",
+                size=1,
+                original_name="Transcription.musicxml",
+                origin="local_file",
+                content_origin="transcription",
+                source_score_id=source_id,
+                storage_key="test/musicxml",
+                added_at=NOW,
+            )
+        )
+    await database.migrate()
+    async with database.unit_of_work() as unit:
+        run = await unit.transcription_runs.latest(source_id)
+        assert run is not None
+        assert run.movement_count == 1
+        (score,) = await unit.scores.list_transcriptions(run.id)
+        assert score.id == score_id
+        assert score.movement_number is None
+    await database.downgrade("0002")
+    async with database.engine.connect() as connection:
+        result = await connection.execute(select(scores.c.id, scores.c.source_score_id))
+        assert result.one() == (score_id, source_id)
 
 
 @pytest.mark.anyio

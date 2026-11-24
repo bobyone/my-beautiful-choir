@@ -144,6 +144,7 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
         "add_score_from_google_drive",
         "open_score",
         "get_score_file",
+        "list_scores",
         "show_repertoire",
         "show_work",
         "upload_score",

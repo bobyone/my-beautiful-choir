@@ -45,7 +45,10 @@ class ShowWorkTool(ViewTool[ShowWorkArguments]):
 
     @property
     def description(self) -> str:
-        return "Show a work and its scores, including the score ids."
+        return (
+            "Open the Work view to show a work and its scores. "
+            "Use list_scores to look up score ids when the user asks for files in the conversation."
+        )
 
     @property
     def arguments_model(self) -> type[ShowWorkArguments]:

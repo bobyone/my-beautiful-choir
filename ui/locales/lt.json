@@ -27,6 +27,7 @@
     "composer": "Kompozitorius",
     "deletion": "Ištrynimas",
     "mode": "Režimas",
+    "movement": "Dalis {number, number}",
     "notes": "Pastabos",
     "personalMode": "Asmeninis režimas",
     "repertoire": "Repertuaras",

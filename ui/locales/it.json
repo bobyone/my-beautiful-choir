@@ -27,6 +27,7 @@
     "composer": "Compositore",
     "deletion": "Eliminazione",
     "mode": "Modalità",
+    "movement": "Movimento {number, number}",
     "notes": "Note",
     "personalMode": "Modalità personale",
     "repertoire": "Repertorio",

@@ -236,3 +236,75 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     assert refreshed["deletion"]["name"] == "Gloria"
     _tool_result(session, 26, "confirm_deletion", token=refreshed["token"])
     assert _tool_result(session, 27, "show_repertoire")["structuredContent"]["works"] == []
+
+
+def test_find_and_send_scores_without_a_view(launched: StdioSession, tmp_path: Path) -> None:
+    launched.initialize()
+    tools = {tool["name"]: tool for tool in launched.request(2, "tools/list")["tools"]}
+    for name in ("list_scores", "get_score_file"):
+        assert "ui" not in tools[name].get("_meta", {})
+
+    _call(launched, 3, "create_choir", name="Lyon")
+    _call(launched, 4, "create_choir", name="Paris")
+    works = [
+        _tool_result(launched, index, "add_work", **work)["structuredContent"]["work"]["id"]
+        for index, work in enumerate(
+            (
+                {"title": "Adeste fideles (NL15.2)"},
+                {"title": "Peuple fidèle", "composer": "Composer A"},
+                {"title": "Adeste fideles (NL15.20)"},
+                {"title": "Other work", "composer": "NL15.2"},
+                {"title": "Adeste fideles (NL15.2)", "choir": "Paris"},
+            ),
+            start=5,
+        )
+    ]
+
+    for index, (work_id, selector, extension, content) in enumerate(
+        (
+            (works[0], {"work_reference": "nl15.2"}, "pdf", score_samples.pdf()),
+            (works[1], {"work_title": "peuple fidele"}, "musicxml", score_samples.musicxml()),
+        )
+    ):
+        path = tmp_path / f"Choir score.{extension}"
+        path.write_bytes(content)
+        added = _tool_result(
+            launched, 10 + index * 3, "add_score_from_file", work_id=work_id, path=str(path)
+        )["structuredContent"]["score"]
+        found = _tool_result(launched, 11 + index * 3, "list_scores", **selector)[
+            "structuredContent"
+        ]
+        assert found == {
+            "work_id": work_id,
+            "scores": [{"id": added["id"], "label": "Choir score", "format": extension}],
+        }
+        files = _tool_result(launched, 12 + index * 3, "get_score_file", score_id=added["id"])
+        assert b64decode(files["content"][1]["resource"]["blob"]) == content
+
+    assert _tool_result(launched, 16, "list_scores", work_reference="NL15.2", choir="Paris")[
+        "structuredContent"
+    ] == {"work_id": works[4], "scores": []}
+    assert _tool_result(launched, 17, "list_scores", work_id=works[2])["structuredContent"] == {
+        "work_id": works[2],
+        "scores": [],
+    }
+    _tool_result(launched, 18, "add_work", title="Peuple fidèle", composer="Composer B")
+    ambiguous = _tool_result(launched, 19, "list_scores", work_title="Peuple fidèle")
+    choices = ambiguous["structuredContent"]
+    assert choices["work_count"] == 2
+    assert "scores" not in choices
+    assert [choice["label"] for choice in choices["works"]] == [
+        "Peuple fidèle (Composer A)",
+        "Peuple fidèle (Composer B)",
+    ]
+    assert all(choice["id"] in ambiguous["content"][0]["text"] for choice in choices["works"])
+    missing = _tool_result(launched, 20, "list_scores", work_reference="NL15.3")
+    assert missing["structuredContent"] == {"works": [], "work_count": 0}
+
+    uri = tools["show_work"]["_meta"]["ui"]["resourceUri"]
+    assert uri == "ui://my-beautiful-choir/work.html"
+    shown = _tool_result(launched, 21, "show_work", work_id=works[0])
+    assert shown["structuredContent"]["work"]["id"] == works[0]
+    assert (
+        launched.request(22, "resources/read", {"uri": uri})["contents"][0]["text"] == "<p>work</p>"
+    )

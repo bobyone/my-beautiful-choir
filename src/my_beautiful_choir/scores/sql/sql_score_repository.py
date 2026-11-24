@@ -8,7 +8,7 @@ from collections.abc import Collection
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Row, delete, func, insert, select
+from sqlalchemy import Row, case, delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from my_beautiful_choir.persistence.sql.tables import scores, works
@@ -31,6 +31,8 @@ _COLUMNS = (
     scores.c.added_at,
     scores.c.source_score_id,
     scores.c.content_origin,
+    scores.c.transcription_run_id,
+    scores.c.movement_number,
 )
 
 
@@ -47,6 +49,8 @@ def _score(row: Row[*tuple[Any, ...]]) -> Score:
         storage_key=row.storage_key,
         added_at=row.added_at,
         source_score_id=row.source_score_id,
+        transcription_run_id=row.transcription_run_id,
+        movement_number=row.movement_number,
     )
 
 
@@ -78,6 +82,8 @@ class SqlScoreRepository(ScoreRepository):
                 if score.origin in (ScoreOrigin.TRANSCRIPTION, ScoreOrigin.MUSICXML_TEXT)
                 else None,
                 source_score_id=score.source_score_id,
+                transcription_run_id=score.transcription_run_id,
+                movement_number=score.movement_number,
                 link=score.link,
                 storage_key=score.storage_key,
                 added_at=score.added_at,
@@ -93,11 +99,25 @@ class SqlScoreRepository(ScoreRepository):
         return _score(row)
 
     async def list(self, work_id: UUID) -> list[Score]:
-        """Scores of the work, by date added then label."""
+        """Scores of the work, keeping each group in numeric movement order."""
         rows = await self._connection.execute(
             select(*_COLUMNS)
             .where(scores.c.work_id == work_id)
-            .order_by(scores.c.added_at, scores.c.label, scores.c.id)
+            .order_by(
+                scores.c.added_at,
+                case((scores.c.movement_number.is_not(None), scores.c.transcription_run_id)),
+                scores.c.movement_number,
+                scores.c.label,
+                scores.c.id,
+            )
+        )
+        return [_score(row) for row in rows]
+
+    async def list_transcriptions(self, run_id: int) -> builtins.list[Score]:
+        rows = await self._connection.execute(
+            select(*_COLUMNS)
+            .where(scores.c.transcription_run_id == run_id)
+            .order_by(scores.c.movement_number)
         )
         return [_score(row) for row in rows]
 

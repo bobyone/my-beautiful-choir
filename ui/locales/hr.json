@@ -27,6 +27,7 @@
     "composer": "Skladatelj",
     "deletion": "Brisanje",
     "mode": "Način rada",
+    "movement": "Stavak {number, number}",
     "notes": "Bilješke",
     "personalMode": "Osobni način rada",
     "repertoire": "Repertoar",

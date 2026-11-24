@@ -21,13 +21,14 @@ personal mode. A score belongs to a work: find the work's id first (use the
 | Add a score from a file of the user's computer | `add_score_from_file(work_id, path, label?)` |
 | Add a score from a public Google Drive link | `add_score_from_google_drive(work_id, link, label?)` |
 | Open a score | `open_score(score_id)` |
+| Find scores without opening a view | `list_scores(work_id?, work_title?, work_reference?, choir?)` |
 | Send a score to the user in the conversation | `get_score_file(score_id)` |
 | Delete a score | `delete_score(score_id)` |
 
 ## Rules to follow
 
-- The user can upload a file with **Add a score** in the Work view. Use
-  `show_work(work_id)` to open that view. The file picker supplies the file
+- When the user asks to open a work or use the file picker, call
+  `show_work(work_id)`. In the Work view, **Add a score** supplies the file
   to the app-only upload tool.
 
 - Accepted formats: PDF, MusicXML (`.musicxml`), compressed MusicXML
@@ -51,14 +52,26 @@ personal mode. A score belongs to a work: find the work's id first (use the
   label), with characters that file systems refuse replaced by `_`, followed
   by the extension of the detected format (for instance `Alto.mscz` holding a
   PDF is given as `Alto.pdf`). The original name stays in the repertoire.
-  A large score uses much of the conversation context. When the client does
-  not show the file, or for a large score, use `open_score`, or open the Work
-  view with `show_work(work_id)`: when the client can save
-  files, the user downloads a score of any size with **Download**.
+  A large score uses much of the conversation context. If the client cannot
+  present the embedded file, explain that the user can ask to open the score
+  locally or use **Download** in the Work view.
 
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.
   If the deletion preview changes, review it again before confirming.
+
+## Send scores in the conversation
+
+1. Call `list_scores` for each named work using exactly one of `work_id`,
+   `work_title` or `work_reference`. Use `work_reference` for a complete
+   reference in the title, such as `NL15.2`. For a title or reference search,
+   provide the choir if named. Otherwise, the search uses the default choir.
+2. Choose the requested scores by label and format. If several works or
+   scores could satisfy the request, ask which ones the user wants. If a
+   work or score is missing, report it.
+3. Call `get_score_file` for each unambiguous score, including in a request
+   with other scores still to clarify. Keep the conversation view-free
+   unless the user asks to open a view.
 
 ## Transcribe and verify
 
@@ -68,12 +81,15 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - Call `transcribe_score(score_id)` directly. The Work view is optional.
   When the result is pending, wait before calling
   `get_transcription_status(job_id)` again. Specify `recompute: true` only
-  when the user asks for another transcription. Relay the official
+  when the user asks for another transcription. Read the complete ordered
+  `scores` array. Each movement is a score linked to the same source PDF.
+  Relay the official
   installation link when the engine is missing or unavailable.
 - Read the score with `read_musicxml_score(score_id, offset?, length?)`,
   following the returned `next_offset` for more text. To verify the score
   when the user asks, use `read_score_source_page(score_id, page)` on
-  the returned source score id if it is available. If the source was
+  the returned source score id if it is available. For several movements,
+  follow their returned order when comparing with the PDF. If the source was
   deleted, report that the comparison is unavailable. Otherwise, compare
   with the actual pages, report
   differences and identify any passages you could not check.

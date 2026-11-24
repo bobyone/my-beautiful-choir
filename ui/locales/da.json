@@ -27,6 +27,7 @@
     "composer": "Komponist",
     "deletion": "Sletning",
     "mode": "Tilstand",
+    "movement": "Sats {number, number}",
     "notes": "Noter",
     "personalMode": "Personlig tilstand",
     "repertoire": "Repertoire",

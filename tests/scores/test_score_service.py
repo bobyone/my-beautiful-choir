@@ -28,10 +28,12 @@ from my_beautiful_choir.scores.errors import (
 )
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
+from my_beautiful_choir.scores.formats.signatures.music_xml_signature import MusicXmlSignature
 from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
 from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature import (
     MuseScoreSignature,
 )
+from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.scores.sources.errors import UnreadableLocalFileError
@@ -39,7 +41,7 @@ from my_beautiful_choir.scores.sources.score_content import ScoreContent
 from my_beautiful_choir.storage.errors import StorageError
 from tests import score_samples
 from tests.doubles import DenyingAuthorization, FakeClock
-from tests.persistence_doubles import InMemoryDatabase
+from tests.persistence_doubles import InMemoryDatabase, InMemoryScoreRepository
 from tests.score_doubles import InMemoryFileStorage, SpyScoreOpener, StubScoreSource
 
 LIMIT = 4096
@@ -51,7 +53,9 @@ class _Fixture:
         self.clock = FakeClock()
         self.storage = InMemoryFileStorage()
         self.opener = SpyScoreOpener()
-        self.detector = ScoreFormatDetector([PdfSignature(), MuseScoreSignature()])
+        self.detector = ScoreFormatDetector(
+            [PdfSignature(), MuseScoreSignature(), MusicXmlSignature()]
+        )
 
     def service(self, authorization: Authorization | None = None) -> ScoreService:
         return self.service_with_maximum(LIMIT, authorization)
@@ -104,6 +108,79 @@ async def test_add_stores_the_content_and_saves_the_score(fixture: _Fixture) -> 
     assert score.storage_key == f"choirs/{work.choir_id}/scores/{score.id}"
     assert fixture.storage.files == {score.storage_key: score_samples.pdf()}
     assert await fixture.service().list_scores(work.id) == [score]
+
+
+@pytest.mark.anyio
+async def test_transcription_movements_share_the_publication_time(
+    fixture: _Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    source = StubScoreSource(score_samples.pdf())
+    _, pdf = await service.add_score(work.id, source)
+    store = fixture.storage.store
+    concurrent_scores: list[Score] = []
+
+    async def store_with_concurrent_upload(key: str, content: bytes) -> None:
+        await store(key, content)
+        if content == score_samples.musicxml() and not concurrent_scores:
+            fixture.clock.advance(timedelta(seconds=1))
+            _, score = await service.add_score(work.id, source, "Other PDF")
+            concurrent_scores.append(score)
+            fixture.clock.advance(timedelta(seconds=1))
+
+    monkeypatch.setattr(fixture.storage, "store", store_with_concurrent_upload)
+    movement = StubScoreSource(score_samples.musicxml())
+    first, second = await service.add_transcriptions(pdf.id, (movement, movement), reuse=False)
+
+    assert first.added_at == second.added_at == fixture.clock.now()
+    assert await service.list_scores(work.id) == [pdf, *concurrent_scores, first, second]
+
+
+@pytest.mark.anyio
+async def test_transcription_storage_failure_discards_all_staged_scores(
+    fixture: _Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, pdf = await service.add_score(work.id, StubScoreSource(score_samples.pdf()))
+    store = fixture.storage.store
+
+    async def fail_on_second_movement(key: str, content: bytes) -> None:
+        if len(fixture.storage.files) == 2:
+            raise StorageError(key, "disk full")
+        await store(key, content)
+
+    monkeypatch.setattr(fixture.storage, "store", fail_on_second_movement)
+    movement = StubScoreSource(score_samples.musicxml())
+    with pytest.raises(StorageError, match="disk full"):
+        await service.add_transcriptions(pdf.id, (movement, movement), reuse=False)
+    assert await service.list_scores(work.id) == [pdf]
+    assert fixture.storage.files == {pdf.storage_key: score_samples.pdf()}
+    assert fixture.database.data.runs == []
+
+
+@pytest.mark.anyio
+async def test_transcription_database_failure_rolls_back_run_and_scores(
+    fixture: _Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, pdf = await service.add_score(work.id, StubScoreSource(score_samples.pdf()))
+    original_add = InMemoryScoreRepository.add
+
+    async def fail_on_second_movement(repository: InMemoryScoreRepository, score: Score) -> None:
+        if score.movement_number == 2:
+            raise RuntimeError("Database write failed.")
+        await original_add(repository, score)
+
+    monkeypatch.setattr(InMemoryScoreRepository, "add", fail_on_second_movement)
+    movement = StubScoreSource(score_samples.musicxml())
+    with pytest.raises(RuntimeError, match="Database write failed"):
+        await service.add_transcriptions(pdf.id, (movement, movement), reuse=False)
+    assert await service.list_scores(work.id) == [pdf]
+    assert fixture.storage.files == {pdf.storage_key: score_samples.pdf()}
+    assert fixture.database.data.runs == []
 
 
 @pytest.mark.anyio

@@ -166,6 +166,31 @@ describe("repertoire and work views", () => {
     ]);
   });
 
+  it("shows all movements in order and does not duplicate a reused result", async () => {
+    const movements = [1, 2, 10].map((number) => ({
+      id: `movement-${number.toString()}`,
+      label: "Stored label",
+      movement_number: number,
+      format: "musicxml",
+      size: 180,
+    }));
+    host.answerToolCall = () => result({ state: "done", scores: movements });
+    await show(WorkApp, result({ ...workResult, supports_transcription: true }));
+    const button = screen.getByRole("button", { name: "Transcribe the score" });
+    fireEvent.click(button);
+    await screen.findByRole("rowheader", { name: "Movement 10" });
+    fireEvent.click(button);
+    await waitFor(() => {
+      expect(host.toolCalls).toHaveLength(2);
+    });
+    expect(screen.getAllByRole("rowheader").map((row) => row.textContent)).toEqual([
+      "Soprano",
+      "Movement 1",
+      "Movement 2",
+      "Movement 10",
+    ]);
+  });
+
   it("offers the official installation link when Audiveris is missing", async () => {
     host.answerToolCall = () =>
       result({

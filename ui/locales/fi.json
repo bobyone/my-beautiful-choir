@@ -27,6 +27,7 @@
     "composer": "Säveltäjä",
     "deletion": "Poisto",
     "mode": "Tila",
+    "movement": "Osa {number, number}",
     "notes": "Muistiinpanot",
     "personalMode": "Henkilökohtainen tila",
     "repertoire": "Ohjelmisto",

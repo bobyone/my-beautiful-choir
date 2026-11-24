@@ -8,7 +8,9 @@ SPDX-License-Identifier: GPL-2.0-or-later
 In personal mode the work view and standalone MCP tools share the
 transcription service. It runs the injected local recognition engine,
 persists a MusicXML score through the score service, and records its
-source PDF. For Flatpak, only the private job directory in the application
+source PDF. Multi-movement results are saved together with their ordered
+positions. See [multi-movement transcription](decisions/0023-transcribe-all-movements.md).
+For Flatpak, only the private job directory in the application
 cache is shared with Audiveris. The separate PDF rendering adapter provides page images on
 request. See [local score recognition](decisions/0021-run-local-score-recognition.md)
 and [score verification](decisions/0022-exchange-score-contents-for-verification.md).
@@ -352,6 +354,23 @@ Text tools: `add_score_from_file(work_id, path, label?)`,
 Google Drive sources), `open_score(score_id)` and `get_score_file(score_id)`.
 Scores are named by their id. The structured content gives the `work_id` and
 the score (`score_data`).
+
+`ListScoresTool(scores, repertoire)` works in personal mode without an
+associated view. It takes exactly one of `work_id`, `work_title` or
+`work_reference` (a complete reference in the stored title, such as
+`NL15.2`). Title and reference searches use the optional `choir`, defaulting
+to the default choir. Title fragments and references are matched without
+case or accents. The result contains choices with work IDs and labels when
+multiple works match. A unique work or explicit work ID returns `work_id`
+and `scores`, each with its ID, label and format.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `scores` | `ScoreService` | required | Lists the authorized work's scores. |
+| `repertoire` | `RepertoireService` | required | Finds authorized works by title or reference. |
+
+See [ADR 0024](decisions/0024-list-scores-without-a-view.md) for the separation
+between score lookup, file delivery and the Work view.
 
 `GetScoreFileTool(service)` reads the score with `ScoreService.read_score` and returns it with
 `score_file_result`: a text describing it and one `ToolFile` named by its

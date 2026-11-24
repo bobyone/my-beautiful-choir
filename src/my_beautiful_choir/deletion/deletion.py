@@ -4,6 +4,7 @@
 """Deletion value objects."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
@@ -30,3 +31,7 @@ class Deletion:
     """Number of works deleted with a choir."""
     score_count: int = 0
     """Number of scores deleted with a choir or a work."""
+    movement_number: int | None = None
+    """Movement number of a score from a multi-movement transcription."""
+    added_at: datetime | None = None
+    """When that movement was published, to distinguish separate transcriptions."""

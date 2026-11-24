@@ -27,6 +27,7 @@
     "composer": "Συνθέτης",
     "deletion": "Διαγραφή",
     "mode": "Λειτουργία",
+    "movement": "Μέρος {number, number}",
     "notes": "Σημειώσεις",
     "personalMode": "Προσωπική λειτουργία",
     "repertoire": "Ρεπερτόριο",

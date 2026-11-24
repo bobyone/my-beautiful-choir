@@ -12,6 +12,15 @@ const deletion = {
   work_count: 1,
   score_count: 2,
 };
+const movement = {
+  target: "score",
+  name: "Movement 2",
+  parent_name: "Ave Maria",
+  work_count: 0,
+  score_count: 0,
+  movement_number: 2,
+  added_at: "2026-11-24T09:30:00+00:00",
+};
 
 describe("parseDeletionInfo", () => {
   it("converts a valid payload to the view representation", () => {
@@ -33,6 +42,17 @@ describe("parseDeletionInfo", () => {
     });
   });
 
+  it("parses movement details from a score deletion", () => {
+    expect(
+      parseDeletionInfo({
+        content: [],
+        structuredContent: { status: "pending", deletion: movement, token: "test-token" },
+      }),
+    ).toMatchObject({
+      deletion: { movementNumber: 2, addedAt: movement.added_at },
+    });
+  });
+
   it.each([
     { status: "pending", deletion, token: "" },
     { status: "pending", deletion, token: 5 },
@@ -45,6 +65,10 @@ describe("parseDeletionInfo", () => {
     { status: "deleted", deletion: { ...deletion, work_count: -1 } },
     { status: "deleted", deletion: { ...deletion, score_count: 1.5 } },
     { status: "deleted", deletion: { ...deletion, score_count: "2" } },
+    { status: "deleted", deletion: { ...movement, movement_number: 0 } },
+    { status: "deleted", deletion: { ...movement, target: "work" } },
+    { status: "deleted", deletion: { ...movement, movement_number: undefined } },
+    { status: "deleted", deletion: { ...movement, added_at: "invalid" } },
   ])("rejects a malformed deletion result", (structuredContent) => {
     expect(parseDeletionInfo({ content: [], structuredContent })).toBeUndefined();
   });
