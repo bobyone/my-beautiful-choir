@@ -355,6 +355,23 @@ Google Drive sources), `open_score(score_id)` and `get_score_file(score_id)`.
 Scores are named by their id. The structured content gives the `work_id` and
 the score (`score_data`).
 
+`ListScoresTool(scores, repertoire)` works in personal mode without an
+associated view. It takes exactly one of `work_id`, `work_title` or
+`work_reference` (a complete reference in the stored title, such as
+`NL15.2`). Title and reference searches use the optional `choir`, defaulting
+to the default choir. Title fragments and references are matched without
+case or accents. The result contains choices with work IDs and labels when
+multiple works match. A unique work or explicit work ID returns `work_id`
+and `scores`, each with its ID, label and format.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `scores` | `ScoreService` | required | Lists the authorized work's scores. |
+| `repertoire` | `RepertoireService` | required | Finds authorized works by title or reference. |
+
+See [ADR 0024](decisions/0024-list-scores-without-a-view.md) for the separation
+between score lookup, file delivery and the Work view.
+
 `GetScoreFileTool(service)` reads the score with `ScoreService.read_score` and returns it with
 `score_file_result`: a text describing it and one `ToolFile` named by its
 download name (`download_name`), with the media type of its format; the

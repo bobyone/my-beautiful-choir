@@ -56,6 +56,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
+| Work reference | A complete catalogue reference written in the title of a work, such as NL15.2. | `work_reference` | | work reference | référence de l'œuvre |
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.

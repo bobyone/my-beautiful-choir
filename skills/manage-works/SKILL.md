@@ -19,6 +19,7 @@ personal mode.
 |---|---|
 | Add a work | `add_work(choir?, title, composer?, arranger?, voicing?, sung_languages?, notes?)` |
 | Search a choir's repertoire | `show_repertoire(choir?, search?, page?, page_size?)` |
+| Find scores and work IDs without opening a view | `list_scores(work_id?, work_title?, work_reference?, choir?)` |
 | Show a work and its scores | `show_work(work_id)` |
 | Change a work | `edit_work(work_id, ...)` |
 | Delete a work and its scores | `delete_work(work_id)` |
@@ -34,6 +35,10 @@ personal mode.
   clear it. `sung_languages` replaces the whole list.
 - A work is named by its id, given when it is added.
 - Two works may have the same title (for example two arrangements).
+- For score lookup, use `list_scores` with a work id, a title or a complete
+  reference in the title. If several works match, ask which work the user
+  means. Use `show_work` and `show_repertoire` when the user asks to show
+  the corresponding view.
 - `show_repertoire` returns one repertoire page, 10 works by default,
   ordered by title. Give `page_size` (up to 100) when the user asks for
   more works at once, and `page` to move on; the result says the page

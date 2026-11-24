@@ -95,3 +95,15 @@ def search_text(text: str | None) -> str | None:
         return None
     decomposed = unicodedata.normalize("NFKD", text.strip().casefold())
     return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+
+def title_matches(title: str, query: str, *, reference: bool) -> bool:
+    """Match a title fragment or a complete reference within the title."""
+    normalized_title = search_text(title) or ""
+    normalized_query = search_text(query)
+    if not normalized_query:
+        return False
+    if reference:
+        pattern = rf"(?<!\w)(?<!\w\.){re.escape(normalized_query)}(?!\w|\.\w)"
+        return re.search(pattern, normalized_title) is not None
+    return normalized_query in normalized_title

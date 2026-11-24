@@ -143,6 +143,8 @@ async def test_permissions_are_required(
     with pytest.raises(AccessDeniedError):
         await consulting.search(None)
     with pytest.raises(AccessDeniedError):
+        await consulting.search_titles(None, work.title, reference=False)
+    with pytest.raises(AccessDeniedError):
         await consulting.get_work(work.id)
 
 

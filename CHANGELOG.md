@@ -20,6 +20,8 @@ and this project adheres to
 
 ### Added
 
+- In personal mode, find scores by work ID, title or a reference in the
+  title and send them in the conversation without opening a view (#22).
 - Transcribe PDFs with multiple movements in personal mode. The application
   adds one MusicXML score per movement in source order and publishes the
   results together (#23).

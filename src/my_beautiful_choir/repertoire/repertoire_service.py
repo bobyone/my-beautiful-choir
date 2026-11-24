@@ -20,7 +20,12 @@ from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFa
 from my_beautiful_choir.repertoire.page_request import PageRequest, page_count
 from my_beautiful_choir.repertoire.repertoire_page import RepertoirePage
 from my_beautiful_choir.repertoire.work import Work, WorkChanges, WorkDetails
-from my_beautiful_choir.repertoire.work_rules import apply_work_changes, clean_work_details
+from my_beautiful_choir.repertoire.work_rules import (
+    apply_work_changes,
+    clean_work_details,
+    search_text,
+    title_matches,
+)
 from my_beautiful_choir.storage.file_storage import FileStorage
 
 
@@ -93,6 +98,18 @@ class RepertoireService(Deleter):
             target = await find_choir(unit_of_work.choirs, choir)
             self._authorization.require(Permission.CONSULT_REPERTOIRE, target.id)
             return target, await unit_of_work.works.search(target.id, text)
+
+    async def search_titles(self, choir: str | None, query: str, *, reference: bool) -> list[Work]:
+        """Find works by title fragment or complete reference in the title."""
+        _, candidates = await self.search(choir, query)
+        return sorted(
+            (work for work in candidates if title_matches(work.title, query, reference=reference)),
+            key=lambda work: (
+                search_text(work.title) or "",
+                search_text(work.details.composer) or "",
+                work.id,
+            ),
+        )
 
     async def search_page_with_score_counts(
         self, choir: str | None, text: str | None, request: PageRequest
