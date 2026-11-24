@@ -18,6 +18,7 @@ from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.scores.errors import (
     InvalidScoreSizeError,
     ScoreFileMissingError,
+    StoredScoreTooLargeError,
 )
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.opening.score_opener import ScoreOpener
@@ -116,21 +117,29 @@ class ScoreService(Deleter):
     async def read_score(self, score_id: UUID) -> tuple[Work, Score, bytes]:
         """The score, its work and its stored content, exactly as stored.
 
-        Reading never changes the repertoire.
+        Reading never changes the repertoire. A score larger than the score
+        maximum is refused: on its recorded size before anything is read, and
+        on its stored size after reading at most the maximum plus one byte, so
+        that a file changed outside the application never loads in full.
 
         Raises:
             ScoreNotFoundError: if no score has this id.
             WorkNotFoundError: if its work no longer exists.
             AccessDeniedError: if the user may not consult the repertoire of its choir.
             ScoreFileMissingError: if its content is missing from the storage.
+            StoredScoreTooLargeError: if its recorded or stored size exceeds the maximum.
         """
         async with self._unit_of_work() as unit_of_work:
             score = await unit_of_work.scores.get(score_id)
             work = await unit_of_work.works.get(score.work_id)
             self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
+        if score.size > self._maximum_size:
+            raise StoredScoreTooLargeError(score.id, score.label, self._maximum_size)
         if not await self._file_storage.exists(score.storage_key):
             raise ScoreFileMissingError(score.id, score.label)
-        content = await self._file_storage.read(score.storage_key)
+        content = await self._file_storage.read(score.storage_key, self._maximum_size)
+        if len(content) > self._maximum_size:
+            raise StoredScoreTooLargeError(score.id, score.label, self._maximum_size)
         return work, score, content
 
     async def open_score(self, score_id: UUID) -> tuple[Work, Score]:

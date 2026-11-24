@@ -23,6 +23,7 @@ from my_beautiful_choir.scores.errors import (
     ScoreFileMissingError,
     ScoreNotFoundError,
     ScoreOpenError,
+    StoredScoreTooLargeError,
     UnsupportedScoreFormatError,
 )
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
@@ -53,6 +54,11 @@ class _Fixture:
         self.detector = ScoreFormatDetector([PdfSignature(), MuseScoreSignature()])
 
     def service(self, authorization: Authorization | None = None) -> ScoreService:
+        return self.service_with_maximum(LIMIT, authorization)
+
+    def service_with_maximum(
+        self, maximum_size: int, authorization: Authorization | None = None
+    ) -> ScoreService:
         return ScoreService(
             self.database.unit_of_work,
             self.clock,
@@ -60,7 +66,7 @@ class _Fixture:
             self.storage,
             self.detector,
             self.opener,
-            maximum_size=LIMIT,
+            maximum_size=maximum_size,
         )
 
     async def work(self) -> Work:
@@ -268,6 +274,43 @@ async def test_read_a_missing_score_or_a_missing_file(fixture: _Fixture) -> None
     fixture.storage.files.clear()
     with pytest.raises(ScoreFileMissingError):
         await service.read_score(score.id)
+
+
+@pytest.mark.anyio
+async def test_read_accepts_a_score_of_exactly_the_maximum(fixture: _Fixture) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    content = score_samples.pdf().ljust(LIMIT, b"0")
+    _, score = await service.add_score(work.id, StubScoreSource(content))
+    _, _, read = await service.read_score(score.id)
+    assert read == content
+    assert fixture.storage.reads == [(score.storage_key, LIMIT)]
+
+
+@pytest.mark.anyio
+async def test_read_refuses_a_stored_file_above_the_maximum_despite_its_record(
+    fixture: _Fixture,
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, score = await service.add_score(work.id, StubScoreSource(score_samples.pdf()), "Alto")
+    fixture.storage.files[score.storage_key] = score_samples.pdf().ljust(LIMIT + 1000, b"0")
+    with pytest.raises(StoredScoreTooLargeError) as raised:
+        await service.read_score(score.id)
+    assert (raised.value.label, raised.value.limit) == ("Alto", LIMIT)
+    assert fixture.storage.reads == [(score.storage_key, LIMIT)]
+
+
+@pytest.mark.anyio
+async def test_read_refuses_a_recorded_size_above_the_maximum_before_reading(
+    fixture: _Fixture,
+) -> None:
+    work = await fixture.work()
+    _, score = await fixture.service().add_score(work.id, StubScoreSource(score_samples.pdf()))
+    smaller = fixture.service_with_maximum(score.size - 1)
+    with pytest.raises(StoredScoreTooLargeError):
+        await smaller.read_score(score.id)
+    assert fixture.storage.reads == []
 
 
 @pytest.mark.anyio

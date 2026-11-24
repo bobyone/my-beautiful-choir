@@ -72,7 +72,7 @@ code and the process exit code.
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`, `counts_of_works(work_ids)` (number of scores of each given work with scores). |
 | `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
-| `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key)`, `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
+| `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key, maximum_size=None)` (with a maximum size, reads at most one byte more, so that a larger content is detected without being loaded), `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
 | `ScoreFormatDetector` | `scores.formats` | `detect(content) -> ScoreFormat`: tries its signatures in order and gives the format of the first one that matches; raises `UnsupportedScoreFormatError`, listing the accepted formats. |
 | `ScoreSource` | `scores.sources` | `origin` (`ScoreOrigin`) and `link` (`None` by default), recorded with the score; `async fetch(limit) -> ScoreContent`: gives the content of a score being added and its original file name, of at most `limit` bytes; stops as soon as the content exceeds the limit and raises `InvalidScoreSizeError`; raises a `ScoreSourceError` when the content cannot be obtained. An empty content is returned as is: the score service refuses it. One source is built per request, from the tool arguments. |
@@ -303,9 +303,13 @@ their id. The structured content describes the work (`work_data`).
   a failed removal is logged.
 - `list_scores(work_id)`.
 - `read_score(score_id) -> (Work, Score, bytes)`: checks the right on the
-  work's choir; raises `ScoreFileMissingError` when the content is missing
-  from the storage; returns the content exactly as stored. It changes
-  nothing.
+  work's choir; raises `StoredScoreTooLargeError` when the recorded size
+  exceeds the score maximum, before reading anything; raises
+  `ScoreFileMissingError` when the content is missing from the storage;
+  reads at most the score maximum plus one byte and raises
+  `StoredScoreTooLargeError` when the stored content exceeds it (a file
+  changed outside the application); returns the content exactly as stored.
+  It changes nothing.
 - `open_score(score_id)`: reads the score with `read_score`, then gives the
   content to the opener.
 - Deletion (`Deleter`): a score, then its stored content.
