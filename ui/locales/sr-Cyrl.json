@@ -27,6 +27,7 @@
     "composer": "Композитор",
     "deletion": "Брисање",
     "mode": "Режим рада",
+    "movement": "Став {number, number}",
     "notes": "Белешке",
     "personalMode": "Лични режим рада",
     "repertoire": "Репертоар",

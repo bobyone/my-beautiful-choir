@@ -27,6 +27,7 @@
     "composer": "Cumponist",
     "deletion": "Stizzada",
     "mode": "Modus",
+    "movement": "Moviment {number, number}",
     "notes": "Remartgas",
     "personalMode": "Modus persunal",
     "repertoire": "Repertori",

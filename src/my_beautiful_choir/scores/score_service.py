@@ -4,6 +4,8 @@
 
 """Operations on the scores of a work (flows G, H and I of issue #7)."""
 
+import asyncio
+from dataclasses import replace
 from uuid import UUID, uuid4
 
 from my_beautiful_choir.authorization.authorization import Authorization
@@ -23,9 +25,14 @@ from my_beautiful_choir.scores.errors import (
 )
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
+from my_beautiful_choir.scores.musicxml.musicxml_document import musicxml_text
 from my_beautiful_choir.scores.opening.score_opener import ScoreOpener
-from my_beautiful_choir.scores.recognition.errors import UnsupportedSourceScoreError
+from my_beautiful_choir.scores.recognition.errors import (
+    RecognitionError,
+    UnsupportedSourceScoreError,
+)
 from my_beautiful_choir.scores.score import Score
+from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_rules import (
     MAXIMUM_SIZE,
     original_name,
@@ -62,9 +69,6 @@ class ScoreService(Deleter):
         work_id: UUID,
         source: ScoreSource,
         label: str | None = None,
-        *,
-        source_score_id: UUID | None = None,
-        reuse_transcription: bool = False,
     ) -> tuple[Work, Score]:
         """Add a score to the work, with the content given by ``source``.
 
@@ -82,7 +86,96 @@ class ScoreService(Deleter):
         async with self._unit_of_work() as unit_of_work:
             work = await unit_of_work.works.get(work_id)
             self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
-        # The content is fetched outside any transaction: a download may be long.
+        # Fetch outside any transaction: a download may be long.
+        score, content = await self._prepare_score(work, source, label)
+        await self._file_storage.store(score.storage_key, content)
+        try:
+            async with self._unit_of_work() as unit_of_work:
+                work = await unit_of_work.works.get(work_id)
+                await unit_of_work.scores.add(score)
+                await unit_of_work.commit()
+        except BaseException:
+            await remove_stored_contents(self._file_storage, [score.storage_key])
+            raise
+        return work, score
+
+    async def latest_transcriptions(self, source_id: UUID) -> tuple[Score, ...]:
+        """Return the last complete set, or an empty tuple if a movement is missing."""
+        async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot()
+            source = await unit_of_work.scores.get(source_id)
+            work = await unit_of_work.works.get(source.work_id)
+            self._authorization.require(Permission.CONSULT_REPERTOIRE, work.choir_id)
+            return await self._latest_complete(unit_of_work, source_id)
+
+    async def add_transcriptions(
+        self, source_id: UUID, movements: tuple[ScoreSource, ...], *, reuse: bool
+    ) -> tuple[Score, ...]:
+        """Validate, stage and publish all movements in one database transaction.
+
+        An incomplete export or a storage failure cannot publish a partial run.
+        A competing complete run can be reused under the write transaction.
+        """
+        work, source = await self.describe_score(source_id)
+        self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+        if source.format is not ScoreFormat.PDF:
+            raise UnsupportedSourceScoreError("Choose a stored PDF score to transcribe.")
+        if not movements:
+            raise RecognitionError("No movement was transcribed. Check the source PDF.")
+        staged: list[Score] = []
+        published = False
+        try:
+            for number, movement in enumerate(movements, start=1):
+                movement_number = number if len(movements) > 1 else None
+                label = "Transcription" if movement_number is None else f"Movement {number}"
+                score, content = await self._prepare_score(work, movement, label)
+                await asyncio.to_thread(musicxml_text, content)
+                staged.append(
+                    replace(
+                        score,
+                        origin=ScoreOrigin.TRANSCRIPTION,
+                        original_name=f"{label}.musicxml",
+                        source_score_id=source_id,
+                        movement_number=movement_number,
+                    )
+                )
+                await self._file_storage.store(score.storage_key, content)
+            async with self._unit_of_work() as unit_of_work:
+                await unit_of_work.start_snapshot(for_update=True)
+                # Losing the PDF during recognition must roll back the staged results.
+                await unit_of_work.scores.get(source_id)
+                if reuse and (existing := await self._latest_complete(unit_of_work, source_id)):
+                    return existing
+                run = await unit_of_work.transcription_runs.add(work.id, source_id, len(staged))
+                results = tuple(replace(score, transcription_run_id=run.id) for score in staged)
+                for score in results:
+                    await unit_of_work.scores.add(score)
+                await unit_of_work.commit()
+                published = True
+                return results
+        finally:
+            if not published:
+                await remove_stored_contents(
+                    self._file_storage, (score.storage_key for score in staged)
+                )
+
+    async def _latest_complete(
+        self, unit_of_work: UnitOfWork, source_id: UUID
+    ) -> tuple[Score, ...]:
+        run = await unit_of_work.transcription_runs.latest(source_id)
+        if run is None:
+            return ()
+        scores = await unit_of_work.scores.list_transcriptions(run.id)
+        if len(scores) != run.movement_count:
+            return ()
+        for score in scores:
+            if not await self._file_storage.exists(score.storage_key):
+                return ()
+        return tuple(scores)
+
+    async def _prepare_score(
+        self, work: Work, source: ScoreSource, label: str | None
+    ) -> tuple[Score, bytes]:
         fetched = await source.fetch(self._maximum_size)
         if fetched.size == 0:
             raise InvalidScoreSizeError(self._maximum_size)
@@ -100,41 +193,8 @@ class ScoreService(Deleter):
             link=source.link,
             storage_key=storage_key(work.choir_id, score_id),
             added_at=self._clock.now(),
-            source_score_id=source_score_id,
         )
-        await self._file_storage.store(score.storage_key, fetched.content)
-        existing: Score | None = None
-        try:
-            async with self._unit_of_work() as unit_of_work:
-                if source_score_id is not None:
-                    await unit_of_work.start_snapshot(for_update=True)
-                    source_score = await unit_of_work.scores.get(source_score_id)
-                    if (
-                        source_score.work_id != work_id
-                        or source_score.format is not ScoreFormat.PDF
-                    ):
-                        raise UnsupportedSourceScoreError("Choose an existing PDF from this work.")
-                    if reuse_transcription:
-                        siblings = await unit_of_work.scores.list(work_id)
-                        existing = next(
-                            (
-                                item
-                                for item in reversed(siblings)
-                                if item.source_score_id == source_score_id
-                            ),
-                            None,
-                        )
-                work = await unit_of_work.works.get(work_id)
-                if existing is None:
-                    await unit_of_work.scores.add(score)
-                    await unit_of_work.commit()
-        except BaseException:
-            await remove_stored_contents(self._file_storage, [score.storage_key])
-            raise
-        if existing is not None:
-            await remove_stored_contents(self._file_storage, [score.storage_key])
-            return work, existing
-        return work, score
+        return score, fetched.content
 
     async def list_scores(self, work_id: UUID) -> list[Score]:
         """Scores of the work, the oldest first.

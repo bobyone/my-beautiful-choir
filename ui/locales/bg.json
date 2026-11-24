@@ -27,6 +27,7 @@
     "composer": "Композитор",
     "deletion": "Изтриване",
     "mode": "Режим",
+    "movement": "Част {number, number}",
     "notes": "Бележки",
     "personalMode": "Личен режим",
     "repertoire": "Репертоар",

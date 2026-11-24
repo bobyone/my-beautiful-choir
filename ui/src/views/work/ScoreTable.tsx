@@ -57,7 +57,9 @@ export function ScoreTable({
         {scores.map((score) => (
           <tr key={score.id}>
             <th id={`score-${score.id}`} scope="row">
-              {score.label}
+              {score.movementNumber === undefined
+                ? score.label
+                : t("glossary.movement", { number: score.movementNumber })}
             </th>
             <td>{FORMATS[score.format]}</td>
             <td>{bytes.format(score.size)}</td>

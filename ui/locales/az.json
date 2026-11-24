@@ -27,6 +27,7 @@
     "composer": "Bəstəkar",
     "deletion": "Silmə",
     "mode": "Rejim",
+    "movement": "Hissə {number, number}",
     "notes": "Qeydlər",
     "personalMode": "Şəxsi rejim",
     "repertoire": "Repertuar",

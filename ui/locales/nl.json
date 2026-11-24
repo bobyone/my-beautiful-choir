@@ -27,6 +27,7 @@
     "composer": "Componist",
     "deletion": "Verwijdering",
     "mode": "Modus",
+    "movement": "Deel {number, number}",
     "notes": "Notities",
     "personalMode": "Persoonlijke modus",
     "repertoire": "Repertoire",

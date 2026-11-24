@@ -19,6 +19,7 @@ export interface ScoreInfo {
   label: string;
   format: "pdf" | "musicxml" | "mxl" | "mscz";
   size: number;
+  movementNumber?: number;
 }
 
 export interface WorkResult {
@@ -47,7 +48,7 @@ export function parseWork(value: unknown): WorkInfo | undefined {
 
 export function parseScore(value: unknown): ScoreInfo | undefined {
   if (!record(value)) return undefined;
-  const { id, label, format, size } = value;
+  const { id, label, format, size, movement_number: movementNumber } = value;
   if (
     typeof id !== "string" ||
     typeof label !== "string" ||
@@ -55,7 +56,9 @@ export function parseScore(value: unknown): ScoreInfo | undefined {
     (format !== "pdf" && format !== "musicxml" && format !== "mxl" && format !== "mscz")
   )
     return undefined;
-  return { id, label, format, size };
+  if (movementNumber === undefined) return { id, label, format, size };
+  if (!nonnegativeInteger(movementNumber) || movementNumber === 0) return undefined;
+  return { id, label, format, size, movementNumber };
 }
 
 /** The score file a tool returned as an embedded resource, if any. */

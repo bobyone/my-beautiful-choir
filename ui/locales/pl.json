@@ -27,6 +27,7 @@
     "composer": "Kompozytor",
     "deletion": "Usuwanie",
     "mode": "Tryb",
+    "movement": "Część {number, number}",
     "notes": "Notatki",
     "personalMode": "Tryb osobisty",
     "repertoire": "Repertuar",

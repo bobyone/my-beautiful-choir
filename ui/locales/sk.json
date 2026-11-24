@@ -27,6 +27,7 @@
     "composer": "Skladateľ",
     "deletion": "Odstránenie",
     "mode": "Režim",
+    "movement": "Časť {number, number}",
     "notes": "Poznámky",
     "personalMode": "Osobný režim",
     "repertoire": "Repertoár",

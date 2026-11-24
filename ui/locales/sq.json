@@ -27,6 +27,7 @@
     "composer": "Kompozitor",
     "deletion": "Fshirje",
     "mode": "Modaliteti",
+    "movement": "Lëvizja {number, number}",
     "notes": "Shënime",
     "personalMode": "Modaliteti personal",
     "repertoire": "Repertor",

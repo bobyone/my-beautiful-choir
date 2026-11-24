@@ -27,6 +27,7 @@
     "composer": "Kompożitur",
     "deletion": "Tħassir",
     "mode": "Modalità",
+    "movement": "Moviment {number, number}",
     "notes": "Noti",
     "personalMode": "Modalità personali",
     "repertoire": "Repertorju",

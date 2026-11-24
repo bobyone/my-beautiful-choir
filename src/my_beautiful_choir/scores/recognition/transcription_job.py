@@ -19,6 +19,6 @@ class TranscriptionJob:
     id: UUID
     source_id: UUID
     recompute: bool = False
-    score: Score | None = None
+    scores: tuple[Score, ...] = ()
     error: RecognitionError | None = None
     task: asyncio.Task[None] | None = None

@@ -27,6 +27,7 @@
     "composer": "Կոմպոզիտոր",
     "deletion": "Ջնջում",
     "mode": "Ռեժիմ",
+    "movement": "Մաս {number, number}",
     "notes": "Նշումներ",
     "personalMode": "Անձնական ռեժիմ",
     "repertoire": "Երգացանկ",

@@ -16,13 +16,14 @@ from my_beautiful_choir.scores.pdf.pdfium.pdfium_page_renderer import PdfiumPage
 from my_beautiful_choir.scores.recognition.audiveris.installation import AudiverisInstallation
 from my_beautiful_choir.scores.recognition.audiveris.recognizer import AudiverisRecognizer
 from my_beautiful_choir.scores.recognition.errors import EngineNotFoundError
+from my_beautiful_choir.scores.score_rules import MAXIMUM_SIZE
 
 
 @pytest.mark.anyio
 async def test_real_audiveris_transcribes_full_pdf() -> None:
     sample = os.environ.get("MBC_TEST_AUDIVERIS_PDF")
     if not sample:
-        pytest.skip("Set MBC_TEST_AUDIVERIS_PDF to a continuous, multipage score.")
+        pytest.skip("Set MBC_TEST_AUDIVERIS_PDF to a multipage score.")
     override = os.environ.get("MBC_TEST_AUDIVERIS_EXECUTABLE")
     installation = AudiverisInstallation(
         Path(override) if override else None, sys.platform, os.environ, Path.home()
@@ -36,5 +37,10 @@ async def test_real_audiveris_transcribes_full_pdf() -> None:
     assert page_count >= 2
     # The adapter checks the real .omr archive before returning the MusicXML.
     cache = user_cache_path("my-beautiful-choir-tests")
-    output = await AudiverisRecognizer(installation, 180, cache).transcribe(pdf)
-    assert "<note" in musicxml_text(output)
+    count = int(os.environ.get("MBC_TEST_AUDIVERIS_MOVEMENTS", "1"))
+    recognizer = AudiverisRecognizer(installation, 180, cache)
+    async with recognizer.transcribe(pdf) as movements:
+        assert len(movements) == count
+        for source in movements:
+            output = await source.fetch(MAXIMUM_SIZE)
+            assert "<note" in musicxml_text(output.content)

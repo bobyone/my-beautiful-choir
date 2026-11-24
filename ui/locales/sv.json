@@ -27,6 +27,7 @@
     "composer": "Kompositör",
     "deletion": "Borttagning",
     "mode": "Läge",
+    "movement": "Sats {number, number}",
     "notes": "Anteckningar",
     "personalMode": "Personligt läge",
     "repertoire": "Repertoar",

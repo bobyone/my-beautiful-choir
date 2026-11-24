@@ -27,6 +27,7 @@
     "composer": "Tónskáld",
     "deletion": "Eyðing",
     "mode": "Hamur",
+    "movement": "Kafli {number, number}",
     "notes": "Athugasemdir",
     "personalMode": "Einkahamur",
     "repertoire": "Efnisskrá",

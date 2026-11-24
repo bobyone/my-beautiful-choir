@@ -68,12 +68,15 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - Call `transcribe_score(score_id)` directly. The Work view is optional.
   When the result is pending, wait before calling
   `get_transcription_status(job_id)` again. Specify `recompute: true` only
-  when the user asks for another transcription. Relay the official
+  when the user asks for another transcription. Read the complete ordered
+  `scores` array. Each movement is a score linked to the same source PDF.
+  Relay the official
   installation link when the engine is missing or unavailable.
 - Read the score with `read_musicxml_score(score_id, offset?, length?)`,
   following the returned `next_offset` for more text. To verify the score
   when the user asks, use `read_score_source_page(score_id, page)` on
-  the returned source score id if it is available. If the source was
+  the returned source score id if it is available. For several movements,
+  follow their returned order when comparing with the PDF. If the source was
   deleted, report that the comparison is unavailable. Otherwise, compare
   with the actual pages, report
   differences and identify any passages you could not check.

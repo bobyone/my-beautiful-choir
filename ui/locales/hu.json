@@ -27,6 +27,7 @@
     "composer": "Zeneszerző",
     "deletion": "Törlés",
     "mode": "Mód",
+    "movement": "Tétel {number, number}",
     "notes": "Megjegyzések",
     "personalMode": "Személyes mód",
     "repertoire": "Repertoár",

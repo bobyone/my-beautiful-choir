@@ -5,7 +5,10 @@
 """Audiveris adapter for full PDF transcription in batch mode."""
 
 import asyncio
+import re
 import subprocess
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from xml.etree import ElementTree
@@ -17,11 +20,14 @@ from my_beautiful_choir.scores.recognition.errors import (
     RecognitionError,
 )
 from my_beautiful_choir.scores.recognition.score_recognizer import ScoreRecognizer
-from my_beautiful_choir.scores.score_rules import MAXIMUM_SIZE
+from my_beautiful_choir.scores.sources.local_file_score_source import LocalFileScoreSource
+from my_beautiful_choir.scores.sources.score_source import ScoreSource
+
+_EXPORT_NAME = re.compile(r"source(?:\.mvt([1-9][0-9]*))?\.(?:xml|musicxml)", re.IGNORECASE)
 
 
 class AudiverisRecognizer(ScoreRecognizer):
-    """Run Audiveris in a disposable directory and return its single uncompressed export."""
+    """Run Audiveris in a disposable directory and provide its ordered exports."""
 
     def __init__(
         self, installation: AudiverisInstallation, timeout_seconds: int, cache_directory: Path
@@ -30,8 +36,9 @@ class AudiverisRecognizer(ScoreRecognizer):
         self._timeout = timeout_seconds
         self._cache_directory = cache_directory
 
-    async def transcribe(self, pdf: bytes) -> bytes:
-        """Transcribe a PDF with a locally installed Audiveris."""
+    @asynccontextmanager
+    async def transcribe(self, pdf: bytes) -> AsyncIterator[tuple[ScoreSource, ...]]:
+        """Transcribe a PDF and keep the exports available until the caller is done."""
         launch = await self._installation.discover()
         workspace_parent = None
         if launch.flatpak_app_id is not None:
@@ -58,26 +65,7 @@ class AudiverisRecognizer(ScoreRecognizer):
                 str(source),
                 workspace=workspace,
             )
-            exports = sorted(
-                path
-                for path in output.rglob("*")
-                if path.suffix.casefold() in {".xml", ".musicxml"}
-                and path.is_file()
-                and not path.is_symlink()
-                and path.resolve().is_relative_to(output.resolve())
-            )
-            if not exports:
-                raise RecognitionError("Audiveris did not produce a MusicXML score. Check the PDF.")
-            if len(exports) != 1:
-                raise RecognitionError(
-                    "The PDF produced several scores. Transcribe one movement at a time."
-                )
-            _verify_book(exports[0].with_name("source.omr"))
-            with exports[0].open("rb") as stream:
-                content = stream.read(MAXIMUM_SIZE + 1)
-            if not content or len(content) > MAXIMUM_SIZE:
-                raise RecognitionError("The MusicXML transcription is empty or too large.")
-            return content
+            yield _movement_sources(output)
 
     async def _run(self, *command: str, workspace: Path) -> None:
         try:
@@ -106,8 +94,40 @@ class AudiverisRecognizer(ScoreRecognizer):
             )
 
 
-def _verify_book(project: Path) -> None:
-    """An Audiveris export can omit invalid sheets even when it exits successfully."""
+def _movement_sources(output: Path) -> tuple[ScoreSource, ...]:
+    """Match all movement exports to the verified Audiveris project."""
+    root = output.resolve()
+    projects = [
+        path
+        for path in output.rglob("source.omr")
+        if path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(root)
+    ]
+    if len(projects) != 1:
+        raise RecognitionError("Audiveris could not confirm that it processed the full PDF.")
+    project = projects[0]
+    count = _movement_count(project)
+    exports: dict[int, Path] = {}
+    for path in project.parent.iterdir():
+        match = _EXPORT_NAME.fullmatch(path.name)
+        if match is None:
+            continue
+        number = match[1]
+        if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root):
+            raise RecognitionError("Audiveris did not produce a complete set of movement exports.")
+        if (number is None) != (count == 1):
+            raise RecognitionError("Audiveris did not produce a complete set of movement exports.")
+        # File names are bounded by the filesystem. Compare against the project before publishing.
+        position = int(number) if number else 1
+        if position in exports:
+            raise RecognitionError("Audiveris produced duplicate movement exports.")
+        exports[position] = path
+    if exports.keys() != set(range(1, count + 1)):
+        raise RecognitionError("Audiveris did not produce a complete set of movement exports.")
+    return tuple(LocalFileScoreSource(exports[number]) for number in range(1, count + 1))
+
+
+def _movement_count(project: Path) -> int:
+    """Return the movement count only if all source sheets have been processed."""
     try:
         if project.is_symlink():
             raise ValueError("Unexpected project symlink.")
@@ -130,3 +150,7 @@ def _verify_book(project: Path) -> None:
         raise RecognitionError(
             "Audiveris skipped a page. Check every page of the PDF and try again."
         )
+    count = len(book.findall("score"))
+    if not count:
+        raise RecognitionError("Audiveris did not detect any movement. Check the source PDF.")
+    return count

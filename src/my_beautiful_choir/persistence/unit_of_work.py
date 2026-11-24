@@ -10,6 +10,9 @@ from typing import Self
 
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
+from my_beautiful_choir.scores.recognition.transcription_run_repository import (
+    TranscriptionRunRepository,
+)
 from my_beautiful_choir.scores.score_repository import ScoreRepository
 
 
@@ -48,6 +51,11 @@ class UnitOfWork(ABC):
     @abstractmethod
     def scores(self) -> ScoreRepository:
         """Repository of the scores."""
+
+    @property
+    @abstractmethod
+    def transcription_runs(self) -> TranscriptionRunRepository:
+        """Repository of completed transcription runs."""
 
     @abstractmethod
     async def start_snapshot(self, *, for_update: bool = False) -> None:

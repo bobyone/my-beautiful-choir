@@ -31,6 +31,10 @@ class ScoreRepository(ABC):
         """Scores of the work, the oldest first."""
 
     @abstractmethod
+    async def list_transcriptions(self, run_id: int) -> builtins.list[Score]:
+        """The remaining scores of a transcription run in movement order."""
+
+    @abstractmethod
     async def list_of_choir(self, choir_id: UUID) -> builtins.list[Score]:
         """All scores of the choir."""
 

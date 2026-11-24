@@ -27,6 +27,7 @@
     "composer": "Komponist",
     "deletion": "Läschen",
     "mode": "Modus",
+    "movement": "Saz {number, number}",
     "notes": "Notizen",
     "personalMode": "Perséinleche Modus",
     "repertoire": "Repertoire",

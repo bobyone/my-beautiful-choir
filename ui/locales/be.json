@@ -27,6 +27,7 @@
     "composer": "Кампазітар",
     "deletion": "Выдаленне",
     "mode": "Рэжым",
+    "movement": "Частка {number, number}",
     "notes": "Нататкі",
     "personalMode": "Асабісты рэжым",
     "repertoire": "Рэпертуар",
