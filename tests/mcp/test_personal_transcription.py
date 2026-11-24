@@ -123,7 +123,9 @@ async def test_local_transcription_and_musicxml_text_tools(tmp_path: Path) -> No
         )
         assert failure["state"] == "failed"
         assert failure["error_code"] == "engine_missing"
-        assert failure["install_url"].startswith("https://audiveris.github.io")
+        assert failure["install_url"] == (
+            "https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/"
+        )
         assert len(await scores.list_scores(work.id)) == 3
         existing_source = MusicXmlScoreSource(
             score_samples.musicxml(), "Another result.musicxml", ScoreOrigin.TRANSCRIPTION
