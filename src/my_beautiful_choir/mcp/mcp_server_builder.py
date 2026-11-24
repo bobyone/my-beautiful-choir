@@ -14,7 +14,7 @@ from collections.abc import Awaitable, Callable, Sequence
 from typing import Annotated, Any, cast
 from urllib.parse import quote
 
-from mcp.server.apps import Apps, client_supports_apps
+from mcp.server.apps import Apps
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.types import (
     BlobResourceContents,
@@ -117,10 +117,7 @@ def _signature_of(tool: Tool[Any]) -> inspect.Signature:
 
 
 def _tool_context(request_context: Context) -> ToolContext:
-    return ToolContext(
-        confirmation=ElicitationConfirmation(request_context),
-        client_shows_views=client_supports_apps(request_context),
-    )
+    return ToolContext(confirmation=ElicitationConfirmation(request_context))
 
 
 def _handler_for(tool: Tool[Any]) -> ToolHandler:

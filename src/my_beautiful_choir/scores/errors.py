@@ -69,11 +69,15 @@ class ScoreFileMissingError(ScoresError):
         self.label = label
 
 
-class ScoreAboveLimitError(ScoresError):
-    """A score is larger than the limit of the operation that reads it."""
+class StoredScoreTooLargeError(ScoresError):
+    """The stored file of a score is larger than the score maximum."""
 
     def __init__(self, score_id: UUID, label: str, limit: int) -> None:
-        super().__init__(f"The score {label!r} is larger than {limit / MEGABYTE:g} MB.")
+        super().__init__(
+            f"The file of the score {label!r} is larger than the {limit / MEGABYTE:g} MB "
+            "maximum of a score: it was changed outside the application. Restore it from a "
+            "backup, or delete the score and add it again."
+        )
         self.score_id = score_id
         self.label = label
         self.limit = limit

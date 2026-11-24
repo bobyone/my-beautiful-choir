@@ -20,8 +20,8 @@ and this project adheres to
 
 ### Added
 
-- `get_score_file` gives a score of up to 2 MB back in the conversation as
-  an embedded file (#15).
+- `get_score_file` gives a score back in the conversation as an embedded
+  file, up to the 50 MB score maximum (#15, #18).
 - Download of scores from the Work view, in clients that can save files (#15).
 
 - Repertoire pages of 10 works by default in the Repertoire view and

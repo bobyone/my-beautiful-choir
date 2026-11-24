@@ -28,9 +28,7 @@ from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
     AddScoreFromGoogleDriveArguments,
     AddScoreFromGoogleDriveTool,
 )
-from my_beautiful_choir.tools.scores.errors import ScoreTooLargeToReturnError
 from my_beautiful_choir.tools.scores.get_score_file_tool import (
-    CONVERSATION_FILE_MAXIMUM_SIZE,
     GetScoreFileArguments,
     GetScoreFileTool,
 )
@@ -172,7 +170,6 @@ async def test_get_score_file_gives_back_the_stored_file(fixture: _Fixture) -> N
     assert tool.name == "get_score_file"
     assert tool.view is None
     assert not tool.app_only
-    assert "2 MB" in tool.description
     result = await tool.execute(GetScoreFileArguments(score_id=score.id), tool_context())
     assert result.files == (
         ToolFile("Ave Maria é alto.pdf", "application/pdf", score_samples.pdf()),
@@ -183,42 +180,15 @@ async def test_get_score_file_gives_back_the_stored_file(fixture: _Fixture) -> N
     assert fixture.opener.opened == []
 
 
-def test_the_conversation_limit_is_2_mebibytes() -> None:
-    assert CONVERSATION_FILE_MAXIMUM_SIZE == 2 * 1024 * 1024
-
-
 @pytest.mark.anyio
-async def test_get_score_file_accepts_a_score_of_exactly_the_limit(fixture: _Fixture) -> None:
+async def test_get_score_file_gives_back_a_score_above_2_megabytes(fixture: _Fixture) -> None:
     work = await fixture.work()
-    _, score = await fixture.service.add_score(work.id, StubScoreSource(score_samples.pdf()))
-    tool = GetScoreFileTool(fixture.service, maximum_size=score.size)
-    result = await tool.execute(GetScoreFileArguments(score_id=score.id), tool_context())
-    assert len(result.files) == 1
-
-
-@pytest.mark.anyio
-async def test_get_score_file_refuses_a_score_above_the_limit(fixture: _Fixture) -> None:
-    work = await fixture.work()
-    _, score = await fixture.service.add_score(
-        work.id, StubScoreSource(score_samples.pdf()), "Alto"
+    content = score_samples.pdf() + b"0" * (2 * 1024 * 1024)
+    _, score = await fixture.service.add_score(work.id, StubScoreSource(content, "Full.pdf"))
+    result = await GetScoreFileTool(fixture.service).execute(
+        GetScoreFileArguments(score_id=score.id), tool_context()
     )
-    tool = GetScoreFileTool(fixture.service, maximum_size=score.size - 1)
-    with pytest.raises(ScoreTooLargeToReturnError) as raised:
-        await tool.execute(GetScoreFileArguments(score_id=score.id), tool_context())
-    message = str(raised.value)
-    assert "'Alto'" in message
-    assert "open_score" in message
-    assert "Download" in message
-
-
-@pytest.mark.anyio
-async def test_get_score_file_refuses_a_stored_content_above_the_limit(fixture: _Fixture) -> None:
-    work = await fixture.work()
-    _, score = await fixture.service.add_score(work.id, StubScoreSource(score_samples.pdf()))
-    fixture.storage.files[score.storage_key] = score_samples.pdf() + b"x"
-    tool = GetScoreFileTool(fixture.service, maximum_size=score.size)
-    with pytest.raises(ScoreTooLargeToReturnError):
-        await tool.execute(GetScoreFileArguments(score_id=score.id), tool_context())
+    assert result.files == (ToolFile("Full.pdf", "application/pdf", content),)
 
 
 @pytest.mark.anyio

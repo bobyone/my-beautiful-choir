@@ -101,9 +101,8 @@ and the unregistered `application/x-musescore`),
 `ApplicationInfo` (`application`: name, version, mode), `ToolResult`
 (`tools`: `text`, `structured`, `files`), `ToolFile` (`tools`: `name`,
 metadata only and never a path, `media_type`, `content`, kept out of its
-representation so it never reaches a log), `ToolContext` (`tools`: `confirmation`, and
-`client_shows_views`, whether the client declared MCP Apps support for the
-call; what a tool can use during one call), `MetricsExport` (`monitoring`).
+representation so it never reaches a log), `ToolContext` (`tools`:
+`confirmation`; what a tool can use during one call), `MetricsExport` (`monitoring`).
 
 ## Implementations
 
@@ -303,13 +302,14 @@ their id. The structured content describes the work (`work_data`).
   was deleted meanwhile, for instance), the stored content is removed, and
   a failed removal is logged.
 - `list_scores(work_id)`.
-- `read_score(score_id, maximum_size=None) -> (Work, Score, bytes)`: checks
-  the right on the work's choir; with a maximum size, raises
-  `ScoreAboveLimitError` when the recorded size exceeds it, before reading
-  anything; raises `ScoreFileMissingError` when the content is missing from
-  the storage; reads at most the maximum size plus one byte and raises
-  `ScoreAboveLimitError` when the stored content exceeds it; returns the
-  content exactly as stored. It changes nothing.
+- `read_score(score_id) -> (Work, Score, bytes)`: checks the right on the
+  work's choir; raises `StoredScoreTooLargeError` when the recorded size
+  exceeds the score maximum, before reading anything; raises
+  `ScoreFileMissingError` when the content is missing from the storage;
+  reads at most the score maximum plus one byte and raises
+  `StoredScoreTooLargeError` when the stored content exceeds it (a file
+  changed outside the application); returns the content exactly as stored.
+  It changes nothing.
 - `open_score(score_id)`: reads the score with `read_score`, then gives the
   content to the opener.
 - Deletion (`Deleter`): a score, then its stored content.
@@ -345,8 +345,7 @@ Google Drive sources), `open_score(score_id)` and `get_score_file(score_id)`.
 Scores are named by their id. The structured content gives the `work_id` and
 the score (`score_data`).
 
-`GetScoreFileTool(service, maximum_size=CONVERSATION_FILE_MAXIMUM_SIZE)`
-reads the score with `ScoreService.read_score` and returns it with
+`GetScoreFileTool(service)` reads the score with `ScoreService.read_score` and returns it with
 `score_file_result`: a text describing it and one `ToolFile` named by its
 download name (`download_name`), with the media type of its format; the
 structured content keeps the original name unchanged.
@@ -354,13 +353,11 @@ structured content keeps the original name unchanged.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `service` | `ScoreService` | required | Reads the score. |
-| `maximum_size` | `int` | 2 MiB | Largest score returned, in bytes: a returned file may enter the model context. |
 
-It reads the score with its limit and turns `ScoreAboveLimitError` into
-`ScoreTooLargeToReturnError`: a recorded size above the limit is refused
-before the file is read, and a stored file larger than its record after
-reading at most the limit plus one byte. The message points to `open_score`
-and to Download in the Work view.
+There is no conversation limit: any stored score, up to the 50 MB score
+maximum, is returned, and may enter the model context of hosts that pass
+embedded resources to the model
+([ADR 0020](decisions/0020-return-score-files-without-a-conversation-limit.md)).
 
 ### Score format signatures (`scores.formats.signatures`)
 
@@ -498,14 +495,9 @@ passes the bytes to `UploadedScoreSource` and the regular score service.
 The service checks the decoded size and recognizes the format from the
 content. The original name is metadata. The file storage key uses UUIDs.
 
-`DownloadScoreTool(view, service, conversation_maximum_size=2 MiB)` is
-app-only: `download_score(score_id)` reads the score with
-`ScoreService.read_score` and returns it with `score_file_result`. A client
-that does not show views may ignore the app-only visibility and let its model
-call the tool, so the conversation limit is lifted only when
-`ToolContext.client_shows_views` is true; otherwise a larger score raises
-`ScoreTooLargeToReturnError` before it is read. With views, the score limit
-bounds it. When the host advertises the MCP Apps `downloadFile`
+`DownloadScoreTool(view, service)` is app-only: `download_score(score_id)`
+reads the score with `ScoreService.read_score` and returns it with
+`score_file_result`, with no limit other than the score maximum. When the host advertises the MCP Apps `downloadFile`
 capability (`useHost().canDownload`), the Work panel shows **Download** next
 to **Open** for each score: it calls `download_score`, takes the embedded
 resource of the result and asks the host to save it with `App.downloadFile`
@@ -596,10 +588,7 @@ only code that imports the SDK.
   validation message;
 - each call receives a `ToolContext` whose confirmation is an
   `ElicitationConfirmation` on the SDK request context, passed through a
-  reserved parameter (`mbc_request_context`, refused as an argument name),
-  and whose `client_shows_views` is the SDK's `client_supports_apps`: the
-  client declared the `io.modelcontextprotocol/ui` extension with the
-  `text/html;profile=mcp-app` media type;
+  reserved parameter (`mbc_request_context`, refused as an argument name);
 - a `ConfirmationInputRequired` ends the call with its input request;
 - a `DomainError` is returned to the model as an error result with its
   message; any other exception is logged with its stack trace and
