@@ -14,9 +14,3 @@ class ToolContext:
 
     confirmation: ConfirmationRequester
     """Asks the user to confirm an action during this call."""
-    client_shows_views: bool = False
-    """Whether the client declared that it shows views (MCP Apps) for this call.
-
-    Such a client keeps app-only tools away from the model; any other client
-    may let the model call them.
-    """

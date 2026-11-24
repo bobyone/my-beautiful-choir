@@ -200,20 +200,19 @@ def _exercise_repertoire_views(session: StdioSession, tools: dict[str, Any]) -> 
     assert b64decode(file["resource"]["blob"]) == score_samples.pdf()
     downloaded = _tool_result(session, 171, "download_score", score_id=score_id)
     assert downloaded["content"][1]["resource"] == file["resource"]
-    # This client declares no MCP Apps support: the conversation limit applies.
+    # No conversation limit, even for a client that declares no MCP Apps support.
+    large_content = score_samples.pdf() + b"0" * 2 * 1024 * 1024
     large = _tool_result(
         session,
         172,
         "upload_score",
         work_id=work_id,
         file_name="Full.pdf",
-        content=b64encode(score_samples.pdf() + b"0" * 2 * 1024 * 1024).decode(),
+        content=b64encode(large_content).decode(),
     )["structuredContent"]["score"]["id"]
     for request_id, tool in ((173, "download_score"), (174, "get_score_file")):
-        call = {"name": tool, "arguments": {"score_id": large}}
-        refused = session.request(request_id, "tools/call", call)
-        assert refused["isError"]
-        assert "too large to be returned in the conversation" in refused["content"][0]["text"]
+        [_, large_file] = _tool_result(session, request_id, tool, score_id=large)["content"]
+        assert b64decode(large_file["resource"]["blob"]) == large_content
     deleted = _tool_result(session, 175, "preview_score_deletion", target_id=large)
     _tool_result(session, 176, "confirm_deletion", token=deleted["structuredContent"]["token"])
     repertoire = _tool_result(session, 18, "show_repertoire", search="etoile")["structuredContent"]

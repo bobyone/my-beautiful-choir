@@ -69,16 +69,6 @@ class ScoreFileMissingError(ScoresError):
         self.label = label
 
 
-class ScoreAboveLimitError(ScoresError):
-    """A score is larger than the limit of the operation that reads it."""
-
-    def __init__(self, score_id: UUID, label: str, limit: int) -> None:
-        super().__init__(f"The score {label!r} is larger than {limit / MEGABYTE:g} MB.")
-        self.score_id = score_id
-        self.label = label
-        self.limit = limit
-
-
 class ScoreOpenError(ScoresError):
     """A score cannot be opened on the user's computer."""
 

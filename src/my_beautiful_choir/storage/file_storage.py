@@ -35,13 +35,8 @@ class FileStorage(ABC):
         """Store ``content`` under ``key``, replacing any previous content, atomically."""
 
     @abstractmethod
-    async def read(self, key: str, maximum_size: int | None = None) -> bytes:
-        """Content stored under ``key``; raises ``StorageError`` if there is none.
-
-        With ``maximum_size``, at most ``maximum_size + 1`` bytes are read: a
-        result longer than ``maximum_size`` tells that the content exceeds it,
-        without loading all of it.
-        """
+    async def read(self, key: str) -> bytes:
+        """Content stored under ``key``; raises ``StorageError`` if there is none."""
 
     @abstractmethod
     async def delete(self, key: str) -> None:

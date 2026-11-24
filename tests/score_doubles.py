@@ -14,27 +14,21 @@ from my_beautiful_choir.storage.file_storage import FileStorage, check_storage_k
 
 
 class InMemoryFileStorage(FileStorage):
-    """Stored contents kept in a dictionary; ``failing`` makes ``store`` fail.
-
-    ``reads`` records the key and the maximum size of each read.
-    """
+    """Stored contents kept in a dictionary; ``failing`` makes ``store`` fail."""
 
     def __init__(self) -> None:
         self.files: dict[str, bytes] = {}
         self.failing = False
-        self.reads: list[tuple[str, int | None]] = []
 
     async def store(self, key: str, content: bytes) -> None:
         if self.failing:
             raise StorageError(key, "disk full")
         self.files[check_storage_key(key)] = content
 
-    async def read(self, key: str, maximum_size: int | None = None) -> bytes:
+    async def read(self, key: str) -> bytes:
         if check_storage_key(key) not in self.files:
             raise StorageError(key, "no such file")
-        self.reads.append((key, maximum_size))
-        content = self.files[key]
-        return content if maximum_size is None else content[: maximum_size + 1]
+        return self.files[key]
 
     async def delete(self, key: str) -> None:
         self.files.pop(check_storage_key(key), None)

@@ -13,6 +13,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- `get_score_file` and `download_score` return scores of any size, up to the
+  50 MB score maximum: the 2 MB conversation limit is removed (#18).
+
 ### Fixed
 
 - Keep temporary copies of opened scores in a private directory (#7).
