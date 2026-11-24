@@ -8,7 +8,8 @@ import asyncio
 import os
 import shutil
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
+from functools import partial
 from pathlib import Path
 
 from my_beautiful_choir.scores.recognition.errors import (
@@ -94,6 +95,8 @@ def _executable(candidate: Path) -> bool:
 
 
 def _windows_registry() -> Iterable[Path]:
+    if sys.platform != "win32":
+        return
     import winreg
 
     uninstall = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -117,21 +120,21 @@ def _windows_registry() -> Iterable[Path]:
                                 if isinstance(name, str) and name.casefold().startswith(
                                     "audiveris"
                                 ):
-                                    yield from _windows_install_path(key)
+                                    yield from _windows_install_paths(
+                                        partial(winreg.QueryValueEx, key)
+                                    )
                         except OSError:
                             continue
             except OSError:
                 continue
 
 
-def _windows_install_path(key: object) -> Iterable[Path]:
-    import winreg
-    from typing import cast
-
-    registry_key = cast("winreg.HKEYType", key)
+def _windows_install_paths(
+    read_value: Callable[[str], tuple[object, int]],
+) -> Iterable[Path]:
     for field in ("InstallLocation", "DisplayIcon"):
         try:
-            value, _ = winreg.QueryValueEx(registry_key, field)
+            value, _ = read_value(field)
         except OSError:
             continue
         if isinstance(value, str) and value:

@@ -56,6 +56,7 @@ async def test_windows_registry_tracks_a_custom_location(
         EnumKey=lambda *_: "audiveris",
     )
     monkeypatch.setitem(sys.modules, "winreg", registry)
+    monkeypatch.setattr(installation, "sys", SimpleNamespace(platform="win32"))
     assert executable in list(installation._windows_registry())
     monkeypatch.setattr(installation, "_executable", Path.is_file)
     command = await AudiverisInstallation(None, "win32", {}, tmp_path).command()

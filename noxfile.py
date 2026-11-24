@@ -68,7 +68,7 @@ def format_(session: nox.Session) -> None:
 @nox.session
 def typecheck(session: nox.Session) -> None:
     """Check static types."""
-    _uv_run(session, "mypy")
+    _uv_run(session, "--extra", "personal-ocr", "mypy")
 
 
 @nox.session
