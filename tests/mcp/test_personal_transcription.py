@@ -155,6 +155,11 @@ async def test_local_transcription_and_musicxml_text_tools(tmp_path: Path) -> No
         assert "score" not in multiple
         movement_ids = [item["id"] for item in multiple["scores"]]
         assert [item["movement_number"] for item in multiple["scores"]] == list(range(1, 12))
+        assert len({item["added_at"] for item in multiple["scores"]}) == 1
+        preview = await _call(client, "preview_score_deletion", target_id=movement_ids[1])
+        assert preview["status"] == "pending"
+        assert preview["deletion"]["movement_number"] == 2
+        assert preview["deletion"]["added_at"] == multiple["scores"][1]["added_at"]
         repeated = await _call(client, "transcribe_score", score_id=str(pdf.id))
         assert repeated["scores"] == multiple["scores"]
         assert [str(item.id) for item in (await scores.list_scores(work.id))[-11:]] == movement_ids

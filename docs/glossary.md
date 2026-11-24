@@ -32,8 +32,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
-| Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
-| Notes | Notes |
+| Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |

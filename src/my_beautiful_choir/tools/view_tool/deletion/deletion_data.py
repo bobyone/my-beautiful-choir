@@ -4,6 +4,7 @@
 """Structured content and English texts shared by the deletion tools."""
 
 from collections.abc import Mapping
+from datetime import datetime
 from enum import StrEnum
 from typing import cast
 from uuid import UUID
@@ -66,6 +67,12 @@ def deletion_data(
             "parent_name": deletion.parent_name,
             "work_count": deletion.work_count,
             "score_count": deletion.score_count,
+            **(
+                {"movement_number": deletion.movement_number}
+                if deletion.movement_number is not None
+                else {}
+            ),
+            **({"added_at": deletion.added_at.isoformat()} if deletion.added_at else {}),
         },
     }
     if token is not None:
@@ -77,6 +84,8 @@ def deletion_from_data(data: Mapping[str, object]) -> Deletion:
     """The deletion described by structured content made by ``deletion_data``."""
     described = cast(Mapping[str, object], data["deletion"])
     parent_name = described["parent_name"]
+    movement_number = described.get("movement_number")
+    added_at = described.get("added_at")
     return Deletion(
         target=DeletionTarget(str(described["target"])),
         target_id=UUID(str(described["id"])),
@@ -84,6 +93,8 @@ def deletion_from_data(data: Mapping[str, object]) -> Deletion:
         parent_name=None if parent_name is None else str(parent_name),
         work_count=int(str(described["work_count"])),
         score_count=int(str(described["score_count"])),
+        movement_number=None if movement_number is None else int(str(movement_number)),
+        added_at=None if added_at is None else datetime.fromisoformat(str(added_at)),
     )
 
 

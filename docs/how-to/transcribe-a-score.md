@@ -31,7 +31,9 @@ Installing this extra enables requesting source-page images.
 
 The assistant can also save supplied MusicXML text as a new score of a
 work. To rerun recognition when a transcription exists, ask explicitly
-for a new transcription. Each successful recalculation adds a score.
+for a new transcription. Each run's movements share the date and time
+they were added and appear together in the Work view. The deletion preview
+shows the localized movement label and this date and time.
 If a movement from the latest run was deleted, the next request transcribes
 the whole PDF again and preserves the remaining scores. If recognition
 fails, check the PDF or follow the engine installation link.

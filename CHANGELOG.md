@@ -24,7 +24,8 @@ and this project adheres to
   title and send them in the conversation without opening a view (#22).
 - Transcribe PDFs with multiple movements in personal mode. The application
   adds one MusicXML score per movement in source order and publishes the
-  results together (#23).
+  results together. Deletion previews show localized movement labels and
+  the date and time the movements were added (#23).
 - Transcribe a stored PDF into MusicXML in personal mode, from the Work
   view or directly through MCP. Discover Audiveris automatically and allow
   the model to add and read MusicXML text and verify against PDF pages (#20).

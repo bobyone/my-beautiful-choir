@@ -147,7 +147,11 @@ class ScoreService(Deleter):
                 if reuse and (existing := await self._latest_complete(unit_of_work, source_id)):
                     return existing
                 run = await unit_of_work.transcription_runs.add(work.id, source_id, len(staged))
-                results = tuple(replace(score, transcription_run_id=run.id) for score in staged)
+                added_at = self._clock.now()
+                results = tuple(
+                    replace(score, transcription_run_id=run.id, added_at=added_at)
+                    for score in staged
+                )
                 for score in results:
                     await unit_of_work.scores.add(score)
                 await unit_of_work.commit()
@@ -290,5 +294,12 @@ class ScoreService(Deleter):
         score = await unit_of_work.scores.get(score_id)
         work = await unit_of_work.works.get(score.work_id)
         self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
-        deletion = Deletion(DeletionTarget.SCORE, score.id, score.label, work.title)
+        deletion = Deletion(
+            DeletionTarget.SCORE,
+            score.id,
+            score.label,
+            work.title,
+            movement_number=score.movement_number,
+            added_at=score.added_at if score.movement_number is not None else None,
+        )
         return DeletionPreview(deletion, scores=(score,))

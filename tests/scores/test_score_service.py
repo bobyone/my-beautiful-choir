@@ -111,6 +111,33 @@ async def test_add_stores_the_content_and_saves_the_score(fixture: _Fixture) -> 
 
 
 @pytest.mark.anyio
+async def test_transcription_movements_share_the_publication_time(
+    fixture: _Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    source = StubScoreSource(score_samples.pdf())
+    _, pdf = await service.add_score(work.id, source)
+    store = fixture.storage.store
+    concurrent_scores: list[Score] = []
+
+    async def store_with_concurrent_upload(key: str, content: bytes) -> None:
+        await store(key, content)
+        if content == score_samples.musicxml() and not concurrent_scores:
+            fixture.clock.advance(timedelta(seconds=1))
+            _, score = await service.add_score(work.id, source, "Other PDF")
+            concurrent_scores.append(score)
+            fixture.clock.advance(timedelta(seconds=1))
+
+    monkeypatch.setattr(fixture.storage, "store", store_with_concurrent_upload)
+    movement = StubScoreSource(score_samples.musicxml())
+    first, second = await service.add_transcriptions(pdf.id, (movement, movement), reuse=False)
+
+    assert first.added_at == second.added_at == fixture.clock.now()
+    assert await service.list_scores(work.id) == [pdf, *concurrent_scores, first, second]
+
+
+@pytest.mark.anyio
 async def test_transcription_storage_failure_discards_all_staged_scores(
     fixture: _Fixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:

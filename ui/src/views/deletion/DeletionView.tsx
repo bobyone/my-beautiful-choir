@@ -124,11 +124,24 @@ export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary })
   const number = new Intl.NumberFormat(i18n.language);
   const parentTarget: DeletionTarget | undefined =
     deletion.target === "work" ? "choir" : deletion.target === "score" ? "work" : undefined;
+  const addedAt = deletion.addedAt;
 
   return (
     <dl className="row">
       <dt className="col-sm-4">{targetLabel(deletion.target, t)}</dt>
-      <dd className="col-sm-8">{deletion.name}</dd>
+      <dd className="col-sm-8">
+        {deletion.movementNumber === undefined
+          ? deletion.name
+          : t("glossary.movement", { number: deletion.movementNumber })}
+        {addedAt !== undefined && (
+          <time className="d-block" dateTime={addedAt}>
+            {new Intl.DateTimeFormat(i18n.language, {
+              dateStyle: "short",
+              timeStyle: "medium",
+            }).format(new Date(addedAt))}
+          </time>
+        )}
+      </dd>
       {parentTarget !== undefined && deletion.parentName !== null && (
         <>
           <dt className="col-sm-4">{targetLabel(parentTarget, t)}</dt>

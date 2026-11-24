@@ -58,6 +58,34 @@ describe("DeletionView", () => {
     expect(screen.queryByText("Scores")).toBeNull();
   });
 
+  it("localizes a movement label and shows when the transcription was added", async () => {
+    const addedAt = "2026-11-24T09:30:00+00:00";
+    await renderView(
+      {
+        kind: "pending",
+        deletion: {
+          target: "score",
+          name: "Movement 2",
+          parentName: "Ave Maria",
+          workCount: 0,
+          scoreCount: 0,
+          movementNumber: 2,
+          addedAt,
+        },
+      },
+      "fr",
+    );
+    expect(screen.getByText("Mouvement 2")).toBeDefined();
+    expect(screen.queryByText("Movement 2")).toBeNull();
+    const timestamp = screen.getByRole("time");
+    expect(timestamp.getAttribute("datetime")).toBe(addedAt);
+    expect(timestamp.textContent).toBe(
+      new Intl.DateTimeFormat("fr", { dateStyle: "short", timeStyle: "medium" }).format(
+        new Date(addedAt),
+      ),
+    );
+  });
+
   it.each<DeletionState>([
     { kind: "loading" },
     { kind: "connection-error" },

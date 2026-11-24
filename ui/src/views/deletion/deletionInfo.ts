@@ -13,6 +13,8 @@ export interface DeletionSummary {
   parentName: string | null;
   workCount: number;
   scoreCount: number;
+  movementNumber?: number;
+  addedAt?: string;
 }
 
 /** Result of `delete_choir`, `delete_work`, `delete_score` and `confirm_deletion`. */
@@ -30,14 +32,21 @@ function parseSummary(value: unknown): DeletionSummary | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
-  const { target, name, parent_name, work_count, score_count } = value as Record<string, unknown>;
+  const { target, name, parent_name, work_count, score_count, movement_number, added_at } =
+    value as Record<string, unknown>;
   if (
     typeof target !== "string" ||
     !TARGETS.includes(target) ||
     typeof name !== "string" ||
     (parent_name !== null && typeof parent_name !== "string") ||
     !isCount(work_count) ||
-    !isCount(score_count)
+    !isCount(score_count) ||
+    (movement_number !== undefined &&
+      (target !== "score" || !isCount(movement_number) || movement_number === 0)) ||
+    (added_at !== undefined &&
+      (movement_number === undefined ||
+        typeof added_at !== "string" ||
+        !Number.isFinite(Date.parse(added_at))))
   ) {
     return undefined;
   }
@@ -47,6 +56,8 @@ function parseSummary(value: unknown): DeletionSummary | undefined {
     parentName: parent_name,
     workCount: work_count,
     scoreCount: score_count,
+    ...(movement_number === undefined ? {} : { movementNumber: movement_number }),
+    ...(added_at === undefined ? {} : { addedAt: added_at }),
   };
 }
 
