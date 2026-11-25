@@ -170,17 +170,19 @@ class ChoirService(Deleter):
         self._authorization.require(Permission.MANAGE_CHOIRS, choir.id)
         works = await unit_of_work.works.search(choir.id)
         scores = await unit_of_work.scores.list_of_choir(choir.id)
+        events = await unit_of_work.events.list_of_choir(choir.id)
         deletion = Deletion(
             DeletionTarget.CHOIR,
             choir.id,
             choir.name,
             work_count=len(works),
             score_count=len(scores),
-            event_count=await unit_of_work.events.count_of_choir(choir.id),
+            event_count=len(events),
         )
         return DeletionPreview(
             deletion,
             choir=choir,
             works=tuple(sorted(works, key=lambda work: work.id)),
             scores=tuple(sorted(scores, key=lambda score: score.id)),
+            events=tuple(events),
         )

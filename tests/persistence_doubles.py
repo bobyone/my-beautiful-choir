@@ -269,7 +269,12 @@ class InMemoryEventRepository(EventRepository):
         return self._with_current_titles(self._data.events[event_id])
 
     async def update(self, event: Event) -> None:
-        self._data.events[event.id] = event
+        stored = self._data.events[event.id]
+        self._data.events[event.id] = replace(event, programme=stored.programme)
+
+    async def replace_programme(self, event: Event) -> None:
+        stored = self._data.events[event.id]
+        self._data.events[event.id] = replace(stored, programme=event.programme)
 
     async def delete(self, event_id: UUID) -> None:
         del self._data.events[event_id]
@@ -285,8 +290,15 @@ class InMemoryEventRepository(EventRepository):
             key=lambda event: (event.details.starts_at, event.title, event.id.hex),
         )
 
-    async def count_of_choir(self, choir_id: UUID) -> int:
-        return sum(1 for event in self._data.events.values() if event.choir_id == choir_id)
+    async def list_of_choir(self, choir_id: UUID) -> builtins.list[Event]:
+        return sorted(
+            (
+                self._with_current_titles(event)
+                for event in self._data.events.values()
+                if event.choir_id == choir_id
+            ),
+            key=lambda event: event.id,
+        )
 
     async def count_referencing_work(self, work_id: UUID) -> int:
         return sum(

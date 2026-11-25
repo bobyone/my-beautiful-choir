@@ -71,6 +71,22 @@ def test_invalid_details_are_refused(details: EventDetails, attribute: str) -> N
     assert raised.value.attribute == attribute
 
 
+def test_dates_out_of_the_supported_range_are_refused() -> None:
+    far = datetime.max.replace(tzinfo=timezone(timedelta(hours=-1)))
+    with pytest.raises(InvalidEventError, match="outside the supported dates") as raised:
+        clean_event_details(EventDetails(title="Concert", starts_at=far))
+    assert raised.value.attribute == "start"
+
+
+def test_notes_are_bounded_by_the_configured_length() -> None:
+    details = EventDetails(title="Concert", starts_at=START, notes="x" * 11)
+    with pytest.raises(InvalidEventError, match="at most 10 characters"):
+        clean_event_details(details, notes_length=10)
+    assert clean_event_details(details, notes_length=11).notes == "x" * 11
+    with pytest.raises(InvalidEventError, match="at most 10 characters"):
+        apply_event_changes(clean_event_details(details), EventChanges(), notes_length=10)
+
+
 def test_an_event_may_end_when_it_starts() -> None:
     cleaned = clean_event_details(EventDetails(title="Concert", starts_at=START, ends_at=START))
     assert cleaned.ends_at == cleaned.starts_at

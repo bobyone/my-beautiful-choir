@@ -35,11 +35,16 @@ def _text(attribute: str, value: str | None, maximum: int) -> str | None:
 def _utc(attribute: str, moment: datetime) -> datetime:
     if moment.tzinfo is None or moment.utcoffset() is None:
         raise InvalidEventError(attribute, "it must include a time zone offset")
-    return moment.astimezone(UTC)
+    try:
+        return moment.astimezone(UTC)
+    except OverflowError:
+        raise InvalidEventError(attribute, "it is outside the supported dates") from None
 
 
-def clean_event_details(details: EventDetails) -> EventDetails:
+def clean_event_details(details: EventDetails, *, notes_length: int = NOTES_LENGTH) -> EventDetails:
     """Validated and normalized details, with dates in UTC.
+
+    ``notes_length`` is the configured maximum of the notes, at most ``NOTES_LENGTH``.
 
     Raises:
         InvalidEventError: if the title is empty, an attribute is too long, a date
@@ -57,11 +62,13 @@ def clean_event_details(details: EventDetails) -> EventDetails:
         starts_at=starts_at,
         ends_at=ends_at,
         place=_text("place", details.place, PLACE_LENGTH),
-        notes=_text("notes", details.notes, NOTES_LENGTH),
+        notes=_text("notes", details.notes, min(notes_length, NOTES_LENGTH)),
     )
 
 
-def apply_event_changes(details: EventDetails, changes: EventChanges) -> EventDetails:
+def apply_event_changes(
+    details: EventDetails, changes: EventChanges, *, notes_length: int = NOTES_LENGTH
+) -> EventDetails:
     """Details with the changes applied, validated and normalized.
 
     Raises:
@@ -80,7 +87,7 @@ def apply_event_changes(details: EventDetails, changes: EventChanges) -> EventDe
     )
     if changes.clear_end:
         updated = replace(updated, ends_at=None)
-    return clean_event_details(updated)
+    return clean_event_details(updated, notes_length=notes_length)
 
 
 def clean_programme(items: Sequence[ProgrammeItem]) -> tuple[ProgrammeItem, ...]:

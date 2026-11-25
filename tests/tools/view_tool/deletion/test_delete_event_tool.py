@@ -165,6 +165,23 @@ async def test_deleting_a_choir_counts_its_events(tools: _Tools) -> None:
 
 
 @pytest.mark.anyio
+async def test_replacing_an_event_requires_a_fresh_choir_confirmation(tools: _Tools) -> None:
+    choirs = tools.world.choirs()
+    [choir_id] = tools.world.database.data.choirs
+    preview = await choirs.describe_deletion(choir_id)
+    events = tools.world.events()
+    await events.delete(await events.describe_deletion(_event_id(tools, "Rehearsal")))
+    await tools.world.event("Chœur", "New rehearsal", STARTS, EventKind.REHEARSAL)
+
+    with pytest.raises(StaleConfirmationError) as raised:
+        await choirs.delete(preview)
+
+    assert raised.value.preview.deletion.event_count == preview.deletion.event_count
+    assert raised.value.preview.events != preview.events
+    assert tools.world.database.data.choirs
+
+
+@pytest.mark.anyio
 async def test_name_description_and_view(tools: _Tools) -> None:
     assert tools.event.name == "delete_event"
     assert "never ask for it in the conversation" in tools.event.description

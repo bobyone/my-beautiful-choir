@@ -87,6 +87,11 @@ async def test_add_get_update_delete(database: SqlDatabase) -> None:
         await unit_of_work.commit()
 
     async with database.unit_of_work() as unit_of_work:
+        assert await unit_of_work.events.get(event.id) == replace(edited, programme=event.programme)
+        await unit_of_work.events.replace_programme(edited)
+        await unit_of_work.commit()
+
+    async with database.unit_of_work() as unit_of_work:
         assert await unit_of_work.events.get(event.id) == edited
         await unit_of_work.events.delete(event.id)
         await unit_of_work.commit()
@@ -146,17 +151,42 @@ async def test_programme_shows_the_current_title_then_the_kept_one(
 
 
 @pytest.mark.anyio
+async def test_unrelated_updates_keep_the_title_saved_with_the_programme(
+    database: SqlDatabase,
+) -> None:
+    event = _event(NOW)
+    await _add(database, event)
+    async with database.unit_of_work() as unit_of_work:
+        await unit_of_work.works.update(replace(WORK, details=WorkDetails(title="Renamed")))
+        await unit_of_work.commit()
+
+    async with database.unit_of_work() as unit_of_work:
+        shown = await unit_of_work.events.get(event.id)
+        assert shown.programme[0].work_title == "Renamed"
+        await unit_of_work.events.update(
+            replace(shown, details=replace(shown.details, place="Church"), programme_hidden=True)
+        )
+        await unit_of_work.works.delete(WORK.id)
+        await unit_of_work.commit()
+
+    async with database.unit_of_work() as unit_of_work:
+        kept = await unit_of_work.events.get(event.id)
+    assert kept.details.place == "Church"
+    assert [entry.work_title for entry in kept.programme] == ["Ave Maria", None, "Ave Maria"]
+
+
+@pytest.mark.anyio
 async def test_deleting_a_choir_deletes_its_events(database: SqlDatabase) -> None:
     mine, theirs = _event(NOW), _event(NOW, choir=OTHER)
     await _add(database, mine, theirs)
 
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.events.count_of_choir(CHOIR.id) == 1
+        assert [e.id for e in await unit_of_work.events.list_of_choir(CHOIR.id)] == [mine.id]
         await unit_of_work.choirs.delete(CHOIR.id)
         await unit_of_work.commit()
 
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.events.count_of_choir(CHOIR.id) == 0
+        assert await unit_of_work.events.list_of_choir(CHOIR.id) == []
         with pytest.raises(EventNotFoundError):
             await unit_of_work.events.get(mine.id)
         assert await unit_of_work.events.get(theirs.id) == theirs
@@ -182,4 +212,4 @@ async def test_downgrade_removes_only_the_events(database: SqlDatabase) -> None:
         assert await unit_of_work.works.get(WORK.id) == WORK
     await database.migrate()
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.events.count_of_choir(CHOIR.id) == 0
+        assert await unit_of_work.events.list_of_choir(CHOIR.id) == []

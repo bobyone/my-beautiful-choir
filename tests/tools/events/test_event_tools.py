@@ -39,11 +39,14 @@ class _World:
         self.work = work
         self.observers = StubObserverSource()
         service = world.events(observers=self.observers)
-        self.create = CreateEventTool(service)
-        self.edit = EditEventTool(service)
-        self.hide = SetProgrammeHiddenTool(service)
-        self.get = GetEventTool(service)
-        self.list = ListEventsTool(service, EventSettings())
+        settings = EventSettings()
+        self.create = CreateEventTool(service, settings)
+        self.edit = EditEventTool(service, settings)
+        self.hide = SetProgrammeHiddenTool(service, settings)
+        self.get = GetEventTool(service, settings)
+        self.list = ListEventsTool(service, settings)
+        self.short_notes = GetEventTool(service, EventSettings(notes_chars=10))
+        self.short_list = ListEventsTool(service, EventSettings(notes_chars=10))
 
 
 @pytest.fixture
@@ -176,6 +179,34 @@ async def test_the_public_sees_neither_notes_nor_a_hidden_programme(tools: _Worl
     assert "programme_hidden" not in event
     assert event["programme"] == []
     assert event["programme_withheld"] is True
+
+
+@pytest.mark.anyio
+async def test_notes_longer_than_the_limit_never_reach_the_model(tools: _World) -> None:
+    event_id = await _create_concert(tools)
+
+    read = await tools.short_notes.execute(GetEventArguments(event_id=event_id), tool_context())
+    listed = await tools.short_list.execute(ListEventsArguments(), tool_context())
+
+    assert "Arrive at 19:30" not in read.text
+    assert "longer than 10 characters and are not shown" in read.text
+    event = cast(dict[str, Any], read.structured["event"])
+    assert event["notes"] is None
+    assert event["notes_withheld"] is True
+    assert "Arrive at 19:30" not in listed.text
+    [listed_event] = cast(list[dict[str, Any]], listed.structured["events"])
+    assert listed_event["notes"] is None
+    assert listed_event["notes_withheld"] is True
+    assert "Arrive at 19:30" not in str(listed.structured)
+
+
+@pytest.mark.anyio
+async def test_notes_over_the_limit_are_refused(tools: _World) -> None:
+    with pytest.raises(InvalidEventError, match="at most 280 characters"):
+        await tools.create.execute(
+            CreateEventArguments(kind="concert", title="Concert", starts_at=NOW, notes="x" * 281),
+            tool_context(),
+        )
 
 
 @pytest.mark.anyio

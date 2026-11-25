@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.events.visible_event import VisibleEvent
 from my_beautiful_choir.tools.events.event_data import event_data, event_label
@@ -27,8 +28,9 @@ class SetProgrammeHiddenArguments(BaseModel):
 class SetProgrammeHiddenTool(Tool[SetProgrammeHiddenArguments]):
     """Hides or shows the programme of a concert to the public."""
 
-    def __init__(self, service: EventService) -> None:
+    def __init__(self, service: EventService, settings: EventSettings) -> None:
         self._service = service
+        self._notes_limit = settings.notes_chars
 
     @property
     def name(self) -> str:
@@ -57,5 +59,5 @@ class SetProgrammeHiddenTool(Tool[SetProgrammeHiddenArguments]):
         state = "hidden from" if event.programme_hidden else "shown to"
         return ToolResult(
             text=f"The programme of {event_label(event)} is {state} the public.",
-            structured={"event": event_data(VisibleEvent(event, complete=True))},
+            structured={"event": event_data(VisibleEvent(event, complete=True), self._notes_limit)},
         )

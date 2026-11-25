@@ -60,6 +60,22 @@ def test_invalid_periods_are_refused(
 
 
 @pytest.mark.parametrize(
+    ("start", "end", "reason"),
+    [
+        (datetime.max.replace(tzinfo=UTC), None, "give both bounds explicitly"),
+        (None, datetime.min.replace(tzinfo=UTC), "give both bounds explicitly"),
+        (datetime.max.replace(tzinfo=timezone(timedelta(hours=-1))), None, "start is outside"),
+        (None, datetime.min.replace(tzinfo=timezone(timedelta(hours=1))), "end is outside"),
+    ],
+)
+def test_bounds_out_of_the_supported_dates_are_refused(
+    start: datetime | None, end: datetime | None, reason: str
+) -> None:
+    with pytest.raises(InvalidPeriodError, match=reason):
+        _resolve(start, end)
+
+
+@pytest.mark.parametrize(
     ("starts_at", "ends_at", "overlaps"),
     [
         (NOW - timedelta(days=1), None, False),

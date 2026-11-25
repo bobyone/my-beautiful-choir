@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.events.event import EventChanges
 from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.events.visible_event import VisibleEvent
@@ -40,7 +41,9 @@ class EditEventArguments(BaseModel):
     )
     clear_end: bool = Field(default=False, description="True to remove the end of the event.")
     place: str | None = Field(default=None, description=f"Place. {_KEEP_OR_CLEAR}")
-    notes: str | None = Field(default=None, description=f"Internal notes. {_KEEP_OR_CLEAR}")
+    notes: str | None = Field(
+        default=None, description=f"Short internal notes, as for create_event. {_KEEP_OR_CLEAR}"
+    )
     programme: list[ProgrammeItemArguments] | None = Field(
         default=None,
         description=(
@@ -53,8 +56,9 @@ class EditEventArguments(BaseModel):
 class EditEventTool(Tool[EditEventArguments]):
     """Edits the attributes and the programme of an event."""
 
-    def __init__(self, service: EventService) -> None:
+    def __init__(self, service: EventService, settings: EventSettings) -> None:
         self._service = service
+        self._notes_limit = settings.notes_chars
 
     @property
     def name(self) -> str:
@@ -90,5 +94,5 @@ class EditEventTool(Tool[EditEventArguments]):
         event = await self._service.edit_event(arguments.event_id, changes, programme)
         return ToolResult(
             text=f"Updated {event_label(event)}.",
-            structured={"event": event_data(VisibleEvent(event, complete=True))},
+            structured={"event": event_data(VisibleEvent(event, complete=True), self._notes_limit)},
         )

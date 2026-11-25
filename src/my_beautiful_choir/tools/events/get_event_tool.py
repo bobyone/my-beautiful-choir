@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.tools.events.event_data import UTC_NOTICE, event_data, event_text
 from my_beautiful_choir.tools.tool import Tool
@@ -23,8 +24,9 @@ class GetEventArguments(BaseModel):
 class GetEventTool(Tool[GetEventArguments]):
     """Reads an event with its programme."""
 
-    def __init__(self, service: EventService) -> None:
+    def __init__(self, service: EventService, settings: EventSettings) -> None:
         self._service = service
+        self._notes_limit = settings.notes_chars
 
     @property
     def name(self) -> str:
@@ -45,6 +47,6 @@ class GetEventTool(Tool[GetEventArguments]):
         """Read the event."""
         choir, visible = await self._service.get_event(arguments.event_id)
         return ToolResult(
-            text=f'Choir "{choir.name}": {event_text(visible)}',
-            structured={"choir": choir.name, "event": event_data(visible)},
+            text=f'Choir "{choir.name}": {event_text(visible, self._notes_limit)}',
+            structured={"choir": choir.name, "event": event_data(visible, self._notes_limit)},
         )

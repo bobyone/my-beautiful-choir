@@ -109,11 +109,14 @@ class SqlEventRepository(EventRepository):
         return _event(row, programmes[event_id])
 
     async def update(self, event: Event) -> None:
-        """Replace the attributes and the whole programme."""
+        """Replace the attributes; the programme rows, with their kept titles, are untouched."""
         _require_no_participants(event)
         await self._connection.execute(
             update(events).where(events.c.id == event.id).values(**_values(event))
         )
+
+    async def replace_programme(self, event: Event) -> None:
+        """Delete the programme entries, then insert those of the event."""
         await self._connection.execute(
             delete(programme_entries).where(programme_entries.c.event_id == event.id)
         )
@@ -139,12 +142,15 @@ class SqlEventRepository(EventRepository):
         programmes = await self._programmes([row.id for row in rows])
         return [_event(row, programmes[row.id]) for row in rows]
 
-    async def count_of_choir(self, choir_id: UUID) -> int:
-        """Number of events of the choir."""
-        count = await self._connection.scalar(
-            select(func.count()).select_from(events).where(events.c.choir_id == choir_id)
-        )
-        return count or 0
+    async def list_of_choir(self, choir_id: UUID) -> list[Event]:
+        """Every event of the choir with its programme, sorted by id."""
+        rows = (
+            await self._connection.execute(
+                select(events).where(events.c.choir_id == choir_id).order_by(events.c.id)
+            )
+        ).all()
+        programmes = await self._programmes([row.id for row in rows])
+        return [_event(row, programmes[row.id]) for row in rows]
 
     async def count_referencing_work(self, work_id: UUID) -> int:
         """Number of distinct events whose programme refers to the work."""

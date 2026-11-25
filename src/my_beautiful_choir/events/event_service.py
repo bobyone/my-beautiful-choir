@@ -76,7 +76,7 @@ class EventService(Deleter):
             InvalidEventError: if an attribute, the programme or the audience is invalid.
             WorkNotFoundError: if a programme work is not in the choir's repertoire.
         """
-        cleaned = clean_event_details(details)
+        cleaned = clean_event_details(details, notes_length=self._settings.notes_chars)
         items = clean_programme(programme)
         participants = check_audience(kind, False, participant_ids)
         async with self._unit_of_work() as unit_of_work:
@@ -113,18 +113,22 @@ class EventService(Deleter):
         """
         items = None if programme is None else clean_programme(programme)
         async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot(for_update=True)
             event = await self._visible(unit_of_work, event_id)
             self._authorization.require(Permission.MANAGE_EVENTS, event.choir_id)
             edited = replace(
                 event,
-                details=apply_event_changes(event.details, changes),
+                details=apply_event_changes(
+                    event.details, changes, notes_length=self._settings.notes_chars
+                ),
                 updated_at=self._clock.now(),
             )
+            await unit_of_work.events.update(edited)
             if items is not None:
                 edited = replace(
                     edited, programme=await _programme(unit_of_work, event.choir_id, items)
                 )
-            await unit_of_work.events.update(edited)
+                await unit_of_work.events.replace_programme(edited)
             await unit_of_work.commit()
         return edited
 
@@ -139,6 +143,7 @@ class EventService(Deleter):
             ProgrammeNotHideableError: if the event is not a concert.
         """
         async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot(for_update=True)
             event = await self._visible(unit_of_work, event_id)
             self._authorization.require(Permission.HIDE_PROGRAMME, event.choir_id)
             check_audience(event.kind, hidden, event.participant_ids)

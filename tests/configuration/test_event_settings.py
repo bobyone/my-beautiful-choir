@@ -13,6 +13,7 @@ def test_defaults() -> None:
     settings = EventSettings()
     assert settings.default_period_days == 92
     assert settings.maximum_period_days == 366
+    assert settings.notes_chars == 280
 
 
 @pytest.mark.parametrize(
@@ -21,6 +22,8 @@ def test_defaults() -> None:
         {"default_period_days": 0},
         {"default_period_days": 367},
         {"maximum_period_days": 3661},
+        {"notes_chars": 0},
+        {"notes_chars": 2001},
         {"default_period_days": 30, "maximum_period_days": 29},
     ],
 )

@@ -56,8 +56,20 @@ def _entry_data(entry: ProgrammeEntry) -> Mapping[str, object]:
     }
 
 
-def event_data(visible: VisibleEvent) -> Mapping[str, object]:
-    """Structured content describing an event as the observer may see it."""
+def _shown_notes(visible: VisibleEvent, notes_limit: int) -> tuple[str | None, bool]:
+    """Notes the model may receive, and whether longer notes were withheld."""
+    notes = visible.event.details.notes if visible.complete else None
+    if notes is not None and len(notes) > notes_limit:
+        return None, True
+    return notes, False
+
+
+def event_data(visible: VisibleEvent, notes_limit: int) -> Mapping[str, object]:
+    """Structured content describing an event as the observer may see it.
+
+    Notes longer than ``notes_limit`` are free text that is never given to the
+    model: they are left out and ``notes_withheld`` is set.
+    """
     event = visible.event
     details = event.details
     data: dict[str, object] = {
@@ -71,8 +83,10 @@ def event_data(visible: VisibleEvent) -> Mapping[str, object]:
         "programme_withheld": visible.programme_withheld,
     }
     if visible.complete:
+        notes, withheld = _shown_notes(visible, notes_limit)
         data |= {
-            "notes": details.notes,
+            "notes": notes,
+            "notes_withheld": withheld,
             "programme_hidden": event.programme_hidden,
             "created_at": event.created_at.isoformat(),
             "updated_at": event.updated_at.isoformat(),
@@ -90,8 +104,11 @@ def _entry_text(entry: ProgrammeEntry) -> str:
     return f"{entry.position}. " + "; ".join(parts)
 
 
-def event_text(visible: VisibleEvent) -> str:
-    """Self-sufficient English description of an event, with its programme."""
+def event_text(visible: VisibleEvent, notes_limit: int) -> str:
+    """Self-sufficient English description of an event, with its programme.
+
+    Notes longer than ``notes_limit`` are left out, as in ``event_data``.
+    """
     event = visible.event
     details = event.details
     label = event_label(event)
@@ -100,8 +117,14 @@ def event_text(visible: VisibleEvent) -> str:
         lines.append(f"Ends: {details.ends_at.isoformat()}.")
     if details.place:
         lines.append(f"Place: {details.place}.")
-    if visible.complete and details.notes:
-        lines.append(f"Notes: {details.notes}")
+    notes, withheld = _shown_notes(visible, notes_limit)
+    if notes:
+        lines.append(f"Notes: {notes}")
+    if withheld:
+        lines.append(
+            f"The notes are longer than {notes_limit} characters and are not shown; "
+            "shorten them with edit_event to read them here."
+        )
     if visible.programme_withheld:
         lines.append("The programme is hidden from the public.")
     elif event.programme:

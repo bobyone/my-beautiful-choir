@@ -33,7 +33,8 @@ who may see it.
   local time, use their time zone. Results are in UTC: always present dates
   to the user in their time zone.
 - A concert is visible to everyone; a rehearsal to the members of the choir.
-  Notes are internal and never shown to the public. Lessons cannot be
+  Notes are short (280 characters unless configured otherwise), internal,
+  and never shown to the public. Lessons cannot be
   created yet: tell the user they come with choir members.
 - The kind of an event cannot change. To change it, confirm with the user,
   delete the event and create a new one.

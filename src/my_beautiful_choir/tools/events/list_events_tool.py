@@ -81,6 +81,6 @@ class ListEventsTool(Tool[ListEventsArguments]):
                     "start": listing.period.start.isoformat(),
                     "end": listing.period.end.isoformat(),
                 },
-                "events": [event_data(seen) for seen in listing.events],
+                "events": [event_data(seen, self._settings.notes_chars) for seen in listing.events],
             },
         )

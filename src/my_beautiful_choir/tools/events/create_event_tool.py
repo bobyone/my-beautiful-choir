@@ -8,9 +8,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.events.event import EventDetails
 from my_beautiful_choir.events.event_kind import EventKind
-from my_beautiful_choir.events.event_rules import NOTES_LENGTH, PLACE_LENGTH, TITLE_LENGTH
+from my_beautiful_choir.events.event_rules import PLACE_LENGTH, TITLE_LENGTH
 from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.events.visible_event import VisibleEvent
 from my_beautiful_choir.tools.choirs.choir_data import CHOIR_FIELD_DESCRIPTION
@@ -49,8 +50,8 @@ class CreateEventArguments(BaseModel):
     notes: str | None = Field(
         default=None,
         description=(
-            f"Internal notes for the members, never shown to the public, at most "
-            f"{NOTES_LENGTH} characters."
+            "Short internal notes for the members, never shown to the public, at most 280 "
+            "characters unless configured otherwise."
         ),
     )
     programme: list[ProgrammeItemArguments] = Field(
@@ -61,8 +62,9 @@ class CreateEventArguments(BaseModel):
 class CreateEventTool(Tool[CreateEventArguments]):
     """Adds a concert or a rehearsal to a choir."""
 
-    def __init__(self, service: EventService) -> None:
+    def __init__(self, service: EventService, settings: EventSettings) -> None:
         self._service = service
+        self._notes_limit = settings.notes_chars
 
     @property
     def name(self) -> str:
@@ -102,6 +104,6 @@ class CreateEventTool(Tool[CreateEventArguments]):
             text=f'Added {event_label(event)} to the choir "{choir.name}" (id {event.id}).',
             structured={
                 "choir": choir.name,
-                "event": event_data(VisibleEvent(event, complete=True)),
+                "event": event_data(VisibleEvent(event, complete=True), self._notes_limit),
             },
         )

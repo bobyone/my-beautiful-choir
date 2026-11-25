@@ -9,11 +9,16 @@ from typing import Self
 
 from my_beautiful_choir.events.errors import InvalidPeriodError
 
+_OUT_OF_RANGE = "it is outside the supported dates; give both bounds explicitly"
+
 
 def _utc(bound: str, moment: datetime) -> datetime:
     if moment.tzinfo is None or moment.utcoffset() is None:
         raise InvalidPeriodError(f"the {bound} must include a time zone offset")
-    return moment.astimezone(UTC)
+    try:
+        return moment.astimezone(UTC)
+    except OverflowError:
+        raise InvalidPeriodError(f"the {bound} is outside the supported dates") from None
 
 
 @dataclass(frozen=True)
@@ -49,10 +54,13 @@ class Period:
         length = timedelta(days=default_days)
         first = None if start is None else _utc("start", start)
         last = None if end is None else _utc("end", end)
-        if first is None:
-            first = now.astimezone(UTC) if last is None else last - length
-        if last is None:
-            last = first + length
+        try:
+            if first is None:
+                first = now.astimezone(UTC) if last is None else last - length
+            if last is None:
+                last = first + length
+        except OverflowError:
+            raise InvalidPeriodError(_OUT_OF_RANGE) from None
         if last < first:
             raise InvalidPeriodError("the end must not be before the start")
         if last - first > timedelta(days=maximum_days):
