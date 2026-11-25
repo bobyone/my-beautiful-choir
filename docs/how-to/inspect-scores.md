@@ -21,10 +21,11 @@ score IDs.
    a label repeats. The default pitch mode is `sounding`; choose
    `written` to inspect written pitches.
 3. Call `compare_scores(before_score_id, after_score_id, matches?)` on
-   two scores of the same work. The result is `identical`, `different`,
+   two scores of the same work. Attribute changes are reported in the
+   measure where they are written. The result is `identical`, `different`,
    or `partial`. A partial result lists ambiguities or unsupported
    features. If printed labels differ or repeat, pass positions to
-   confirm the correspondence, for example:
+   confirm the match, for example:
 
    ```json
    {

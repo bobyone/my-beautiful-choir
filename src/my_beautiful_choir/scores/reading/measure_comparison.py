@@ -33,7 +33,6 @@ def _categories(measure: Measure) -> dict[str, list[object]]:
     categories: dict[str, list[object]] = defaultdict(list)
     if measure.implicit:
         categories["measure_attributes"].append("implicit")
-    categories["effective_attributes"].extend(measure.opening)
     for event in measure.events:
         position = event.offset, event.staff, event.voice
         if event.kind in {"note", "rest"}:

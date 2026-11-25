@@ -25,6 +25,7 @@ MUSICAL_DETAILS = frozenset(
         "attributes",
         "barre",
         "bar-style",
+        "barline",
         "bass",
         "bass-alter",
         "bass-step",

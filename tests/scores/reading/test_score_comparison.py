@@ -49,6 +49,53 @@ async def test_compares_musical_categories_and_ignores_graphics_and_divisions() 
 
 
 @pytest.mark.anyio
+async def test_reports_repeat_changes_and_retains_final_barline() -> None:
+    source = _SCORE.replace(
+        "</measure></part>",
+        '<barline location="right"><ending number="1" type="stop"/>'
+        '<repeat direction="backward" times="2"/></barline></measure>'
+        '<measure number="10"><barline location="right">'
+        "<bar-style>light-heavy</bar-style></barline></measure></part>",
+    )
+    reader = MusicXmlScoreReader()
+    before = await reader.read(ScoreFormat.MUSICXML, source.encode())
+    repeat, final = before.parts[0].measures
+    assert not repeat.unsupported
+    assert not final.unsupported
+    (repeat_barline,) = (event for event in repeat.events if event.kind == "barline")
+    assert [item.kind for item in repeat_barline.details[0].details] == ["ending", "repeat"]
+    (final_barline,) = final.events
+    assert final_barline.details[0].details[0].value == "light-heavy"
+    assert list(compare_music(before, before, ())) == []
+
+    after = await reader.read(
+        ScoreFormat.MUSICXML, source.replace('times="2"', 'times="3"').encode()
+    )
+    (entry,) = compare_music(before, after, ())
+    assert entry["before_labels"] == ("9",)
+    assert entry["changes"] == ["barline"]
+
+
+@pytest.mark.anyio
+async def test_reports_attribute_edit_only_in_the_measure_where_it_occurs() -> None:
+    source = _SCORE.replace(
+        "<divisions>4</divisions>", "<divisions>4</divisions><key><fifths>0</fifths></key>"
+    ).replace(
+        "</measure></part>",
+        '</measure><measure number="10"><note><rest/><duration>4</duration></note>'
+        "</measure></part>",
+    )
+    reader = MusicXmlScoreReader()
+    before = await reader.read(ScoreFormat.MUSICXML, source.encode())
+    after = await reader.read(ScoreFormat.MUSICXML, source.replace("fifths>0", "fifths>1").encode())
+    assert before.parts[0].measures[1].opening != after.parts[0].measures[1].opening
+
+    (entry,) = compare_music(before, after, ())
+    assert entry["before_labels"] == ("9",)
+    assert entry["changes"] == ["key"]
+
+
+@pytest.mark.anyio
 async def test_ambiguous_and_explicit_matching() -> None:
     reader = MusicXmlScoreReader()
     plain = await reader.read(ScoreFormat.MUSICXML, _SCORE.encode())
