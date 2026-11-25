@@ -129,6 +129,9 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
     names = [tool.name for tool in container.tools()]
     assert names == [
         "show_about",
+        "describe_score",
+        "read_measures",
+        "compare_scores",
         "duplicate_score_as_draft",
         "preview_score_finalisation",
         "confirm_score_finalisation",

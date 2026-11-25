@@ -40,6 +40,11 @@ class Tool[ArgumentsT: BaseModel](ABC):
         return None
 
     @property
+    def read_only(self) -> bool:
+        """Whether the tool inspects without changing application state."""
+        return False
+
+    @property
     def app_only(self) -> bool:
         """True for a tool only its view may call, hidden from the model.
 
