@@ -26,22 +26,29 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
 | Deletion preview | Summary and record state covered by a deletion confirmation. | `DeletionPreview` | | deletion preview | aperçu de suppression |
 | Download | Saving of a copy of a score on the user's device through the client; the repertoire is not changed. | `download` | `work.downloadScore` | Download | Télécharger |
+| Correspondence | One-to-one match of parts or measures when comparing scores. | `Match` | | match | correspondance |
+| Detected anomaly | Musical irregularity that score reading can establish and locate. | `detected_anomalies` | | detected anomaly | anomalie détectée |
 | Download name | File name proposed for a download: the original name without its extension, otherwise the score label, made safe for common file systems, followed by the extension of the score format. | `download_name` | | download name | nom de téléchargement |
 | Draft date | Creation date of a draft, displayed in the user's time zone. | `draft_date` (`Score.added_at`) | | draft date | date du brouillon |
 | Draft score | Dated, editable score of a work that can be finalised. | `ScoreState.DRAFT` | `work.draftScore` | Draft | Brouillon |
 | DRAFT watermark | Visible DRAFT marking applied to every page of a PDF exported from a draft. | `PdfWatermarker.mark_draft` | | DRAFT | DRAFT |
 | Duplication as a draft | Creation of an independent draft from a final score in the same work. | `duplicate_as_draft` | `work.duplicateDraft` | Duplicate as draft | Dupliquer en brouillon |
+| Exchange notation | Versioned compact representation of measures, their events and effective attributes. | `notation_version` | | exchange notation | notation d’échange |
 | Final score | Numbered score with immutable content and metadata. It can be deleted after confirmation. | `ScoreState.FINAL` | `work.finalScore` | Final | Finale |
 | Finalisation | Promotion of a validated draft to a final score after explicit user confirmation. | `finalise` | `work.finaliseScore` | Finalise score | Finaliser la partition |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
+| Instrument | Singing voice or instrument associated with the events of a part. | `Part.instruments` | | instrument | instrument |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
+| Measure | Ordered segment of a part with a printed label that may recur. | `Measure` | | measure | mesure |
+| Measure range | Contiguous measures of one part, including both endpoints. | `read_measures` | | measure range | plage de mesures |
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
 | Originating score | Final score from which a draft was duplicated. Its label and version are kept if it is deleted. | `OriginatingScore` | `work.originatingScore` | From {label} v{versionNumber} | D’après {label} v{versionNumber} |
+| Part | Ordered measures intended for one or more performers and possibly containing several staves and voices. | `Part` | | part | partie |
 | PDF export | Rendering a score copy to PDF for download. Each page of a draft PDF carries the DRAFT watermark. | `ScorePdfExporter.export` | `work.downloadPdf` | Download PDF | Télécharger le PDF |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
@@ -54,6 +61,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Score origin | Where the content of a score came from when it was added: the file picker of a view, a local file on the user's computer, a public Google Drive link, MusicXML text submitted by the model, or a transcription. | `ScoreOrigin` | | origin | origine |
 | Score size | Number of bytes in the stored score. | `Score.size` | `glossary.scoreSize` | Size | Taille |
 | Server registration | Settings that tell a client how to start the local MCP server. | `ClientRegistration` | | server registration | inscription du serveur |
+| Sounding pitch | Pitch after the transposition declared for the instrument has been applied. | `MusicalEvent.sounding` | | sounding pitch | hauteur entendue |
 | Source score | Existing PDF score of a work used to generate a transcription. | `source_score_id` | | source score | partition source |
 | Stale confirmation | Confirmation whose deletion preview differs from the current state. | `StaleConfirmationError` | | stale confirmation | confirmation périmée |
 | Sung language | Language in which a work is sung. | `Work.sung_languages` | `glossary.sungLanguage` | Sung language | Langue chantée |
@@ -66,6 +74,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
+| Written pitch | Pitch as notated, including its spelling and alteration. | `Pitch` | | written pitch | hauteur écrite |
 | Work reference | A complete catalogue reference written in the title of a work, such as NL15.2. | `work_reference` | | work reference | référence de l'œuvre |
 
 Terms without a translation key are not shown in the user interface yet;
