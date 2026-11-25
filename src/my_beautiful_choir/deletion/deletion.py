@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
+from my_beautiful_choir.events.event_kind import EventKind
 from my_beautiful_choir.scores.score_state import ScoreState
 
 
@@ -18,6 +19,7 @@ class DeletionTarget(StrEnum):
     CHOIR = "choir"
     WORK = "work"
     SCORE = "score"
+    EVENT = "event"
 
 
 @dataclass(frozen=True)
@@ -27,9 +29,9 @@ class Deletion:
     target: DeletionTarget
     target_id: UUID
     name: str
-    """Name of the choir, title of the work or label of the score."""
+    """Name of the choir, title of the work, label of the score or title of the event."""
     parent_name: str | None = None
-    """Name of the choir of a work, or title of the work of a score."""
+    """Name of the choir of a work or an event, or title of the work of a score."""
     work_count: int = 0
     """Number of works deleted with a choir."""
     score_count: int = 0
@@ -40,3 +42,10 @@ class Deletion:
     """When that movement was published, to distinguish separate transcriptions."""
     score_state: ScoreState | None = None
     version_number: int | None = None
+    event_count: int = 0
+    """Events deleted with a choir, or whose programme refers to a deleted work."""
+    event_kind: EventKind | None = None
+    starts_at: datetime | None = None
+    """Start of a deleted event."""
+    programme_entry_count: int = 0
+    """Number of programme entries deleted with an event."""

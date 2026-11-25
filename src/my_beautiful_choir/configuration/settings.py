@@ -11,6 +11,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from my_beautiful_choir.configuration.data_dir import default_data_dir
+from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.configuration.mode import Mode
 from my_beautiful_choir.configuration.recognition_settings import RecognitionSettings
 from my_beautiful_choir.configuration.score_lifecycle_settings import ScoreLifecycleSettings
@@ -41,4 +42,5 @@ class Settings(BaseSettings):
     web: WebSettings = Field(default_factory=WebSettings)
     recognition: RecognitionSettings = Field(default_factory=RecognitionSettings)
     score_lifecycle: ScoreLifecycleSettings = Field(default_factory=ScoreLifecycleSettings)
+    events: EventSettings = Field(default_factory=EventSettings)
     score_reading: ScoreReadingSettings = Field(default_factory=ScoreReadingSettings)

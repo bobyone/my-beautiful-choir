@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 
 from my_beautiful_choir.authorization.authorization import Authorization
 from my_beautiful_choir.authorization.errors import AccessDeniedError
+from my_beautiful_choir.authorization.observer import LOCAL_USER, Observer
+from my_beautiful_choir.authorization.observer_source import ObserverSource
 from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.clock.clock import Clock
 from my_beautiful_choir.confirmation.confirmation_outcome import ConfirmationOutcome
@@ -153,3 +155,13 @@ class DenyingAuthorization(Authorization):
     def require(self, permission: Permission, choir_id: UUID | None = None) -> None:
         if permission in self.denied:
             raise AccessDeniedError(f"Permission {permission} denied.")
+
+
+class StubObserverSource(ObserverSource):
+    """Observer source returning the same observer for every choir."""
+
+    def __init__(self, observer: Observer = LOCAL_USER) -> None:
+        self.current = observer
+
+    def observer(self, choir_id: UUID) -> Observer:
+        return self.current

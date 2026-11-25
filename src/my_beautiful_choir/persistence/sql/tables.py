@@ -27,6 +27,8 @@ NOTES_LENGTH = 2000
 SCORE_LABEL_LENGTH = 100
 ORIGINAL_NAME_LENGTH = 255
 LINK_LENGTH = 2048
+EVENT_TEXT_LENGTH = 200
+EVENT_KIND_LENGTH = 20
 
 metadata = MetaData(
     naming_convention={
@@ -120,4 +122,32 @@ Index(
     scores.c.transcription_run_id,
     scores.c.movement_number,
     unique=True,
+)
+
+events = Table(
+    "events",
+    metadata,
+    Column("id", Uuid, primary_key=True),
+    Column("choir_id", Uuid, ForeignKey("choirs.id", ondelete="CASCADE"), nullable=False),
+    Column("kind", String(EVENT_KIND_LENGTH), nullable=False),
+    Column("title", String(EVENT_TEXT_LENGTH), nullable=False),
+    Column("starts_at", UtcDateTime, nullable=False),
+    Column("ends_at", UtcDateTime),
+    Column("place", String(EVENT_TEXT_LENGTH)),
+    Column("notes", Text),
+    Column("programme_hidden", Boolean, nullable=False),
+    Column("created_at", UtcDateTime, nullable=False),
+    Column("updated_at", UtcDateTime, nullable=False),
+)
+Index("ix_events_choir_start", events.c.choir_id, events.c.starts_at)
+
+programme_entries = Table(
+    "programme_entries",
+    metadata,
+    Column("event_id", Uuid, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True),
+    Column("position", Integer, primary_key=True),
+    # Kept when the work is deleted, with its title (ADR 0031).
+    Column("work_id", Uuid, ForeignKey("works.id", ondelete="SET NULL"), nullable=True, index=True),
+    Column("work_title", String(WORK_TEXT_LENGTH)),
+    Column("note", String(EVENT_TEXT_LENGTH)),
 )

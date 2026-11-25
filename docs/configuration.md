@@ -37,6 +37,9 @@ invalid key with the expected value on stderr and exits with code 2 (see
 | `MBC_SCORE_LIFECYCLE__TRUSTED_FINALISATION_HOST` | boolean | `false` | no | Personal mode: enable finalisation after verifying that the MCP Apps host keeps private result metadata and app-only tool calls out of the model. |
 | `MBC_SCORE_LIFECYCLE__MUSESCORE_EXECUTABLE` | absolute executable path | empty | no | Personal mode: MuseScore Studio executable for optional score PDF export. |
 | `MBC_SCORE_LIFECYCLE__PDF_TIMEOUT_SECONDS` | integer from 1 to 600 | `60` | no | Personal mode: maximum runtime of one MuseScore Studio PDF export. |
+| `MBC_EVENTS__DEFAULT_PERIOD_DAYS` | integer from 1 to 366, at most `MBC_EVENTS__MAXIMUM_PERIOD_DAYS` | `92` | no | Length of the period listed when no bound is given, or from a single bound. |
+| `MBC_EVENTS__MAXIMUM_PERIOD_DAYS` | integer from 1 to 3660 | `366` | no | Longest period that one event listing may cover. |
+| `MBC_EVENTS__NOTES_CHARS` | integer from 1 to 2000 | `280` | no | Longest event notes accepted; longer stored notes are not returned to the model. |
 | `MBC_SCORE_READING__LABEL_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned part or measure label. |
 | `MBC_SCORE_READING__LYRIC_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned lyric field. |
 | `MBC_SCORE_READING__DIRECTION_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned direction field. |

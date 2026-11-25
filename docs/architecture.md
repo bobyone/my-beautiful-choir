@@ -74,14 +74,16 @@ code and the process exit code.
 | `ViewTool[ArgumentsT](Tool)` | `tools.view_tool` | Tool displayed by a `View`. Template method: subclasses implement `_collect(arguments, context)` (data for the view) and `_describe(data)` (self-sufficient English text); `execute` returns both, so the text always matches the view. |
 | `View` | `views` | User interface rendered by the client: `uri` (`ui://`), `content()` (self-contained HTML); raises `ViewNotFoundError`. |
 | `ConfirmationRequester` | `confirmation` | `async ask(question) -> ConfirmationOutcome` (`confirmed`, `refused` or `unavailable` when the user cannot be asked); never raises because the user cannot be asked. |
-| `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
+| `Authorization` | `authorization` | `require(permission, choir_id=None)`: checks that the current user has a `Permission` (`manage_choirs`, `manage_repertoire`, `consult_repertoire`, `manage_events`, `hide_programme`), in a choir when given ([ADR 0003](decisions/0003-multi-choir-tenancy-and-roles.md)); raises `AccessDeniedError`. |
+| `ObserverSource` | `authorization` | `observer(choir_id) -> Observer`: who is consulting the events of a choir, as an `Observer` (`kind`: `local_user`, `instance_administrator`, `manager`, `chorister` or `public`; `member_id` for a member). Separate from `Authorization`, which says whether the user may act ([ADR 0031](decisions/0031-model-choir-events-with-kind-based-visibility.md)). |
 | `Clock` | `clock` | `now() -> datetime`: current date and time, timezone-aware, in UTC. |
 | `StartupStep` | `application` | `name`, `async run()`: something to do before serving; raises a `StartupError`. |
-| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`, `scores`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
+| `UnitOfWork` | `persistence` | One atomic operation on the data store, used as `async with`: changes are kept only by `commit()`; leaving without committing, or with an exception, discards them. Gives access to the repositories (`choirs`, `works`, `scores`, `transcription_runs`, `events`). Services receive a `UnitOfWorkFactory` and open one unit of work per operation ([ADR 0012](decisions/0012-asynchronous-data-access.md)). |
 | `ChoirRepository` | `choirs` | Stores the choirs within a unit of work: `add`, `get(id)` (raises `ChoirNotFoundError`), `find_by_name(name)` (ignoring case), `default()`, `list()` (the oldest first), `rename`, `make_default` (the previous default choir becomes ordinary), `delete`. |
 | `WorkRepository` | `repertoire` | Stores the works within a unit of work: `add`, `get(id)` (raises `WorkNotFoundError`), `search(choir_id, text=None)` (title or composer containing the text, ignoring case and accents; unordered), `count_matching(choir_id, text=None)`, `search_page(choir_id, text, offset, limit)` (the same works ordered by title, then composer with no composer first, then id), `update`, `delete`, `count(choir_id)`. |
 | `ScoreRepository` | `scores` | Stores the scores (not their content) within a unit of work: `add`, `get(id)` (raises `ScoreNotFoundError`), `list(work_id)` (by date added, then label), `delete`, `storage_keys_of_work(work_id)`, `storage_keys_of_choir(choir_id)`, `counts_of_works(work_ids)` (number of scores of each given work with scores). |
-| `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works) and `ScoreService` (scores). |
+| `EventRepository` | `events` | Stores the events and their programmes within a unit of work: `add`, `get(id)` (raises `EventNotFoundError`), `update` (replaces the attributes and flags, never the programme), `replace_programme` (replaces the whole programme with the titles it carries), `delete`, `list_overlapping(choir_id, period)` (events overlapping the period, both bounds included, an event without an end counting as an instant; sorted by start, title, then id), `list_of_choir(choir_id)` (sorted by id, the snapshot of a choir deletion), `count_referencing_work(work_id)`. Programme entries carry the current title of their work while it exists, then the title kept when the programme was last replaced. |
+| `Deleter` | `deletion` | `deletion_target` (`DeletionTarget`), `describe_deletion(id) -> DeletionPreview` (summary and snapshot for confirmation), `delete(preview) -> Deletion` (checks permissions and removes the matching records and their stored contents). Implemented by `ChoirService` (choirs), `RepertoireService` (works), `ScoreService` (scores) and `EventService` (events). |
 | `ScoreOpener` | `scores.opening` | `async open(score, content)`: shows a score to the user in the application that opens its format; raises `ScoreOpenError`. |
 | `FileStorage` | `storage` | Keeps the content of files under keys made of segments separated by `/`, each of ASCII letters, digits, `-` or `_` (`choirs/<id>/scores/<id>`), checked by `check_storage_key` (raises `InvalidStorageKeyError`): `store(key, content)` (replaces atomically), `read(key, maximum_size=None)` (with a maximum size, reads at most one byte more, so that a larger content is detected without being loaded), `delete(key)` (nothing if missing), `exists(key)`. Other failures raise `StorageError` ([ADR 0005](decisions/0005-data-and-file-storage.md)). |
 | `ScoreFormatSignature` | `scores.formats` | `format`, `matches(content) -> bool`: recognizes one score format from the bytes of a file, never from its name; never decompresses an archive nor parses XML. `ZipArchiveSignature` (`signatures.zip`) specializes it for zip archives: it reads only the archive index and calls `matches_entries(names)`. |
@@ -93,9 +95,10 @@ code and the process exit code.
 
 Value objects: `Choir` (`choirs`: `id`, `name`, `created_at`, `is_default`),
 `Work`, `WorkDetails` and `WorkChanges` (`repertoire`),
+`Event`, `EventDetails`, `EventChanges`, `EventKind` (`concert`, `rehearsal`, `lesson`), `ProgrammeEntry`, `ProgrammeItem`, `Period`, `VisibleEvent` and `EventListing` (`events`), `Observer` and `ObserverKind` (`authorization`),
 `Deletion` (`deletion`: `target`, `target_id`, `name`, `parent_name` (the choir
-of a work, the work of a score), `work_count`, `score_count`), `DeletionTarget`
-(`deletion`: `choir`, `work`, `score`),
+of a work or an event, the work of a score), `work_count`, `score_count`, `event_count` (events deleted with a choir, or whose programme refers to a deleted work), `event_kind`, `starts_at` and `programme_entry_count` (of a deleted event)), `DeletionTarget`
+(`deletion`: `choir`, `work`, `score`, `event`),
 `Score` (`scores`: `id`, `work_id`, `label`, `format`, `size`, `original_name`,
 `origin`, `link`, `storage_key`, `added_at`), `ScoreOrigin` (`scores`:
 `file_picker`, `local_file`, `google_drive`),
@@ -130,7 +133,7 @@ unavailable resource (`MBC-PORT`), 4 incomplete installation
 | Container | Provides | Depends on |
 |---|---|---|
 | `ApplicationContainer` | `application_info`, `views_directory`, `about_view`, `show_about_tool` (metered), `tools` (common tools, then the `mode_tools`), `server_builder`, `application` | `settings`, `mode` |
-| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `score_format_detector` (the four signatures, MuseScore before compressed MusicXML), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `choir_service`, `repertoire_service`, `score_opener` (`SystemScoreOpener` in the temporary directory of the system), `google_drive_source` (a new `GoogleDriveScoreSource` per link), `score_service`, `mode_tools` (the choir, work and score tools, metered) | `settings` |
+| `PersonalModeContainer` | `metrics` (`NullMetrics`), `transport` (`StdioTransport`), `database` (`SqlDatabase` in `MBC_DATA_DIR`), `file_storage` (`LocalFileStorage` in `MBC_DATA_DIR`), `score_format_detector` (the four signatures, MuseScore before compressed MusicXML), `startup_steps` (`PrepareDataStore`), `clock` (`SystemClock`), `authorization` (`LocalUserAuthorization`), `observers` (`LocalObserverSource`), `choir_service`, `repertoire_service`, `event_service` (with `settings.events`), `score_opener` (`SystemScoreOpener` in the temporary directory of the system), `google_drive_source` (a new `GoogleDriveScoreSource` per link), `score_service`, `mode_tools` (the choir, work, event and score tools, metered) | `settings` |
 | `WebModeContainer` | `metrics` (`PrometheusMetrics`), `health_check` (`ServerHealthCheck`), `transport` (`HttpTransport`), `startup_steps` (none), `mode_tools` (none: the repertoire needs accounts) | `settings` |
 
 `create_container(settings)` picks the mode container from `settings.mode`.
@@ -158,7 +161,8 @@ sequence of `StartupStep` (none by default).
   `persistence/sql/migrations/` on the database; there is no `alembic.ini`.
 - No connection pool: no connection, hence no `aiosqlite` thread, outlives
   its unit of work. SQLite enforces foreign keys (`PRAGMA foreign_keys=ON`).
-- Schema (`tables.py`): `choirs`, `works` and `scores`, with UUID keys,
+- Schema (`tables.py`): `choirs`, `works`, `scores`, `events` and
+  `programme_entries`, with UUID keys,
   dates in UTC (`UtcDateTime`, which refuses naive dates and restores the
   timezone that SQLite drops) and a partial unique index allowing a single
   default choir. Every change of the schema comes with a migration; a test
@@ -279,6 +283,33 @@ on the same columns with `OFFSET` and `LIMIT` (ADR 0018).
 Text tools: `add_work(choir?, title, composer?, arranger?, voicing?,
 sung_languages?, notes?)` and `edit_work(work_id, ...)`. Works are named by
 their id. The structured content describes the work (`work_data`).
+
+### `EventService` (`events`)
+
+| Parameter | Type | Description |
+|---|---|---|
+| `unit_of_work` | `UnitOfWorkFactory` | One unit of work per operation. |
+| `clock` | `Clock` | Creation and modification dates, and the start of the default period. |
+| `authorization` | `Authorization` | `manage_events` to create, edit and delete; `hide_programme` to hide or show a concert programme. |
+| `observers` | `ObserverSource` | Who is consulting, for the visibility rule. |
+| `settings` | `EventSettings` | `default_period_days` (int, default 92, 1 to 366) and `maximum_period_days` (int, default 366, 1 to 3660, at least the default) and `notes_chars` (int, default 280, 1 to 2000), from `MBC_EVENTS__*`. |
+
+Every read goes through `visible_event(event, observer)` (`events.visibility`, ADR 0031): the local user, managers and the instance administrator see everything; choristers see concerts and rehearsals, and the lessons they take part in; the public sees concerts without their notes, and without their programme when it is hidden. An event the observer may not see raises `EventNotFoundError`, as a missing one.
+
+- `create_event(choir, kind, details, programme=(), participant_ids=())`: adds an event to the named or default choir. Rules (`event_rules.py`, `InvalidEventError` naming the attribute): title required, at most 200 characters; place 200; notes `notes_chars` (280 by default); dates with a time zone offset, stored in UTC; the end, when given, not before the start; at most 100 programme entries, each with a work, a note (200 characters) or both; a lesson needs participants and other kinds have none. Programme works must belong to the choir (`WorkNotFoundError` otherwise); their title is kept.
+- `edit_event(event_id, changes, programme=None)` and `set_programme_hidden` start a write snapshot (`start_snapshot(for_update=True)`) before reading the event, so concurrent changes never undo each other. `None` keeps an attribute, an empty text clears it, `clear_end` removes the end; a given programme replaces the current one. The kind never changes.
+- `set_programme_hidden(event_id, hidden)`: concerts only (`ProgrammeNotHideableError`); asking for the current state changes nothing.
+- `get_event(event_id)` and `list_events(choir, start=None, end=None)`: the visible events; `Period.resolve` completes the period (now and the default length without bounds, the default length from a single bound) and raises `InvalidPeriodError` for an inverted, naive, too long or out-of-range period (a completed bound outside the supported dates).
+- Deletion (`Deleter`): an event with its programme; the preview gives its kind, start, choir and number of programme entries.
+- Limit: lessons cannot be stored yet, their participants need choir members (issue #31).
+
+### `SqlEventRepository` (`events.sql`)
+
+Tables `events` (index on `choir_id`, `starts_at`) and `programme_entries` (key `event_id`, `position`). Deleting a choir deletes its events (cascade); deleting a work sets `work_id` to NULL and keeps `work_title`. Reads return the current title of an existing work. Storing an event with participants raises `NotImplementedError` until choir members exist (#31).
+
+### Event tools (`tools.events`)
+
+Text tools of personal mode: `create_event(choir?, kind, title, starts_at, ends_at?, place?, notes?, programme?)` (kind `concert` or `rehearsal`), `edit_event(event_id, ...)`, `set_programme_hidden(event_id, hidden)`, and the read-only `get_event(event_id)` and `list_events(choir?, start?, end?)`; `delete_event(event_id)` is a `DeleteTool`. Dates are ISO 8601 with an offset and returned in UTC; the descriptions ask the model to present them in the user's time zone. The structured content (`event_data`) leaves out the notes and the modification dates when the observer does not see the whole event, and sets `programme_withheld` when a hidden programme is left out. Notes longer than `notes_chars` (stored under a former, higher limit) are free text never given to the model: both the text and the structured content leave them out and set `notes_withheld` ([ADR 0032](decisions/0032-bound-event-notes-given-to-the-model.md)).
 
 ### `ScoreService` (`scores`)
 
@@ -594,7 +625,9 @@ before enabling its confirmation dialog. It confirms using
 
 The deletion tools describe what the user will delete before requesting
 confirmation. The description includes the target, its parent when present,
-and the number of works and scores affected. A refusal leaves the data intact.
+and the number of works and scores affected; for an event, its kind, start and
+number of programme entries; for a choir, its events; for a work, the events
+whose programme keeps it without a link. A refusal leaves the data intact.
 When the client cannot ask directly, the tool stores the preview in
 `PendingConfirmations[DeletionPreview]` and returns the Deletion view with
 a token. MCP elicitation continuations use a separate registry of tokens
@@ -736,6 +769,10 @@ terms use the `glossary.*` keys. See
 
 Personal mode: the implicit user manages every choir, so every permission
 is granted. No parameter.
+
+### `LocalObserverSource` (`authorization.local`)
+
+Personal mode: the implicit user is the local user observer of every choir, who sees every event. No parameter.
 
 ### `SystemClock` (`clock`)
 

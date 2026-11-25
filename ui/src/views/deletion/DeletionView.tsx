@@ -10,7 +10,7 @@ import Card from "react-bootstrap/Card";
 import Spinner from "react-bootstrap/Spinner";
 import { useTranslation } from "react-i18next";
 
-import type { DeletionSummary, DeletionTarget } from "./deletionInfo";
+import type { DeletionSummary, DeletionTarget, EventKind } from "./deletionInfo";
 
 export type DeletionState =
   | { kind: "loading" }
@@ -125,12 +125,20 @@ export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary })
   const { t, i18n } = useTranslation();
   const number = new Intl.NumberFormat(i18n.language);
   const parentTarget: DeletionTarget | undefined =
-    deletion.target === "work" ? "choir" : deletion.target === "score" ? "work" : undefined;
+    deletion.target === "work" || deletion.target === "event"
+      ? "choir"
+      : deletion.target === "score"
+        ? "work"
+        : undefined;
   const addedAt = deletion.addedAt;
 
   return (
     <dl className="row">
-      <dt className="col-sm-4">{targetLabel(deletion.target, t)}</dt>
+      <dt className="col-sm-4">
+        {deletion.eventKind === undefined
+          ? targetLabel(deletion.target, t)
+          : eventKindLabel(deletion.eventKind, t)}
+      </dt>
       <dd className="col-sm-8">
         {deletion.movementNumber === undefined
           ? deletion.name
@@ -145,6 +153,14 @@ export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary })
             </Badge>
             {deletion.versionNumber && `v${number.format(deletion.versionNumber)}`}
           </div>
+        )}
+        {deletion.startsAt !== undefined && (
+          <time className="d-block" dateTime={deletion.startsAt}>
+            {new Intl.DateTimeFormat(i18n.language, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(deletion.startsAt))}
+          </time>
         )}
         {addedAt !== undefined && (
           <time className="d-block" dateTime={addedAt}>
@@ -173,6 +189,20 @@ export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary })
           <dd className="col-sm-8">{number.format(deletion.scoreCount)}</dd>
         </>
       )}
+      {deletion.programmeEntryCount !== undefined && (
+        <>
+          <dt className="col-sm-4">{t("deletion.programmeEntries")}</dt>
+          <dd className="col-sm-8">{number.format(deletion.programmeEntryCount)}</dd>
+        </>
+      )}
+      {deletion.eventCount !== undefined && (
+        <>
+          <dt className="col-sm-4">
+            {deletion.target === "work" ? t("deletion.referencingEvents") : t("deletion.events")}
+          </dt>
+          <dd className="col-sm-8">{number.format(deletion.eventCount)}</dd>
+        </>
+      )}
     </dl>
   );
 }
@@ -186,5 +216,19 @@ function targetLabel(target: DeletionTarget, t: TFunction): string {
       return t("glossary.work");
     case "score":
       return t("glossary.score");
+    case "event":
+      return t("glossary.event");
+  }
+}
+
+/** Glossary label of a kind of event. */
+function eventKindLabel(kind: EventKind, t: TFunction): string {
+  switch (kind) {
+    case "concert":
+      return t("glossary.concert");
+    case "rehearsal":
+      return t("glossary.rehearsal");
+    case "lesson":
+      return t("glossary.lesson");
   }
 }

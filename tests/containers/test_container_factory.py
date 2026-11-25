@@ -148,6 +148,11 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
         "set_default_choir",
         "add_work",
         "edit_work",
+        "create_event",
+        "edit_event",
+        "set_programme_hidden",
+        "get_event",
+        "list_events",
         "add_score_from_file",
         "add_score_from_google_drive",
         "open_score",
@@ -162,6 +167,7 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
         "delete_choir",
         "delete_work",
         "delete_score",
+        "delete_event",
         "confirm_deletion",
     ]
     assert all(isinstance(tool, MeteredTool) for tool in container.tools())

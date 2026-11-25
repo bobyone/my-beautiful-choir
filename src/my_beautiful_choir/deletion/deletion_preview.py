@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from my_beautiful_choir.choirs.choir import Choir
 from my_beautiful_choir.deletion.deletion import Deletion
+from my_beautiful_choir.events.event import Event
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.scores.score import Score
 
@@ -19,3 +20,4 @@ class DeletionPreview:
     choir: Choir | None = None
     works: tuple[Work, ...] = ()
     scores: tuple[Score, ...] = ()
+    events: tuple[Event, ...] = ()

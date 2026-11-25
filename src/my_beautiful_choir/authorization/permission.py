@@ -17,3 +17,9 @@ class Permission(StrEnum):
 
     CONSULT_REPERTOIRE = "consult_repertoire"
     """Consult the repertoire of a choir and open its scores (manager or chorister)."""
+
+    MANAGE_EVENTS = "manage_events"
+    """Create, edit and delete the events of a choir (manager)."""
+
+    HIDE_PROGRAMME = "hide_programme"
+    """Hide or show the programme of a concert to the public (manager or instance administrator)."""
