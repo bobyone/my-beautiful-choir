@@ -385,6 +385,26 @@ the optional personal-ocr extra and serialises calls with the PDFium
 page renderer. The view receives a draft PDF only after all pages
 have been marked.
 
+### Musical score inspection (`scores.reading`)
+
+`ScoreReadingService` receives `ScoreService` and a `ScoreReader`.
+It uses existing consultation permissions. Before reading a pair it
+checks access to both records and that they belong to the same work.
+Each loaded score includes a fingerprint for paginated results.
+
+`MusicXmlScoreReader` adapts plain and compressed MusicXML to ordered
+parts, measures and exact musical events. It reuses secured XML and
+archive readers, bounds structural depth and count, and carries
+musical attributes forward on each part's timeline. The adapter
+retains supported details and records unrecognised notation.
+
+Description, measure ranges and comparison consume the shared model.
+The personal-mode container wires the reader and the read-only MCP
+tools. `ReadingProjection` bounds fields and serialises the versioned
+notation. `ReadingPage` applies the result budget without dividing
+records. The [configuration reference](configuration.md) lists the
+injected limits and defaults.
+
 ### `SqlScoreRepository` (`scores.sql`)
 
 Table `scores`; the work's foreign key deletes its scores with it.

@@ -27,6 +27,8 @@ and this project adheres to
   and a programme of repertoire works; hide a concert programme from the public; list
   the events of a period; delete an event after confirmation. Deletion previews of works
   and choirs count their events (#30).
+- Describe, read by measure and compare stored MusicXML scores in personal mode (#28).
+
 - Add draft and final score states, per-work versions, duplication, user-confirmed
   finalisation and optional watermarked draft PDF export in personal mode (#26).
 - In personal mode, find scores by work ID, title or a reference in the

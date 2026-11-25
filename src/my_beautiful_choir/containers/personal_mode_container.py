@@ -42,6 +42,8 @@ from my_beautiful_choir.scores.opening.system.system_score_opener import SystemS
 from my_beautiful_choir.scores.pdf.musescore.musescore_pdf_exporter import MuseScorePdfExporter
 from my_beautiful_choir.scores.pdf.pdfium.pdfium_page_renderer import PdfiumPageRenderer
 from my_beautiful_choir.scores.pdf.pdfium.pdfium_watermarker import PdfiumWatermarker
+from my_beautiful_choir.scores.reading.musicxml.musicxml_score_reader import MusicXmlScoreReader
+from my_beautiful_choir.scores.reading.score_reading_service import ScoreReadingService
 from my_beautiful_choir.scores.recognition.audiveris.installation import AudiverisInstallation
 from my_beautiful_choir.scores.recognition.audiveris.recognizer import AudiverisRecognizer
 from my_beautiful_choir.scores.recognition.transcription_service import TranscriptionService
@@ -68,14 +70,19 @@ from my_beautiful_choir.tools.scores.add_score_from_file_tool import AddScoreFro
 from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
     AddScoreFromGoogleDriveTool,
 )
+from my_beautiful_choir.tools.scores.compare_scores_tool import CompareScoresTool
+from my_beautiful_choir.tools.scores.describe_score_tool import DescribeScoreTool
 from my_beautiful_choir.tools.scores.duplicate_score_as_draft_tool import DuplicateScoreAsDraftTool
 from my_beautiful_choir.tools.scores.find_score_sources_tool import FindScoreSourcesTool
 from my_beautiful_choir.tools.scores.get_score_file_tool import GetScoreFileTool
 from my_beautiful_choir.tools.scores.get_transcription_status_tool import GetTranscriptionStatusTool
 from my_beautiful_choir.tools.scores.list_scores_tool import ListScoresTool
 from my_beautiful_choir.tools.scores.open_score_tool import OpenScoreTool
+from my_beautiful_choir.tools.scores.read_measures_tool import ReadMeasuresTool
 from my_beautiful_choir.tools.scores.read_musicxml_score_tool import ReadMusicXmlScoreTool
 from my_beautiful_choir.tools.scores.read_score_source_page_tool import ReadScoreSourcePageTool
+from my_beautiful_choir.tools.scores.reading_page import ReadingPage
+from my_beautiful_choir.tools.scores.reading_projection import ReadingProjection
 from my_beautiful_choir.tools.scores.transcribe_score_tool import TranscribeScoreTool
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
@@ -241,7 +248,21 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         supports_pdf_export=providers.Callable(bool, musescore_executable),
     )
 
+    score_reader = providers.Singleton(MusicXmlScoreReader)
+    score_reading = providers.Singleton(
+        ScoreReadingService, scores=score_service, reader=score_reader
+    )
+    reading_projection = providers.Singleton(
+        ReadingProjection, settings=settings.provided.score_reading
+    )
+    reading_page = providers.Singleton(
+        ReadingPage, settings=settings.provided.score_reading, projection=reading_projection
+    )
+
     mode_tools = providers.List(
+        _metered(DescribeScoreTool, metrics, reading=score_reading, page=reading_page),
+        _metered(ReadMeasuresTool, metrics, reading=score_reading, page=reading_page),
+        _metered(CompareScoresTool, metrics, reading=score_reading, page=reading_page),
         _metered(DuplicateScoreAsDraftTool, metrics, scores=score_service),
         _metered(
             PreviewScoreFinalisationTool,

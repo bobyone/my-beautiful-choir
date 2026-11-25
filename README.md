@@ -29,6 +29,7 @@ The first version covers the choir's repertoire and scores.
 - [Architecture](docs/architecture.md)
 - [Manage score versions and download draft PDFs](docs/how-to/manage-score-versions.md)
 - [Manage the events of a choir](docs/how-to/manage-events.md)
+- [Describe, read and compare scores](docs/how-to/inspect-scores.md)
 - [How-to guides](docs/how-to/)
 - [Glossary](docs/glossary.md)
 - [Architecture decision records](docs/decisions/)

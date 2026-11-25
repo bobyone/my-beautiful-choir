@@ -43,6 +43,11 @@ class MeteredTool[ArgumentsT: BaseModel](Tool[ArgumentsT]):
         return self._inner.view
 
     @property
+    def read_only(self) -> bool:
+        """Preserve the read-only annotation of the wrapped tool."""
+        return self._inner.read_only
+
+    @property
     def app_only(self) -> bool:
         """Visibility of the wrapped tool."""
         return self._inner.app_only

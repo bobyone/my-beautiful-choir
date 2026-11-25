@@ -20,6 +20,7 @@ path = [
     "ui/.prettierrc.json",
     "ui/i18n/*.json",
     "ui/locales/*.json",
+    "docs/reference/score-exchange-notation-v1.schema.json",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bobyone"
