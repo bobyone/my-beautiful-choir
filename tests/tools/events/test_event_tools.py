@@ -258,3 +258,7 @@ async def test_names_and_descriptions(tools: _World) -> None:
     assert tools.hide.arguments_model is SetProgrammeHiddenArguments
     assert tools.get.arguments_model is GetEventArguments
     assert tools.list.arguments_model is ListEventsArguments
+    assert tools.get.read_only
+    assert tools.list.read_only
+    for writer in (tools.create, tools.edit, tools.hide):
+        assert not writer.read_only

@@ -16,7 +16,7 @@ from my_beautiful_choir.tools.events.event_data import (
     event_data,
     event_label,
 )
-from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.read_only_tool import ReadOnlyTool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 
@@ -33,7 +33,7 @@ class ListEventsArguments(BaseModel):
     )
 
 
-class ListEventsTool(Tool[ListEventsArguments]):
+class ListEventsTool(ReadOnlyTool[ListEventsArguments]):
     """Lists the events of a choir over a period, sorted by start."""
 
     def __init__(self, service: EventService, settings: EventSettings) -> None:

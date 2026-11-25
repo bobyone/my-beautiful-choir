@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from my_beautiful_choir.configuration.event_settings import EventSettings
 from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.tools.events.event_data import UTC_NOTICE, event_data, event_text
-from my_beautiful_choir.tools.tool import Tool
+from my_beautiful_choir.tools.read_only_tool import ReadOnlyTool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
 
@@ -21,7 +21,7 @@ class GetEventArguments(BaseModel):
     event_id: UUID = Field(description="Id of the event, as given by list_events.")
 
 
-class GetEventTool(Tool[GetEventArguments]):
+class GetEventTool(ReadOnlyTool[GetEventArguments]):
     """Reads an event with its programme."""
 
     def __init__(self, service: EventService, settings: EventSettings) -> None:

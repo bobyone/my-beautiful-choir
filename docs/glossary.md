@@ -50,7 +50,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
 | Mode | Way the application runs: personal mode or web mode. | `Mode` | `glossary.mode` | mode | mode |
 | Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
-| Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
+| Notes | Optional information about a work, or internal information about an event. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Observer | Person consulting events: a member, the instance administrator, the local user or the public. | `Observer` | | observer | observateur |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
 | Originating score | Final score from which a draft was duplicated. Its label and version are kept if it is deleted. | `OriginatingScore` | `work.originatingScore` | From {label} v{versionNumber} | D’après {label} v{versionNumber} |
