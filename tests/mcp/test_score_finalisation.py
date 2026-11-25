@@ -4,10 +4,12 @@
 
 """Verify finalisation through the server's MCP Apps boundary."""
 
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
 from mcp.client import Client
+from mcp.server.mcpserver import MCPServer
 
 from my_beautiful_choir.configuration.score_lifecycle_settings import ScoreLifecycleSettings
 from my_beautiful_choir.configuration.settings import Settings
@@ -22,11 +24,7 @@ from tests import score_samples
 from tests.score_doubles import StubScoreSource
 
 
-@pytest.mark.anyio
-async def test_confirmation_uses_private_session_bound_single_use_token(tmp_path: Path) -> None:
-    settings = Settings(
-        data_dir=tmp_path, score_lifecycle=ScoreLifecycleSettings(trusted_finalisation_host=True)
-    )
+async def _server_with_draft(settings: Settings) -> tuple[MCPServer, ScoreService, Score]:
     mode = PersonalModeContainer(settings=settings)
     container = ApplicationContainer(settings=settings, mode=mode)
     mode.views_directory.override(container.views_directory)
@@ -37,7 +35,43 @@ async def test_confirmation_uses_private_session_bound_single_use_token(tmp_path
     service = mode.score_service()
     _, source = await service.add_score(work.id, StubScoreSource(score_samples.musicxml()))
     _, draft = await service.duplicate_as_draft(source.id)
-    server = container.server_builder().build()
+    return container.server_builder().build(), service, draft
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("lifecycle", "connected"),
+    [
+        pytest.param(ScoreLifecycleSettings(), True, id="disabled-by-default"),
+        pytest.param(
+            ScoreLifecycleSettings(trusted_finalisation_host=True), False, id="no-session"
+        ),
+    ],
+)
+async def test_preview_withholds_token_when_finalisation_is_unavailable(
+    tmp_path: Path, lifecycle: ScoreLifecycleSettings, connected: bool
+) -> None:
+    settings = Settings(data_dir=tmp_path, score_lifecycle=lifecycle)
+    server, service, draft = await _server_with_draft(settings)
+    with stdio_connection_scope() if connected else nullcontext():
+        async with Client(server, raise_exceptions=False) as client:
+            preview = await client.call_tool(
+                "preview_score_finalisation", {"score_id": str(draft.id)}
+            )
+
+    assert not preview.is_error
+    assert "finalisation_token" not in (preview.meta or {})
+    assert "finalisation" not in (preview.structured_content or {})
+    assert draft.state is ScoreState.DRAFT
+    assert (await service.describe_score(draft.id))[1] == draft
+
+
+@pytest.mark.anyio
+async def test_confirmation_uses_private_session_bound_single_use_token(tmp_path: Path) -> None:
+    settings = Settings(
+        data_dir=tmp_path, score_lifecycle=ScoreLifecycleSettings(trusted_finalisation_host=True)
+    )
+    server, service, draft = await _server_with_draft(settings)
     with stdio_connection_scope():
         await _verify_confirmation(Client(server, raise_exceptions=False), service, draft)
 

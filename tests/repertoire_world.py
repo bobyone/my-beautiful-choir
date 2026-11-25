@@ -13,6 +13,7 @@ from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work import Work, WorkDetails
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
+from my_beautiful_choir.scores.formats.signatures.music_xml_signature import MusicXmlSignature
 from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
 from my_beautiful_choir.scores.musicxml.musicxml_score_validator import MusicXmlScoreValidator
 from my_beautiful_choir.scores.score import Score
@@ -54,7 +55,7 @@ class RepertoireWorld:
             self.clock,
             authorization or LocalUserAuthorization(),
             self.storage,
-            ScoreFormatDetector([PdfSignature()]),
+            ScoreFormatDetector([PdfSignature(), MusicXmlSignature()]),
             self.opener,
             validator=MusicXmlScoreValidator(),
         )
