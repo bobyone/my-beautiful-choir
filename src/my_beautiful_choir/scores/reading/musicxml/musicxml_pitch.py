@@ -2,7 +2,7 @@
 # SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-"""Read written pitch and calculate explicitly declared sounding pitch."""
+"""Read written pitch and calculate sounding pitch from the score."""
 
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ def read_pitch(element: Element[str]) -> Pitch:
 
 
 def sounding_pitch(
-    event: MusicalEvent, changes: Iterable[MusicalEvent], *, concert: bool
+    event: MusicalEvent, changes: Iterable[MusicalEvent]
 ) -> tuple[Fraction, ...] | None:
-    """Use transpose attributes effective at the note on the same staff."""
+    """Apply effective transposition, using written pitch when no transpose is declared."""
     if event.pitch is None:
         return None
     transpose = None
@@ -40,7 +40,7 @@ def sounding_pitch(
         ):
             transpose = change.details[0]
     if transpose is None:
-        return (event.pitch.height,) if concert else None
+        return (event.pitch.height,)
     items = {detail.kind: detail for detail in transpose.details}
     if "chromatic" not in items:
         return None

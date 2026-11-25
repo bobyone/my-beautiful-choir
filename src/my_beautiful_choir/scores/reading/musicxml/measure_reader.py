@@ -31,9 +31,8 @@ _NOTE_FIELDS = {"pitch", "duration", "voice", "staff", "instrument"}
 class MeasureReader:
     """Read each measure in one part while carrying its attributes forward."""
 
-    def __init__(self, instruments: dict[str, int], *, concert: bool) -> None:
+    def __init__(self, instruments: dict[str, int]) -> None:
         self._instruments = instruments
-        self._concert = concert
         self._divisions = Fraction(1)
         self._active: dict[tuple[str, str | None], MusicalEvent] = {}
 
@@ -93,7 +92,7 @@ class MeasureReader:
         if framing.get("non-controlling") == "yes":
             unsupported.add("non-controlling-measure")
         resolved = (
-            replace(event, sounding=sounding_pitch(event, effective, concert=self._concert))
+            replace(event, sounding=sounding_pitch(event, effective))
             if event.pitch is not None
             else event
             for event in events

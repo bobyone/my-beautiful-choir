@@ -53,9 +53,7 @@ def _read(score_format: ScoreFormat, content: bytes) -> ScoreMusic:
     parts = []
     for position, (part_id, entry) in enumerate(declaration.items(), 1):
         instruments, instrument_ids = _instruments(entry, unsupported)
-        reader = MeasureReader(
-            instrument_ids, concert=root.find("defaults/concert-score") is not None
-        )
+        reader = MeasureReader(instrument_ids)
         parts.append(
             Part(
                 position,

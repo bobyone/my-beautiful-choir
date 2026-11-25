@@ -68,6 +68,13 @@ async def test_reading_tools_bound_text_and_compare_drafts_and_finals(tmp_path: 
         assert summary.structured_content is not None
         assert summary.structured_content["state"] == "draft"
         assert summary.structured_content["records"][0]["measure_count"] == 12
+        (sounding_range,) = (
+            record
+            for record in summary.structured_content["records"]
+            if record.get("pitch_mode") == "sounding"
+        )
+        assert sounding_range["lowest"] == sounding_range["highest"] == "60"
+        assert sounding_range["partial"] is False
         arguments = {"score_id": str(after.id), "part": "Voice", "start": "1", "end": "11"}
         page = await client.call_tool("read_measures", arguments)
         assert not page.is_error
@@ -81,7 +88,7 @@ async def test_reading_tools_bound_text_and_compare_drafts_and_finals(tmp_path: 
             for detail in payload["records"][0]["events"][0]["details"]
             if detail["kind"] == "lyric"
         ]
-        assert payload["records"][0]["events"][0]["pitch"] is None
+        assert payload["records"][0]["events"][0]["pitch"] == ["60"]
         assert _LONG_TEXT not in str(page.content) + str(payload)
         assert len(json.dumps(payload, separators=(",", ":"))) <= 1500
         assert payload["next_offset"] is not None

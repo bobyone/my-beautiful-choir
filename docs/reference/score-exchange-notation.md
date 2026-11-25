@@ -33,8 +33,10 @@ A written `pitch` is an object with `step` (A to G), `octave` and
 rational `alter` in semitones. In sounding mode, `pitch` is an array
 of rational semitone heights, with 60 representing C4. Doubling
 produces two heights. The event still carries `written_pitch` for
-spelling. When transposition cannot be determined, `pitch` is
-`null` in sounding mode. A rest or unpitched event has no pitch
+spelling. When there is no applicable transpose element, the
+sounding pitch equals the written pitch. If a transpose element
+is present but lacks the information needed for conversion,
+`pitch` is `null` in sounding mode. A rest or unpitched event has no pitch
 field. Span endpoints refer to a 1-based measure and event position
 in the same part.
 
