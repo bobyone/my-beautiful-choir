@@ -13,6 +13,7 @@ from typing import Any
 from dependency_injector import containers, providers
 from platformdirs import user_cache_path
 
+from my_beautiful_choir.authorization.local.local_observer_source import LocalObserverSource
 from my_beautiful_choir.authorization.local.local_user_authorization import LocalUserAuthorization
 from my_beautiful_choir.choirs.choir_service import ChoirService
 from my_beautiful_choir.clock.system_clock import SystemClock
@@ -21,6 +22,7 @@ from my_beautiful_choir.confirmation.memory.in_memory_pending_confirmations impo
     InMemoryPendingConfirmations,
 )
 from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
+from my_beautiful_choir.events.event_service import EventService
 from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
@@ -53,6 +55,11 @@ from my_beautiful_choir.tools.choirs.create_choir_tool import CreateChoirTool
 from my_beautiful_choir.tools.choirs.list_choirs_tool import ListChoirsTool
 from my_beautiful_choir.tools.choirs.rename_choir_tool import RenameChoirTool
 from my_beautiful_choir.tools.choirs.set_default_choir_tool import SetDefaultChoirTool
+from my_beautiful_choir.tools.events.create_event_tool import CreateEventTool
+from my_beautiful_choir.tools.events.edit_event_tool import EditEventTool
+from my_beautiful_choir.tools.events.get_event_tool import GetEventTool
+from my_beautiful_choir.tools.events.list_events_tool import ListEventsTool
+from my_beautiful_choir.tools.events.set_programme_hidden_tool import SetProgrammeHiddenTool
 from my_beautiful_choir.tools.metered_tool import MeteredTool
 from my_beautiful_choir.tools.repertoire.add_work_tool import AddWorkTool
 from my_beautiful_choir.tools.repertoire.edit_work_tool import EditWorkTool
@@ -75,6 +82,7 @@ from my_beautiful_choir.tools.view_tool.deletion.confirm_deletion_tool import (
     ConfirmDeletionTool,
 )
 from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import DeleteChoirTool
+from my_beautiful_choir.tools.view_tool.deletion.delete_event_tool import DeleteEventTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import ShowRepertoireTool
@@ -150,6 +158,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     )
     work_view = providers.Singleton(PackagedView, name="work", directory=views_directory)
     authorization = providers.Singleton(LocalUserAuthorization)
+    observers = providers.Singleton(LocalObserverSource)
 
     choir_service = providers.Singleton(
         ChoirService,
@@ -165,6 +174,16 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         clock=clock,
         authorization=authorization,
         file_storage=file_storage,
+    )
+
+    event_settings = settings.provided.events
+    event_service = providers.Singleton(
+        EventService,
+        unit_of_work=unit_of_work,
+        clock=clock,
+        authorization=authorization,
+        observers=observers,
+        settings=event_settings,
     )
 
     score_opener = providers.Singleton(SystemScoreOpener.in_temporary_directory)
@@ -263,6 +282,11 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         _metered(SetDefaultChoirTool, metrics, service=choir_service),
         _metered(AddWorkTool, metrics, service=repertoire_service),
         _metered(EditWorkTool, metrics, service=repertoire_service),
+        _metered(CreateEventTool, metrics, service=event_service),
+        _metered(EditEventTool, metrics, service=event_service),
+        _metered(SetProgrammeHiddenTool, metrics, service=event_service),
+        _metered(GetEventTool, metrics, service=event_service),
+        _metered(ListEventsTool, metrics, service=event_service, settings=event_settings),
         _metered(AddScoreFromFileTool, metrics, service=score_service),
         _metered(
             AddScoreFromGoogleDriveTool,
@@ -328,10 +352,20 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             conversation=conversation_confirmations,
         ),
         _metered(
+            DeleteEventTool,
+            metrics,
+            view=deletion_view,
+            deleter=event_service,
+            pending=pending_confirmations,
+            conversation=conversation_confirmations,
+        ),
+        _metered(
             ConfirmDeletionTool,
             metrics,
             view=deletion_view,
-            deleters=providers.List(choir_service, repertoire_service, score_service),
+            deleters=providers.List(
+                choir_service, repertoire_service, score_service, event_service
+            ),
             pending=pending_confirmations,
         ),
     )

@@ -346,3 +346,44 @@ def test_find_and_send_scores_without_a_view(launched: StdioSession, tmp_path: P
     assert (
         launched.request(22, "resources/read", {"uri": uri})["contents"][0]["text"] == "<p>work</p>"
     )
+
+
+def test_manages_events_over_stdio(launched: StdioSession) -> None:
+    launched.initialize()
+    tools = {tool["name"] for tool in launched.request(2, "tools/list")["tools"]}
+    assert {"create_event", "edit_event", "set_programme_hidden", "get_event"} <= tools
+    assert {"list_events", "delete_event"} <= tools
+    _call(launched, 3, "create_choir", name="Choir")
+    work = _tool_result(launched, 4, "add_work", title="Song")["structuredContent"]["work"]
+    created = _tool_result(
+        launched,
+        5,
+        "create_event",
+        kind="concert",
+        title="Concert",
+        starts_at="2099-12-20T20:30:00+01:00",
+        programme=[{"work_id": work["id"]}, {"note": "Interval"}],
+    )["structuredContent"]["event"]
+    assert created["starts_at"] == "2099-12-20T19:30:00+00:00"
+    hidden = _tool_result(launched, 6, "set_programme_hidden", event_id=created["id"], hidden=True)
+    assert hidden["structuredContent"]["event"]["programme_hidden"] is True
+    listed = _tool_result(
+        launched,
+        7,
+        "list_events",
+        start="2099-12-01T00:00:00+00:00",
+        end="2099-12-31T00:00:00+00:00",
+    )["structuredContent"]["events"]
+    assert [event["id"] for event in listed] == [created["id"]]
+    assert [entry["work_title"] for entry in listed[0]["programme"]] == ["Song", None]
+    refused = launched.request(
+        8,
+        "tools/call",
+        {
+            "name": "create_event",
+            "arguments": {"kind": "rehearsal", "title": "R", "starts_at": "2099-12-01T20:00:00"},
+        },
+    )
+    assert refused["isError"]
+    assert "time zone offset" in refused["content"][0]["text"]
+    assert launched.close()[0] == 0
