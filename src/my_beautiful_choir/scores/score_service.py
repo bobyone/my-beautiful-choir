@@ -6,6 +6,7 @@
 
 import asyncio
 from dataclasses import replace
+from hashlib import sha256
 from uuid import UUID, uuid4
 
 from my_beautiful_choir.authorization.authorization import Authorization
@@ -19,14 +20,20 @@ from my_beautiful_choir.deletion.stored_contents import remove_stored_contents
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.scores.errors import (
+    DraftScoreNotAllowedError,
+    FinalScoreProtectedError,
     InvalidScoreSizeError,
     ScoreFileMissingError,
+    ScoreNotDuplicableError,
+    StaleFinalisationError,
     StoredScoreTooLargeError,
 )
+from my_beautiful_choir.scores.finalisation_preview import FinalisationPreview
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.musicxml.musicxml_document import musicxml_text
 from my_beautiful_choir.scores.opening.score_opener import ScoreOpener
+from my_beautiful_choir.scores.originating_score import OriginatingScore
 from my_beautiful_choir.scores.recognition.errors import (
     RecognitionError,
     UnsupportedSourceScoreError,
@@ -39,7 +46,10 @@ from my_beautiful_choir.scores.score_rules import (
     score_label,
     storage_key,
 )
+from my_beautiful_choir.scores.score_state import ScoreState
+from my_beautiful_choir.scores.score_validator import ScoreValidator
 from my_beautiful_choir.scores.sources.score_source import ScoreSource
+from my_beautiful_choir.scores.validation_report import ValidationReport
 from my_beautiful_choir.storage.file_storage import FileStorage
 
 
@@ -55,6 +65,8 @@ class ScoreService(Deleter):
         format_detector: ScoreFormatDetector,
         opener: ScoreOpener,
         maximum_size: int = MAXIMUM_SIZE,
+        *,
+        validator: ScoreValidator,
     ) -> None:
         self._unit_of_work = unit_of_work
         self._clock = clock
@@ -63,6 +75,7 @@ class ScoreService(Deleter):
         self._format_detector = format_detector
         self._opener = opener
         self._maximum_size = maximum_size
+        self._validator = validator
 
     async def add_score(
         self,
@@ -91,8 +104,10 @@ class ScoreService(Deleter):
         await self._file_storage.store(score.storage_key, content)
         try:
             async with self._unit_of_work() as unit_of_work:
+                await unit_of_work.start_snapshot(for_update=True)
                 work = await unit_of_work.works.get(work_id)
-                await unit_of_work.scores.add(score)
+                self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+                score = await unit_of_work.scores.add(score)
                 await unit_of_work.commit()
         except BaseException:
             await remove_stored_contents(self._file_storage, [score.storage_key])
@@ -134,6 +149,8 @@ class ScoreService(Deleter):
                     replace(
                         score,
                         origin=ScoreOrigin.TRANSCRIPTION,
+                        state=ScoreState.DRAFT,
+                        draft_revision=1,
                         original_name=f"{label}.musicxml",
                         source_score_id=source_id,
                         movement_number=movement_number,
@@ -144,6 +161,7 @@ class ScoreService(Deleter):
                 await unit_of_work.start_snapshot(for_update=True)
                 # Losing the PDF during recognition must roll back the staged results.
                 await unit_of_work.scores.get(source_id)
+                self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
                 if reuse and (existing := await self._latest_complete(unit_of_work, source_id)):
                     return existing
                 run = await unit_of_work.transcription_runs.add(work.id, source_id, len(staged))
@@ -197,8 +215,94 @@ class ScoreService(Deleter):
             link=source.link,
             storage_key=storage_key(work.choir_id, score_id),
             added_at=self._clock.now(),
+            state=ScoreState.DRAFT
+            if source.origin is ScoreOrigin.MUSICXML_TEXT
+            else ScoreState.FINAL,
+            draft_revision=1 if source.origin is ScoreOrigin.MUSICXML_TEXT else None,
         )
         return score, fetched.content
+
+    async def duplicate_as_draft(self, score_id: UUID) -> tuple[Work, Score]:
+        """Create an independently stored draft from an eligible final score."""
+        work, source = await self.describe_score(score_id)
+        self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+        if (
+            source.state is not ScoreState.FINAL
+            or source.version_number is None
+            or source.format not in (ScoreFormat.MUSICXML, ScoreFormat.COMPRESSED_MUSICXML)
+        ):
+            raise ScoreNotDuplicableError()
+        content = await self._read_content(source)
+        draft_id = uuid4()
+        draft = replace(
+            source,
+            id=draft_id,
+            size=len(content),
+            storage_key=storage_key(work.choir_id, draft_id),
+            added_at=self._clock.now(),
+            state=ScoreState.DRAFT,
+            version_number=None,
+            draft_revision=1,
+            originating_score=OriginatingScore(source.id, source.label, source.version_number),
+            source_score_id=None,
+            transcription_run_id=None,
+            movement_number=None,
+        )
+        await self._file_storage.store(draft.storage_key, content)
+        try:
+            async with self._unit_of_work() as unit_of_work:
+                await unit_of_work.start_snapshot(for_update=True)
+                await unit_of_work.scores.get(source.id)
+                work = await unit_of_work.works.get(source.work_id)
+                self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+                draft = await unit_of_work.scores.add(draft)
+                await unit_of_work.commit()
+        except BaseException:
+            await remove_stored_contents(self._file_storage, [draft.storage_key])
+            raise
+        return work, draft
+
+    async def read_final_score(self, score_id: UUID) -> tuple[Work, Score, bytes]:
+        """Return a score for a use that requires a final version."""
+        work, score = await self.describe_score(score_id)
+        if score.state is ScoreState.DRAFT:
+            raise DraftScoreNotAllowedError()
+        return work, score, await self._read_content(score)
+
+    async def describe_draft_for_editing(self, score_id: UUID) -> tuple[Work, Score]:
+        """Require management permissions and an editable score."""
+        work, score = await self.describe_score(score_id)
+        self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+        if score.state is ScoreState.FINAL:
+            raise FinalScoreProtectedError()
+        return work, score
+
+    async def preview_finalisation(
+        self, score_id: UUID
+    ) -> tuple[ValidationReport, FinalisationPreview | None]:
+        """Validate the draft and snapshot what must still match when confirmed."""
+        _, score = await self.describe_draft_for_editing(score_id)
+        content = await self._read_content(score)
+        report = await self._validator.validate(score.format, content)
+        if report.errors:
+            return report, None
+        return report, FinalisationPreview(score, sha256(content).digest())
+
+    async def finalise(self, preview: FinalisationPreview) -> tuple[Work, Score]:
+        """Promote only the same draft that was validated and shown to the user."""
+        async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot(for_update=True)
+            score = await unit_of_work.scores.get(preview.score.id)
+            work = await unit_of_work.works.get(score.work_id)
+            self._authorization.require(Permission.MANAGE_REPERTOIRE, work.choir_id)
+            if score.state is not ScoreState.DRAFT or score != preview.score:
+                raise StaleFinalisationError()
+            content = await self._read_content(score)
+            if sha256(content).digest() != preview.content_digest:
+                raise StaleFinalisationError()
+            final = await unit_of_work.scores.finalise(score)
+            await unit_of_work.commit()
+        return work, final
 
     async def list_scores(self, work_id: UUID) -> list[Score]:
         """Scores of the work, the oldest first.
@@ -235,6 +339,9 @@ class ScoreService(Deleter):
             StoredScoreTooLargeError: if its recorded or stored size exceeds the maximum.
         """
         work, score = await self.describe_score(score_id)
+        return work, score, await self._read_content(score)
+
+    async def _read_content(self, score: Score) -> bytes:
         if score.size > self._maximum_size:
             raise StoredScoreTooLargeError(score.id, score.label, self._maximum_size)
         if not await self._file_storage.exists(score.storage_key):
@@ -242,7 +349,7 @@ class ScoreService(Deleter):
         content = await self._file_storage.read(score.storage_key, self._maximum_size)
         if len(content) > self._maximum_size:
             raise StoredScoreTooLargeError(score.id, score.label, self._maximum_size)
-        return work, score, content
+        return content
 
     async def open_score(self, score_id: UUID) -> tuple[Work, Score]:
         """Open the score in the application of the user's computer that opens its format.
@@ -301,5 +408,7 @@ class ScoreService(Deleter):
             work.title,
             movement_number=score.movement_number,
             added_at=score.added_at if score.movement_number is not None else None,
+            score_state=score.state,
+            version_number=score.version_number,
         )
         return DeletionPreview(deletion, scores=(score,))

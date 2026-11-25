@@ -6,13 +6,12 @@
 
 import asyncio
 from io import BytesIO
-from threading import Lock
 
 from my_beautiful_choir.scores.pdf.errors import PdfPageError
 from my_beautiful_choir.scores.pdf.pdf_page_renderer import PdfPageRenderer
+from my_beautiful_choir.scores.pdf.pdfium.pdfium_lock import PDFIUM_LOCK
 
 _MAX_DIMENSION = 1800
-_PDFIUM_LOCK = Lock()
 
 
 class PdfiumPageRenderer(PdfPageRenderer):
@@ -29,7 +28,7 @@ def _render(pdf: bytes, page_number: int) -> tuple[bytes, int]:
     except ImportError as error:
         raise PdfPageError("Install the personal-ocr extra to read source pages.") from error
     try:
-        with _PDFIUM_LOCK, pdfium.PdfDocument(pdf) as document:
+        with PDFIUM_LOCK, pdfium.PdfDocument(pdf) as document:
             count = len(document)
             if not 1 <= page_number <= count:
                 raise PdfPageError(f"Choose a page from 1 to {count}.")

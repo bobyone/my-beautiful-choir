@@ -6,7 +6,7 @@
 
 from my_beautiful_choir.scores.recognition.errors import AUDIVERIS_INSTALL_URL
 from my_beautiful_choir.scores.recognition.transcription_job import TranscriptionJob
-from my_beautiful_choir.tools.scores.score_data import score_data
+from my_beautiful_choir.tools.scores.score_data import describe_score, score_data
 from my_beautiful_choir.tools.tool_result import ToolResult
 
 
@@ -23,7 +23,7 @@ def transcription_result(job: TranscriptionJob) -> ToolResult:
         status.update(state="done", scores=scores)
         if len(scores) == 1:
             status["score"] = scores[0]
-        score_ids = ", ".join(str(score.id) for score in job.scores)
+        score_ids = "; ".join(describe_score(score, include_id=True) for score in job.scores)
         return ToolResult(
             f"MusicXML results from source PDF {job.source_id}, in order: {score_ids}. "
             "Use read_musicxml_score with each id to read its XML text directly.",

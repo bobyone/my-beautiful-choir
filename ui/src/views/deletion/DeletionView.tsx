@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2026 bobyone
+// SPDX-FileContributor: bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 import type { TFunction } from "i18next";
 import Alert from "react-bootstrap/Alert";
+import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Spinner from "react-bootstrap/Spinner";
@@ -133,6 +135,17 @@ export function DeletionSummaryView({ deletion }: { deletion: DeletionSummary })
         {deletion.movementNumber === undefined
           ? deletion.name
           : t("glossary.movement", { number: deletion.movementNumber })}
+        {deletion.scoreState && (
+          <div className="d-flex gap-2">
+            <Badge
+              bg={deletion.scoreState === "draft" ? "warning" : "secondary"}
+              text={deletion.scoreState === "draft" ? "dark" : "light"}
+            >
+              {deletion.scoreState === "draft" ? t("work.draftScore") : t("work.finalScore")}
+            </Badge>
+            {deletion.versionNumber && `v${number.format(deletion.versionNumber)}`}
+          </div>
+        )}
         {addedAt !== undefined && (
           <time className="d-block" dateTime={addedAt}>
             {new Intl.DateTimeFormat(i18n.language, {

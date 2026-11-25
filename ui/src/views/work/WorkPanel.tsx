@@ -13,13 +13,16 @@ import { type DeletionInfo, parseDeletionInfo } from "../deletion/deletionInfo";
 import { CONFIRM_TOOL } from "../deletion/DeletionApp";
 import { DeletionSummaryView } from "../deletion/DeletionView";
 import { type CallTool, resultData } from "../viewData";
+import { type FinalisationInfo, parseFinalisation } from "./finalisationInfo";
+import { ScoreFinalisationDialog } from "./ScoreFinalisationDialog";
 import { requestTranscription, type TranscriptionOutcome } from "./requestTranscription";
 import { readScoreFile } from "./readScoreFile";
 import { ScoreTable } from "./ScoreTable";
 import { WorkDetails } from "./WorkDetails";
 import { parseScore, type ScoreInfo, scoreFile, type WorkResult } from "./workInfo";
 
-type Action = "upload" | "open" | "download" | "prepare-delete" | "delete";
+type Action =
+  "upload" | "open" | "download" | "prepare-delete" | "delete" | "duplicate" | "finalise";
 type Outcome = { action: Action; state: "waiting" | "done" | "cancelled" | "failed" };
 type Deletion = {
   id: string;
@@ -32,12 +35,16 @@ export function WorkPanel({
   callTool,
   downloadFile,
   onBack,
+  initialFinalisation,
+  timeZone,
 }: {
   data: WorkResult;
   callTool: CallTool;
   /** Asks the host to save a file; without it, scores cannot be downloaded. */
   downloadFile?: DownloadFile | undefined;
   onBack?: () => void;
+  initialFinalisation?: FinalisationInfo | undefined;
+  timeZone?: string | undefined;
 }) {
   const { t } = useTranslation();
   const [scores, setScores] = useState(data.scores);
@@ -45,6 +52,8 @@ export function WorkPanel({
   const [deletion, setDeletion] = useState<Deletion | null>(null);
   const [outcome, setOutcome] = useState<Outcome>();
   const [transcription, setTranscription] = useState<TranscriptionOutcome>();
+  const [finalisation, setFinalisation] = useState(initialFinalisation);
+  const [finalisationIssue, setFinalisationIssue] = useState<"invalid" | "stale">();
   const fileInput = useRef<HTMLInputElement>(null);
   const busy = outcome?.state === "waiting" || transcription?.state === "pending";
 
@@ -53,6 +62,7 @@ export function WorkPanel({
     task: () => Promise<undefined | "done" | "cancelled">,
   ): Promise<void> {
     setTranscription(undefined);
+    setFinalisationIssue(undefined);
     setOutcome({ action, state: "waiting" });
     try {
       const state = await task();
@@ -92,6 +102,71 @@ export function WorkPanel({
         return downloadFile(file);
       });
     });
+
+  const downloadPdf =
+    data.supportsPdfExport && downloadFile
+      ? (score: ScoreInfo) => {
+          void perform("download", async () => {
+            const reply = await callTool("download_score_pdf", { score_id: score.id });
+            const file = scoreFile(reply);
+            if (!file) throw new Error("The exported PDF was not returned.");
+            return downloadFile(file);
+          });
+        }
+      : undefined;
+
+  function duplicate(score: ScoreInfo) {
+    void perform("duplicate", async () => {
+      const reply = await callTool("duplicate_score_as_draft", { score_id: score.id });
+      const draft = parseScore(resultData(reply)?.["score"]);
+      if (draft?.state !== "draft") throw new Error("The draft was not returned.");
+      setScores((previous) => [...previous, draft]);
+    });
+  }
+
+  async function prepareFinalisation(score: ScoreInfo) {
+    setFinalisationIssue(undefined);
+    setTranscription(undefined);
+    setOutcome({ action: "finalise", state: "waiting" });
+    try {
+      const reply = await callTool("preview_score_finalisation", { score_id: score.id });
+      const preview = parseFinalisation(reply);
+      if (preview) {
+        setFinalisation(preview);
+      } else if (Array.isArray(resultData(reply)?.["validation_errors"])) {
+        setFinalisationIssue("invalid");
+      } else {
+        throw new Error("The finalisation preview was not returned.");
+      }
+      setOutcome(undefined);
+    } catch {
+      setOutcome({ action: "finalise", state: "failed" });
+    }
+  }
+
+  async function confirmFinalisation() {
+    if (!finalisation) return;
+    const { token } = finalisation;
+    setFinalisation(undefined);
+    setOutcome({ action: "finalise", state: "waiting" });
+    try {
+      const reply = await callTool("confirm_score_finalisation", { token });
+      const result = resultData(reply);
+      if (result?.["finalisation_stale"] === true) {
+        setFinalisationIssue("stale");
+        setOutcome(undefined);
+        return;
+      }
+      const score = parseScore(result?.["score"]);
+      if (score?.state !== "final") throw new Error("The final score was not returned.");
+      setScores((previous) =>
+        previous.map((current) => (current.id === score.id ? score : current)),
+      );
+      setOutcome({ action: "finalise", state: "done" });
+    } catch {
+      setOutcome({ action: "finalise", state: "failed" });
+    }
+  }
 
   async function transcribe(score: ScoreInfo) {
     setOutcome(undefined);
@@ -156,6 +231,13 @@ export function WorkPanel({
         {data.work.title}
       </h1>
       {outcome && <WorkFeedback outcome={outcome} />}
+      {finalisationIssue && (
+        <Alert variant="warning">
+          {finalisationIssue === "invalid"
+            ? t("work.validationFailed")
+            : t("work.finalisationStale")}
+        </Alert>
+      )}
       {transcription?.state === "pending" && (
         <p role="status" aria-label={t("glossary.transcription")}>
           {t("view.loading")}
@@ -184,19 +266,36 @@ export function WorkPanel({
       {!removed && (
         <>
           <WorkDetails data={data} />
-          <h2 className="h5">{t("deletion.scores")}</h2>
-          <ScoreTable
-            scores={scores}
-            busy={busy}
-            onOpen={openScore}
-            onDownload={downloadScore}
-            onTranscribe={
-              data.supportsTranscription ? (score) => void transcribe(score) : undefined
-            }
-            onDelete={(score) => {
-              void prepareDeletion("score", score.id);
-            }}
-          />
+          {(["final", "draft"] as const).map((state) => {
+            const group = scores.filter((score) => (score.state ?? "final") === state);
+            if (state === "draft" && group.length === 0) return null;
+            return (
+              <div key={state}>
+                <h2 className="h5">
+                  {state === "draft" ? t("work.draftScores") : t("work.finalScores")}
+                </h2>
+                <ScoreTable
+                  scores={group}
+                  busy={busy}
+                  onOpen={openScore}
+                  onDownload={downloadScore}
+                  onDownloadPdf={downloadPdf}
+                  onDuplicate={duplicate}
+                  onFinalise={
+                    data.supportsFinalisation
+                      ? (score) => void prepareFinalisation(score)
+                      : undefined
+                  }
+                  onTranscribe={
+                    data.supportsTranscription ? (score) => void transcribe(score) : undefined
+                  }
+                  onDelete={(score) => void prepareDeletion("score", score.id)}
+                  availableOrigins={new Set(scores.map((score) => score.id))}
+                  timeZone={timeZone}
+                />
+              </div>
+            );
+          })}
           <div className="d-flex flex-wrap gap-2">
             <input
               type="file"
@@ -224,6 +323,13 @@ export function WorkPanel({
           </div>
         </>
       )}
+      <ScoreFinalisationDialog
+        preview={finalisation}
+        onCancel={() => {
+          setFinalisation(undefined);
+        }}
+        onConfirm={() => void confirmFinalisation()}
+      />
       <Modal
         show={deletion !== null}
         onHide={() => {
@@ -270,6 +376,15 @@ function WorkFeedback({ outcome }: { outcome: Outcome }) {
   }
   if (outcome.state === "cancelled") {
     return <Alert variant="info">{t("work.downloadCancelled")}</Alert>;
+  }
+  if (outcome.action === "duplicate" || outcome.action === "finalise") {
+    return outcome.state === "failed" ? (
+      <Alert variant="danger">{t("work.scoreActionFailed")}</Alert>
+    ) : (
+      <Alert variant="success">
+        {outcome.action === "finalise" ? t("work.scoreFinalised") : t("work.draftCreated")}
+      </Alert>
+    );
   }
   if (outcome.state === "failed") {
     const message =

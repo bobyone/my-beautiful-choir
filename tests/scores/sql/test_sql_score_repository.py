@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Integration tests of the SQL score repository on a temporary SQLite file."""
 
+import asyncio
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -18,6 +21,7 @@ from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_rules import storage_key
+from my_beautiful_choir.scores.score_state import ScoreState
 
 NOW = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)
 CHOIR = Choir(uuid4(), "Chœur", NOW, is_default=True)
@@ -70,7 +74,31 @@ async def test_add_and_get(database: SqlDatabase) -> None:
     score = _score(link="https://drive.google.com/file/d/abcdefghijkl/view")
     await _add(database, score)
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.scores.get(score.id) == score
+        assert await unit_of_work.scores.get(score.id) == replace(score, version_number=1)
+
+
+@pytest.mark.anyio
+async def test_concurrent_finalisations_allocate_distinct_versions(database: SqlDatabase) -> None:
+    original = _score()
+    first_draft = replace(_score(), state=ScoreState.DRAFT, draft_revision=1)
+    second_draft = replace(_score(), state=ScoreState.DRAFT, draft_revision=1)
+    await _add(database, original, first_draft, second_draft)
+    async with database.unit_of_work() as unit:
+        await unit.scores.delete(original.id)
+        await unit.commit()
+
+    async def finalise(draft: Score) -> Score:
+        async with database.unit_of_work() as unit:
+            await unit.start_snapshot(for_update=True)
+            final = await unit.scores.finalise(draft)
+            await unit.commit()
+        return final
+
+    finals = await asyncio.gather(finalise(first_draft), finalise(second_draft))
+    assert {score.version_number for score in finals} == {2, 3}
+    assert all(score.state is ScoreState.FINAL for score in finals)
+    async with database.unit_of_work() as unit:
+        assert {score.version_number for score in await unit.scores.list(WORK.id)} == {2, 3}
 
 
 @pytest.mark.anyio
@@ -87,7 +115,11 @@ async def test_list_the_scores_of_a_work_the_oldest_first(database: SqlDatabase)
     same_time = _score(label="Bass")
     await _add(database, later, first, same_time, _score(SECOND_WORK))
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.scores.list(WORK.id) == [same_time, first, later]
+        assert await unit_of_work.scores.list(WORK.id) == [
+            replace(same_time, version_number=3),
+            replace(first, version_number=2),
+            replace(later, version_number=1),
+        ]
         assert await unit_of_work.scores.list(uuid4()) == []
 
 
@@ -99,7 +131,7 @@ async def test_delete(database: SqlDatabase) -> None:
         await unit_of_work.scores.delete(deleted.id)
         await unit_of_work.commit()
     async with database.unit_of_work() as unit_of_work:
-        assert await unit_of_work.scores.list(WORK.id) == [kept]
+        assert await unit_of_work.scores.list(WORK.id) == [replace(kept, version_number=1)]
 
 
 @pytest.mark.anyio
@@ -147,6 +179,6 @@ async def test_deleting_a_choir_deletes_the_scores_of_its_works(database: SqlDat
         await unit_of_work.commit()
     async with database.unit_of_work() as unit_of_work:
         assert await unit_of_work.scores.storage_keys_of_choir(CHOIR.id) == []
-        assert await unit_of_work.scores.get(kept.id) == kept
+        assert await unit_of_work.scores.get(kept.id) == replace(kept, version_number=1)
         with pytest.raises(ScoreNotFoundError):
             await unit_of_work.scores.get(deleted.id)

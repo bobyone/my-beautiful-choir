@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Settings of the application."""
@@ -12,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from my_beautiful_choir.configuration.data_dir import default_data_dir
 from my_beautiful_choir.configuration.mode import Mode
 from my_beautiful_choir.configuration.recognition_settings import RecognitionSettings
+from my_beautiful_choir.configuration.score_lifecycle_settings import ScoreLifecycleSettings
 from my_beautiful_choir.configuration.web_settings import WebSettings
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -37,3 +39,4 @@ class Settings(BaseSettings):
     data_dir: Path = Field(default_factory=default_data_dir)
     web: WebSettings = Field(default_factory=WebSettings)
     recognition: RecognitionSettings = Field(default_factory=RecognitionSettings)
+    score_lifecycle: ScoreLifecycleSettings = Field(default_factory=ScoreLifecycleSettings)

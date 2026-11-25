@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tests of the deletion tools, with the services on in-memory doubles."""
@@ -120,15 +121,15 @@ async def test_without_elicitation_the_view_confirms_with_a_single_use_token(
     )
     assert pending.structured["status"] == "pending"
     assert pending.text.startswith(
-        'Nothing is deleted yet: the user must confirm the deletion of the score "Alto" of '
-        'the work "Ave Maria" with the Delete button'
+        'Nothing is deleted yet: the user must confirm the deletion of the score "Alto" '
+        '(final v1) of the work "Ave Maria" with the Delete button'
     )
     assert len(tools.world.database.data.scores) == 2
     token = str(pending.structured["token"])
 
     confirmed = await tools.confirm.execute(ConfirmDeletionArguments(token=token), tool_context())
     assert confirmed.structured["status"] == "deleted"
-    assert confirmed.text == 'Deleted the score "Alto" of the work "Ave Maria".'
+    assert confirmed.text == 'Deleted the score "Alto" (final v1) of the work "Ave Maria".'
     assert score_id not in tools.world.database.data.scores
     assert len(tools.world.storage.files) == 1
 

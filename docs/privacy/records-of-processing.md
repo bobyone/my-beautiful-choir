@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -43,11 +44,19 @@ as described in P2.
 | Purpose | Manage the user's choirs, works and scores in personal mode. |
 | Legal basis | The user acts for themselves (household use). A choir using the software determines its own lawful basis. |
 | Data subjects | The user and any people named in work metadata or score files. |
-| Data categories | Choir names, work titles, composer, arranger, voicing, sung languages, notes, score metadata and file content. |
+| Data categories | Choir names, work titles, composer, arranger, voicing, sung languages, notes, score metadata and file content. Draft and final records carry lifecycle state, version information and, for duplicates, a snapshot of the originating score label and version. |
 | Recipients | The local server and the selected MCP client. The content of a score can be returned to the client in a tool result (`get_score_file`, up to the 50 MB score maximum); the client may pass it to its model, hence to the model provider. Users should check how their MCP client handles tool calls, results and view content. |
 | Processors and transfers outside the EU | The application stores this data locally. Any separate processing by the MCP client is governed by its own configuration and terms. See P1 for public Google Drive imports. |
 | Retention | The application keeps the records until the user deletes them. A confirmed deletion removes the affected records and score files. Deletion previews and tokens are held in server memory, valid for up to ten minutes, and cleared on restart. The user manages the retention of separately made backups. |
 | Security measures | The database and scores use a user data directory. File storage paths are based on generated UUIDs. Opening a score creates a copy in a private temporary directory. Score uploads have content and size validation, and destructive actions require confirmation. |
+
+For optional score PDF export, a local MuseScore Studio process renders a
+MusicXML copy in a temporary directory. The application watermarks draft
+PDF pages and returns the result to the selected MCP client for download.
+It removes the temporary files when the export ends. Finalisation previews
+and tokens are kept in memory until confirmation or expiry. A surviving
+duplicate keeps its originating score label and version until the duplicate
+is deleted.
 
 ### P3. Local transcription and verification (implemented)
 

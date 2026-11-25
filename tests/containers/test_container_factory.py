@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tests of the dependency assembly of each mode."""
@@ -128,6 +129,10 @@ def test_personal_mode_offers_the_repertoire_tools(tmp_path: Path) -> None:
     names = [tool.name for tool in container.tools()]
     assert names == [
         "show_about",
+        "duplicate_score_as_draft",
+        "preview_score_finalisation",
+        "confirm_score_finalisation",
+        "download_score_pdf",
         "find_score_sources",
         "transcribe_score",
         "get_transcription_status",

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tests of the deletion of scores, with in-memory doubles."""
@@ -12,6 +13,7 @@ from my_beautiful_choir.authorization.permission import Permission
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
 from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
 from my_beautiful_choir.scores.errors import ScoreNotFoundError
+from my_beautiful_choir.scores.score_state import ScoreState
 from tests.doubles import DenyingAuthorization
 from tests.repertoire_world import RepertoireWorld
 
@@ -29,7 +31,14 @@ async def test_describe_then_delete_a_score_and_its_content(world: RepertoireWor
     kept = await world.score(work, "Tenor")
     service = world.scores()
     assert service.deletion_target is DeletionTarget.SCORE
-    expected = Deletion(DeletionTarget.SCORE, score.id, "Alto", "Ave Maria")
+    expected = Deletion(
+        DeletionTarget.SCORE,
+        score.id,
+        "Alto",
+        "Ave Maria",
+        score_state=ScoreState.FINAL,
+        version_number=1,
+    )
     preview = await service.describe_deletion(score.id)
     assert preview.deletion == expected
     assert len(world.storage.files) == 2

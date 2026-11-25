@@ -13,7 +13,11 @@ from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work_rules import TITLE_LENGTH
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.tools.repertoire.work_data import work_label
-from my_beautiful_choir.tools.scores.score_data import WORK_ID_DESCRIPTION
+from my_beautiful_choir.tools.scores.score_data import (
+    WORK_ID_DESCRIPTION,
+    describe_score,
+    score_lifecycle_data,
+)
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
@@ -95,14 +99,20 @@ class ListScoresTool(Tool[ListScoresArguments]):
             work_id = works[0].id
         scores = await self._scores.list_scores(work_id)
         text = "\n".join(
-            f"{score.label!r} ({score.format.display_name}, id {score.id})" for score in scores
+            f"{describe_score(score, include_id=True)} ({score.format.display_name})"
+            for score in scores
         )
         return ToolResult(
             text or "This work has no scores.",
             {
                 "work_id": str(work_id),
                 "scores": [
-                    {"id": str(score.id), "label": score.label, "format": score.format.value}
+                    {
+                        "id": str(score.id),
+                        "label": score.label,
+                        "format": score.format.value,
+                        **score_lifecycle_data(score),
+                    }
                     for score in scores
                 ],
             },

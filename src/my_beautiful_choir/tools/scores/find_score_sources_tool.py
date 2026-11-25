@@ -14,7 +14,7 @@ from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.recognition.errors import UnsupportedSourceScoreError
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.tools.repertoire.work_data import work_label
-from my_beautiful_choir.tools.scores.score_data import score_data
+from my_beautiful_choir.tools.scores.score_data import describe_score, score_data
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
@@ -76,7 +76,7 @@ class FindScoreSourcesTool(Tool[FindScoreSourcesArguments]):
             if score.format is ScoreFormat.PDF
             and (arguments.label is None or arguments.label.casefold() in score.label.casefold())
         ]
-        text = "\n".join(f"{score.label!r} (id {score.id})" for score in matches)
+        text = "\n".join(describe_score(score, include_id=True) for score in matches)
         return ToolResult(
             text or "No PDF scores match.",
             {"work_id": str(work_id), "scores": list(map(score_data, matches))},

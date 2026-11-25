@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Rules of the attributes of a score."""
@@ -57,7 +58,9 @@ def original_name(name: str) -> str:
     return _clean(name)[:ORIGINAL_NAME_LENGTH]
 
 
-def download_name(original: str, label: str, score_format: ScoreFormat) -> str:
+def download_name(
+    original: str, label: str, score_format: ScoreFormat, *, draft: bool = False
+) -> str:
     """File name proposed for a download of a score.
 
     It is the original name without its extension (the extension of a score
@@ -78,8 +81,9 @@ def download_name(original: str, label: str, score_format: ScoreFormat) -> str:
         stem = "score"
     if stem.partition(".")[0].upper() in _RESERVED_NAMES:
         stem = f"_{stem}"
-    stem = stem[: ORIGINAL_NAME_LENGTH - len(score_format.extension)].rstrip(" .") or "score"
-    return stem + score_format.extension
+    suffix = (" - DRAFT" if draft else "") + score_format.extension
+    stem = stem[: ORIGINAL_NAME_LENGTH - len(suffix)].rstrip(" .") or "score"
+    return stem + suffix
 
 
 def storage_key(choir_id: UUID, score_id: UUID) -> str:

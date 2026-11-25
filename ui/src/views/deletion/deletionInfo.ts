@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2026 bobyone
+// SPDX-FileContributor: bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 import type { ToolResult } from "../../host/useHost";
@@ -15,6 +16,8 @@ export interface DeletionSummary {
   scoreCount: number;
   movementNumber?: number;
   addedAt?: string;
+  scoreState?: "draft" | "final";
+  versionNumber?: number;
 }
 
 /** Result of `delete_choir`, `delete_work`, `delete_score` and `confirm_deletion`. */
@@ -32,8 +35,17 @@ function parseSummary(value: unknown): DeletionSummary | undefined {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
-  const { target, name, parent_name, work_count, score_count, movement_number, added_at } =
-    value as Record<string, unknown>;
+  const {
+    target,
+    name,
+    parent_name,
+    work_count,
+    score_count,
+    movement_number,
+    added_at,
+    score_state,
+    version_number,
+  } = value as Record<string, unknown>;
   if (
     typeof target !== "string" ||
     !TARGETS.includes(target) ||
@@ -58,6 +70,8 @@ function parseSummary(value: unknown): DeletionSummary | undefined {
     scoreCount: score_count,
     ...(movement_number === undefined ? {} : { movementNumber: movement_number }),
     ...(added_at === undefined ? {} : { addedAt: added_at }),
+    ...(score_state === "draft" || score_state === "final" ? { scoreState: score_state } : {}),
+    ...(isCount(version_number) && version_number > 0 ? { versionNumber: version_number } : {}),
   };
 }
 

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Adapter building an MCP SDK server from the application's tools and views.
@@ -34,6 +35,7 @@ from my_beautiful_choir.confirmation.mcp.elicitation_confirmation import (
     ElicitationConfirmation,
 )
 from my_beautiful_choir.errors import DomainError
+from my_beautiful_choir.mcp.connection_scope import connection_identity
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_file import ToolFile
@@ -87,6 +89,7 @@ def _to_call_tool_result(result: ToolResult) -> CallToolResult:
     return CallToolResult(
         content=content,
         structured_content=dict(result.structured) if result.structured else None,
+        _meta=dict(result.view_metadata) if result.view_metadata else None,
     )
 
 
@@ -122,7 +125,10 @@ def _signature_of(tool: Tool[Any]) -> inspect.Signature:
 
 
 def _tool_context(request_context: Context) -> ToolContext:
-    return ToolContext(confirmation=ElicitationConfirmation(request_context))
+    return ToolContext(
+        confirmation=ElicitationConfirmation(request_context),
+        session=connection_identity.get(),
+    )
 
 
 def _handler_for(tool: Tool[Any]) -> ToolHandler:

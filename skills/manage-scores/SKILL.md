@@ -1,6 +1,6 @@
 ---
 name: manage-scores
-description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to transcribe a stored PDF, add or read MusicXML text, verify a transcription against its PDF, open, receive or delete a score in personal mode.
+description: Use when a my-beautiful-choir user wants to add a score (PDF, MusicXML, MXL or MuseScore file) to a work of a choir's repertoire, from a file of their computer or a Google Drive link, or to transcribe a stored PDF, add or read MusicXML text, verify a transcription against its PDF, open, receive, duplicate, finalise, export a PDF of, or delete a score in personal mode.
 ---
 
 <!--
@@ -23,6 +23,8 @@ personal mode. A score belongs to a work: find the work's id first (use the
 | Open a score | `open_score(score_id)` |
 | Find scores without opening a view | `list_scores(work_id?, work_title?, work_reference?, choir?)` |
 | Send a score to the user in the conversation | `get_score_file(score_id)` |
+| Duplicate a final MusicXML or MXL score as a draft | `duplicate_score_as_draft(score_id)` |
+| Request a Work view finalisation preview | `preview_score_finalisation(score_id)` |
 | Delete a score | `delete_score(score_id)` |
 
 ## Rules to follow
@@ -59,6 +61,21 @@ personal mode. A score belongs to a work: find the work's id first (use the
 - `delete_score` requests confirmation. If the host opens the **Deletion**
   view, ask the user to review the score and choose **Delete** or **Cancel**.
   If the deletion preview changes, review it again before confirming.
+
+## Draft and final scores
+
+- Imports from files and links are final. New transcriptions and submitted
+  MusicXML text are drafts. Tell the user the state and version when you
+  name a score.
+- To edit a final MusicXML or MXL score, first duplicate it as a draft.
+  The original final score remains available. A draft cannot be used
+  where a final score is required.
+- If the user asks to finalise, request the preview and ask them to review
+  it and click **Finalise score** in the Work view. A failed validation or
+  stale confirmation needs a fresh review. Only the user confirms in the view.
+- Save draft downloads with the name provided by the server. In a Work
+  view with local PDF export configured, the user can choose **Download
+  PDF**. Each draft PDF page is watermarked.
 
 ## Send scores in the conversation
 

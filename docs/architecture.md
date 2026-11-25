@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -323,6 +324,35 @@ their id. The structured content describes the work (`work_data`).
 - `open_score(score_id)`: reads the score with `read_score`, then gives the
   content to the opener.
 - Deletion (`Deleter`): a score, then its stored content.
+
+### Score states, confirmation and PDF export
+
+`ScoreService` owns duplication, final-only reads and finalisation. It
+receives its unit of work, file storage, authorisation, clock and
+`ScoreValidator` from the personal-mode container. Duplications stage
+an independent file and publish the new record only after checking the
+origin and authorisation under the write transaction. The origin
+snapshot is separate from transcription provenance.
+
+`ScoreValidator` validates an editable score's format and bytes. Its
+`MusicXmlScoreValidator` implementation checks the document structure
+and bounds reads from compressed MusicXML archives. It returns a
+validation report. Musical validation will extend this contract.
+
+`PendingConfirmations[tuple[object, FinalisationPreview]]` stores the
+preview under a ten-minute, single-use token. The stdio transport binds
+the connection for tool calls. The Work view receives the token in
+private MCP result metadata. The score service checks the preview and
+the file digest under the write transaction before promotion.
+
+`ScorePdfExporter` converts a copy into PDF. `MuseScorePdfExporter`
+uses the configured local executable, disabled when unset, and a
+timeout of 60 seconds by default (1 to 600). It accepts plain or
+compressed MusicXML and returns PDF within the score size limit.
+`PdfWatermarker` marks every draft page; `PdfiumWatermarker` uses
+the optional personal-ocr extra and serialises calls with the PDFium
+page renderer. The view receives a draft PDF only after all pages
+have been marked.
 
 ### `SqlScoreRepository` (`scores.sql`)
 

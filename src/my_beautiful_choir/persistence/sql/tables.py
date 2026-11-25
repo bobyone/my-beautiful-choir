@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Database schema; every change comes with an Alembic migration."""
@@ -99,6 +100,20 @@ scores = Table(
     Column("content_origin", String(20)),
     Column("transcription_run_id", Integer, ForeignKey("transcription_runs.id")),
     Column("movement_number", Integer),
+    Column("state", String(5), nullable=False, server_default="final"),
+    Column("version_number", Integer),
+    Column("draft_revision", Integer),
+    Column("originating_score_id", Uuid),
+    Column("originating_score_label", String(SCORE_LABEL_LENGTH)),
+    Column("originating_score_version", Integer),
+)
+Index("ix_scores_work_version", scores.c.work_id, scores.c.version_number, unique=True)
+
+score_version_counters = Table(
+    "score_version_counters",
+    metadata,
+    Column("work_id", Uuid, ForeignKey("works.id", ondelete="CASCADE"), primary_key=True),
+    Column("last_number", Integer, nullable=False),
 )
 Index(
     "ix_scores_transcription_run",

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tests of the score tools, with the services on in-memory doubles."""
@@ -15,6 +16,7 @@ from my_beautiful_choir.repertoire.work import Work, WorkDetails
 from my_beautiful_choir.scores.errors import ScoreNotFoundError
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
+from my_beautiful_choir.scores.musicxml.musicxml_score_validator import MusicXmlScoreValidator
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.scores.sources.errors import UnsupportedLinkError
@@ -56,6 +58,7 @@ class _Fixture:
             self.storage,
             ScoreFormatDetector([PdfSignature()]),
             self.opener,
+            validator=MusicXmlScoreValidator(),
         )
 
     def google_drive_source(self, link: GoogleDriveLink) -> ScoreSource:
@@ -96,7 +99,7 @@ async def test_add_from_a_file_then_open(fixture: _Fixture, tmp_path: Path) -> N
     score = added.structured["score"]
     assert isinstance(score, dict)
     assert added.text == (
-        f"The score 'Ave Maria' (PDF) was added to the work Ave Maria (Bach); "
+        f"The score 'Ave Maria' (final v1) (PDF) was added to the work Ave Maria (Bach); "
         f"its id is {score['id']}."
     )
     assert added.structured["work_id"] == str(work.id)
@@ -112,7 +115,8 @@ async def test_add_from_a_file_then_open(fixture: _Fixture, tmp_path: Path) -> N
     assert "copy" in open_tool.description
     opened = await open_tool.execute(OpenScoreArguments(score_id=score["id"]), tool_context())
     assert opened.text == (
-        "The score 'Ave Maria' of the work Ave Maria (Bach) was opened on the user's computer."
+        "The score 'Ave Maria' (final v1) of the work Ave Maria (Bach) "
+        "was opened on the user's computer."
     )
     assert opened.structured["score"] == score
     assert len(fixture.opener.opened) == 1

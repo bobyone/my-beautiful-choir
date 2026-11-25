@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -33,6 +34,9 @@ invalid key with the expected value on stderr and exits with code 2 (see
 | `MBC_DATA_DIR` | directory path | the user data directory of the platform (`%LOCALAPPDATA%\my-beautiful-choir` on Windows, `~/Library/Application Support/my-beautiful-choir` on macOS, `~/.local/share/my-beautiful-choir` on Linux) | no | Personal mode: directory of the database and the scores; created at startup if needed. |
 | `MBC_RECOGNITION__AUDIVERIS_EXECUTABLE` | absolute executable path | automatic discovery | no | Personal mode: override for a custom Audiveris installation. |
 | `MBC_RECOGNITION__TIMEOUT_SECONDS` | integer from 1 to 3600 | `600` | no | Personal mode: maximum duration of one recognition process. |
+| `MBC_SCORE_LIFECYCLE__TRUSTED_FINALISATION_HOST` | boolean | `false` | no | Personal mode: enable finalisation after verifying that the MCP Apps host keeps private result metadata and app-only tool calls out of the model. |
+| `MBC_SCORE_LIFECYCLE__MUSESCORE_EXECUTABLE` | absolute executable path | empty | no | Personal mode: MuseScore Studio executable for optional score PDF export. |
+| `MBC_SCORE_LIFECYCLE__PDF_TIMEOUT_SECONDS` | integer from 1 to 600 | `60` | no | Personal mode: maximum runtime of one MuseScore Studio PDF export. |
 | `MBC_WEB__HOST` | IP address or host name | `127.0.0.1` | no | Web mode: address to listen on. Use `0.0.0.0` in a container. |
 | `MBC_WEB__PORT` | integer from 1 to 65535 | `9000` | no | Web mode: port to listen on. |
 | `MBC_WEB__ALLOWED_HOSTS` | comma-separated list of `host:port` | empty | no | Web mode: `Host` header values accepted, as a protection against DNS rebinding. Empty means the local host only. Required when listening on `0.0.0.0`. |

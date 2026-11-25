@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -26,6 +27,7 @@ The first version covers the choir's repertoire and scores.
 - [Quick-start](docs/quick-start.md)
 - [Install the plugin in Codex](docs/how-to/install-the-plugin-in-codex.md)
 - [Architecture](docs/architecture.md)
+- [Manage score versions and download draft PDFs](docs/how-to/manage-score-versions.md)
 - [How-to guides](docs/how-to/)
 - [Glossary](docs/glossary.md)
 - [Architecture decision records](docs/decisions/)

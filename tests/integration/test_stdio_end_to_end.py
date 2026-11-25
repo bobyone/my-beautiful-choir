@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """End-to-end tests of personal mode: a real process spoken to over stdio."""
@@ -71,6 +72,35 @@ def _tool_result(
 
 def _call(session: StdioSession, request_id: int, tool: str, **arguments: object) -> str:
     return str(_tool_result(session, request_id, tool, **arguments)["content"][0]["text"])
+
+
+def test_finalises_draft_after_review_over_stdio(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("MBC_SCORE_LIFECYCLE__TRUSTED_FINALISATION_HOST", "true")
+    _write_stub_views(tmp_path)
+    session = StdioSession([sys.executable, str(LAUNCHER), str(tmp_path)], tmp_path / "data")
+    try:
+        session.initialize()
+        _call(session, 2, "create_choir", name="Choir")
+        work = _tool_result(session, 3, "add_work", title="Song")["structuredContent"]["work"]
+        draft = _tool_result(
+            session, 4, "add_musicxml_score", work_id=work["id"], xml=score_samples.musicxml_text()
+        )["structuredContent"]["score"]
+        assert draft["state"] == "draft"
+        download = _tool_result(session, 5, "get_score_file", score_id=draft["id"])
+        assert download["content"][1]["resource"]["uri"].endswith("%20-%20DRAFT.musicxml")
+        preview = _tool_result(session, 6, "preview_score_finalisation", score_id=draft["id"])
+        token = preview["_meta"]["finalisation_token"]
+        assert token not in str(preview["structuredContent"])
+        final = _tool_result(session, 7, "confirm_score_finalisation", token=token)
+        assert final["structuredContent"]["score"]["state"] == "final"
+        assert final["structuredContent"]["score"]["version_number"] == 1
+        replay = _tool_result(session, 8, "confirm_score_finalisation", token=token)
+        assert replay["structuredContent"] == {"finalisation_stale": True}
+        assert session.close()[0] == 0
+    finally:
+        session.kill()
 
 
 def test_choirs_are_kept_in_the_data_directory(tmp_path: Path) -> None:
@@ -276,7 +306,15 @@ def test_find_and_send_scores_without_a_view(launched: StdioSession, tmp_path: P
         ]
         assert found == {
             "work_id": work_id,
-            "scores": [{"id": added["id"], "label": "Choir score", "format": extension}],
+            "scores": [
+                {
+                    "id": added["id"],
+                    "label": "Choir score",
+                    "format": extension,
+                    "state": "final",
+                    "version_number": 1,
+                }
+            ],
         }
         files = _tool_result(launched, 12 + index * 3, "get_score_file", score_id=added["id"])
         assert b64decode(files["content"][1]["resource"]["blob"]) == content

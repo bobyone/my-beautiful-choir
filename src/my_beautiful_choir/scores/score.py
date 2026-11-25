@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Score value object."""
@@ -8,7 +9,9 @@ from datetime import datetime
 from uuid import UUID
 
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
+from my_beautiful_choir.scores.originating_score import OriginatingScore
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
+from my_beautiful_choir.scores.score_state import ScoreState
 
 
 @dataclass(frozen=True)
@@ -33,3 +36,7 @@ class Score:
     source_score_id: UUID | None = None
     transcription_run_id: int | None = None
     movement_number: int | None = None
+    state: ScoreState = ScoreState.FINAL
+    version_number: int | None = None
+    draft_revision: int | None = None
+    originating_score: OriginatingScore | None = None

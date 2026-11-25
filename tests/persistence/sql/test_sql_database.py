@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Integration tests of the SQL database on a temporary SQLite file."""
 
 from datetime import UTC, datetime
 from pathlib import Path
+from shutil import copytree
 from uuid import uuid4
 
 import pytest
@@ -15,6 +17,7 @@ from sqlalchemy.exc import IntegrityError
 
 from my_beautiful_choir.persistence.sql.sql_database import DATABASE_FILE_NAME, SqlDatabase
 from my_beautiful_choir.persistence.sql.tables import choirs, metadata, scores, works
+from my_beautiful_choir.scores.score_state import ScoreState
 
 NOW = datetime(2026, 11, 21, 12, 0, tzinfo=UTC)
 
@@ -47,7 +50,7 @@ async def test_migration_creates_the_schema_of_the_tables(database: SqlDatabase)
     def differences(connection: Connection) -> list[object]:
         return list(compare_metadata(MigrationContext.configure(connection), metadata))
 
-    assert await database.current_revision() == "0003"
+    assert await database.current_revision() == "0004"
     async with database.engine.connect() as connection:
         assert await connection.run_sync(differences) == []
 
@@ -64,14 +67,16 @@ async def test_downgrade_removes_everything(database: SqlDatabase) -> None:
 @pytest.mark.anyio
 async def test_migrating_twice_changes_nothing(database: SqlDatabase) -> None:
     await database.migrate()
-    assert await database.current_revision() == "0003"
+    assert await database.current_revision() == "0004"
 
 
 @pytest.mark.anyio
 async def test_legacy_transcription_migrates_and_rolls_back_without_losing_scores(
     tmp_path: Path,
 ) -> None:
-    database = SqlDatabase.in_directory(tmp_path)
+    data = tmp_path / "data"
+    data.mkdir()
+    database = SqlDatabase.in_directory(data)
     await database.migrate("0002")
     choir = _choir("A", is_default=True)
     work_id, source_id, score_id = uuid4(), uuid4(), uuid4()
@@ -103,6 +108,10 @@ async def test_legacy_transcription_migrates_and_rolls_back_without_losing_score
                 added_at=NOW,
             )
         )
+    stored_score = data / "score.musicxml"
+    stored_score.write_bytes(b"<score-partwise/>")
+    backup = tmp_path / "backup"
+    copytree(data, backup)
     await database.migrate()
     async with database.unit_of_work() as unit:
         run = await unit.transcription_runs.latest(source_id)
@@ -111,8 +120,17 @@ async def test_legacy_transcription_migrates_and_rolls_back_without_losing_score
         (score,) = await unit.scores.list_transcriptions(run.id)
         assert score.id == score_id
         assert score.movement_number is None
+        assert score.state is ScoreState.FINAL
+        assert score.version_number == 1
+        assert stored_score.read_bytes() == b"<score-partwise/>"
     await database.downgrade("0002")
     async with database.engine.connect() as connection:
+        result = await connection.execute(select(scores.c.id, scores.c.source_score_id))
+        assert result.one() == (score_id, source_id)
+    restored = SqlDatabase.in_directory(backup)
+    assert await restored.current_revision() == "0002"
+    assert (backup / stored_score.name).read_bytes() == stored_score.read_bytes()
+    async with restored.engine.connect() as connection:
         result = await connection.execute(select(scores.c.id, scores.c.source_score_id))
         assert result.one() == (score_id, source_id)
 

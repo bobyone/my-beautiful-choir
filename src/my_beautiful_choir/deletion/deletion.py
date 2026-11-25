@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Deletion value objects."""
@@ -7,6 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
+
+from my_beautiful_choir.scores.score_state import ScoreState
 
 
 class DeletionTarget(StrEnum):
@@ -35,3 +38,5 @@ class Deletion:
     """Movement number of a score from a multi-movement transcription."""
     added_at: datetime | None = None
     """When that movement was published, to distinguish separate transcriptions."""
+    score_state: ScoreState | None = None
+    version_number: int | None = None

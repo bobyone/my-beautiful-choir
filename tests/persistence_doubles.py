@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """In-memory doubles of the unit of work and the repositories."""
@@ -20,13 +21,14 @@ from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 from my_beautiful_choir.repertoire.work import Work
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
 from my_beautiful_choir.repertoire.work_rules import search_text
-from my_beautiful_choir.scores.errors import ScoreNotFoundError
+from my_beautiful_choir.scores.errors import ScoreNotFoundError, StaleFinalisationError
 from my_beautiful_choir.scores.recognition.transcription_run import TranscriptionRun
 from my_beautiful_choir.scores.recognition.transcription_run_repository import (
     TranscriptionRunRepository,
 )
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_repository import ScoreRepository
+from my_beautiful_choir.scores.score_state import ScoreState
 
 
 @dataclass
@@ -36,6 +38,7 @@ class InMemoryData:
     choirs: dict[UUID, Choir] = field(default_factory=dict)
     works: dict[UUID, Work] = field(default_factory=dict)
     scores: dict[UUID, Score] = field(default_factory=dict)
+    score_versions: dict[UUID, int] = field(default_factory=dict)
     runs: list[TranscriptionRun] = field(default_factory=list)
 
 
@@ -137,10 +140,31 @@ class InMemoryScoreRepository(ScoreRepository):
     def __init__(self, data: InMemoryData) -> None:
         self._data = data
 
-    async def add(self, score: Score) -> None:
+    async def add(self, score: Score) -> Score:
         if score.work_id not in self._data.works:
             raise LookupError("the work of the score does not exist (foreign key)")
+        if score.state is ScoreState.FINAL:
+            score = replace(score, version_number=self._next_version(score.work_id))
         self._data.scores[score.id] = score
+        return score
+
+    def _next_version(self, work_id: UUID) -> int:
+        number = self._data.score_versions.get(work_id, 0) + 1
+        self._data.score_versions[work_id] = number
+        return number
+
+    async def finalise(self, score: Score) -> Score:
+        current = await self.get(score.id)
+        if current.state is not ScoreState.DRAFT or current.draft_revision != score.draft_revision:
+            raise StaleFinalisationError()
+        final = replace(
+            current,
+            state=ScoreState.FINAL,
+            version_number=self._next_version(score.work_id),
+            draft_revision=None,
+        )
+        self._data.scores[score.id] = final
+        return final
 
     async def get(self, score_id: UUID) -> Score:
         if score_id not in self._data.scores:
