@@ -14,6 +14,7 @@ from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.musicxml.errors import InvalidMusicXmlError
 from my_beautiful_choir.scores.musicxml.musicxml_document import musicxml_text
 from my_beautiful_choir.scores.score_service import ScoreService
+from my_beautiful_choir.tools.scores.score_data import describe_score, score_lifecycle_data
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
@@ -75,10 +76,12 @@ class ReadMusicXmlScoreTool(Tool[ReadMusicXmlScoreArguments]):
                 source = str(score.source_score_id)
                 source_description = f"Source PDF: {source}."
         return ToolResult(
-            f"MusicXML of {score.id}, characters {arguments.offset}-{end} of {len(xml)}. "
+            f"MusicXML of {describe_score(score, include_id=True)}, "
+            f"characters {arguments.offset}-{end} of {len(xml)}. "
             f"{source_description} Next offset: {next_offset}.\n\n{portion}",
             {
                 "score_id": str(score.id),
+                **score_lifecycle_data(score),
                 "source_score_id": source,
                 "source_available": source_available,
                 "xml": portion,

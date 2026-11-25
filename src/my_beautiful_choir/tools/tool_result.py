@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Result of a tool call."""
@@ -24,3 +25,5 @@ class ToolResult:
     structured: Mapping[str, object] = field(default_factory=dict)
     files: Sequence[ToolFile] = ()
     png_images: Sequence[bytes] = ()
+    view_metadata: Mapping[str, object] = field(default_factory=dict)
+    """Result metadata for the view, outside tool text and structured content."""

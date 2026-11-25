@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -19,6 +20,9 @@ and this project adheres to
 - Require a fresh confirmation if a deletion preview changes (#7).
 
 ### Added
+
+- Add draft and final score states, per-work versions, duplication, user-confirmed
+  finalisation and optional watermarked draft PDF export in personal mode (#26).
 
 - In personal mode, find scores by work ID, title or a reference in the
   title and send them in the conversation without opening a view (#22).

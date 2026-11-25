@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tests of the score service, with in-memory doubles."""
@@ -18,11 +19,15 @@ from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
 from my_beautiful_choir.repertoire.work import Work, WorkDetails
 from my_beautiful_choir.scores.errors import (
+    DraftScoreNotAllowedError,
+    FinalScoreProtectedError,
     InvalidScoreError,
     InvalidScoreSizeError,
     ScoreFileMissingError,
+    ScoreNotDuplicableError,
     ScoreNotFoundError,
     ScoreOpenError,
+    StaleFinalisationError,
     StoredScoreTooLargeError,
     UnsupportedScoreFormatError,
 )
@@ -30,12 +35,17 @@ from my_beautiful_choir.scores.formats.score_format import ScoreFormat
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.formats.signatures.music_xml_signature import MusicXmlSignature
 from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
+from my_beautiful_choir.scores.formats.signatures.zip.compressed_music_xml_signature import (
+    CompressedMusicXmlSignature,
+)
 from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature import (
     MuseScoreSignature,
 )
+from my_beautiful_choir.scores.musicxml.musicxml_score_validator import MusicXmlScoreValidator
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_service import ScoreService
+from my_beautiful_choir.scores.score_state import ScoreState
 from my_beautiful_choir.scores.sources.errors import UnreadableLocalFileError
 from my_beautiful_choir.scores.sources.score_content import ScoreContent
 from my_beautiful_choir.storage.errors import StorageError
@@ -54,7 +64,12 @@ class _Fixture:
         self.storage = InMemoryFileStorage()
         self.opener = SpyScoreOpener()
         self.detector = ScoreFormatDetector(
-            [PdfSignature(), MuseScoreSignature(), MusicXmlSignature()]
+            [
+                PdfSignature(),
+                MuseScoreSignature(),
+                CompressedMusicXmlSignature(),
+                MusicXmlSignature(),
+            ]
         )
 
     def service(self, authorization: Authorization | None = None) -> ScoreService:
@@ -71,6 +86,7 @@ class _Fixture:
             self.detector,
             self.opener,
             maximum_size=maximum_size,
+            validator=MusicXmlScoreValidator(),
         )
 
     async def work(self) -> Work:
@@ -88,6 +104,76 @@ class _Fixture:
 @pytest.fixture
 def fixture() -> _Fixture:
     return _Fixture()
+
+
+@pytest.mark.anyio
+async def test_duplicate_and_finalise_a_score(fixture: _Fixture) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, source = await service.add_score(work.id, StubScoreSource(score_samples.musicxml()))
+    assert source.state is ScoreState.FINAL
+    assert source.version_number == 1
+    with pytest.raises(FinalScoreProtectedError):
+        await service.describe_draft_for_editing(source.id)
+    _, draft = await service.duplicate_as_draft(source.id)
+    assert draft.state is ScoreState.DRAFT
+    assert draft.storage_key != source.storage_key
+    assert draft.originating_score is not None
+    assert draft.originating_score.id == source.id
+    assert draft.originating_score.version_number == 1
+    with pytest.raises(DraftScoreNotAllowedError):
+        await service.read_final_score(draft.id)
+    await service.delete(await service.describe_deletion(source.id))
+    report, preview = await service.preview_finalisation(draft.id)
+    assert not report.errors
+    assert preview is not None
+    _, final = await service.finalise(preview)
+    assert final.id == draft.id
+    assert final.originating_score == draft.originating_score
+    assert final.version_number == 2
+    assert (await service.read_final_score(final.id))[2] == score_samples.musicxml()
+    with pytest.raises(StaleFinalisationError):
+        await service.finalise(preview)
+
+
+@pytest.mark.anyio
+async def test_can_duplicate_a_compressed_score_but_requires_permission_to_finalise(
+    fixture: _Fixture,
+) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    content = score_samples.compressed_musicxml()
+    _, original = await service.add_score(work.id, StubScoreSource(content, "Score.mxl"))
+    _, draft = await service.duplicate_as_draft(original.id)
+    assert draft.format is ScoreFormat.COMPRESSED_MUSICXML
+    assert fixture.storage.files[draft.storage_key] == content
+    _, preview = await service.preview_finalisation(draft.id)
+    assert preview is not None
+    denied = fixture.service(DenyingAuthorization(Permission.MANAGE_REPERTOIRE))
+    with pytest.raises(AccessDeniedError):
+        await denied.finalise(preview)
+    assert (await service.describe_score(draft.id))[1].state is ScoreState.DRAFT
+
+
+@pytest.mark.anyio
+async def test_preview_rejects_invalid_and_stale_content(fixture: _Fixture) -> None:
+    work = await fixture.work()
+    service = fixture.service()
+    _, draft = await service.add_score(
+        work.id, StubScoreSource(score_samples.musicxml(), origin=ScoreOrigin.MUSICXML_TEXT)
+    )
+    assert draft.state is ScoreState.DRAFT
+    _, preview = await service.preview_finalisation(draft.id)
+    assert preview is not None
+    fixture.storage.files[draft.storage_key] = b"<score-partwise>"
+    with pytest.raises(StaleFinalisationError):
+        await service.finalise(preview)
+    report, new_preview = await service.preview_finalisation(draft.id)
+    assert report.errors
+    assert new_preview is None
+    _, pdf = await service.add_score(work.id, StubScoreSource(score_samples.pdf()))
+    with pytest.raises(ScoreNotDuplicableError):
+        await service.duplicate_as_draft(pdf.id)
 
 
 @pytest.mark.anyio

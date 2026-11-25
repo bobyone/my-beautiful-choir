@@ -25,6 +25,7 @@ from my_beautiful_choir.monitoring.null_metrics import NullMetrics
 from my_beautiful_choir.persistence.sql.prepare_data_store import PrepareDataStore
 from my_beautiful_choir.persistence.sql.sql_database import SqlDatabase
 from my_beautiful_choir.repertoire.repertoire_service import RepertoireService
+from my_beautiful_choir.scores.finalisation_preview import FinalisationPreview
 from my_beautiful_choir.scores.formats.score_format_detector import ScoreFormatDetector
 from my_beautiful_choir.scores.formats.signatures.music_xml_signature import MusicXmlSignature
 from my_beautiful_choir.scores.formats.signatures.pdf_signature import PdfSignature
@@ -34,8 +35,11 @@ from my_beautiful_choir.scores.formats.signatures.zip.compressed_music_xml_signa
 from my_beautiful_choir.scores.formats.signatures.zip.muse_score_signature import (
     MuseScoreSignature,
 )
+from my_beautiful_choir.scores.musicxml.musicxml_score_validator import MusicXmlScoreValidator
 from my_beautiful_choir.scores.opening.system.system_score_opener import SystemScoreOpener
+from my_beautiful_choir.scores.pdf.musescore.musescore_pdf_exporter import MuseScorePdfExporter
 from my_beautiful_choir.scores.pdf.pdfium.pdfium_page_renderer import PdfiumPageRenderer
+from my_beautiful_choir.scores.pdf.pdfium.pdfium_watermarker import PdfiumWatermarker
 from my_beautiful_choir.scores.recognition.audiveris.installation import AudiverisInstallation
 from my_beautiful_choir.scores.recognition.audiveris.recognizer import AudiverisRecognizer
 from my_beautiful_choir.scores.recognition.transcription_service import TranscriptionService
@@ -57,6 +61,7 @@ from my_beautiful_choir.tools.scores.add_score_from_file_tool import AddScoreFro
 from my_beautiful_choir.tools.scores.add_score_from_google_drive_tool import (
     AddScoreFromGoogleDriveTool,
 )
+from my_beautiful_choir.tools.scores.duplicate_score_as_draft_tool import DuplicateScoreAsDraftTool
 from my_beautiful_choir.tools.scores.find_score_sources_tool import FindScoreSourcesTool
 from my_beautiful_choir.tools.scores.get_score_file_tool import GetScoreFileTool
 from my_beautiful_choir.tools.scores.get_transcription_status_tool import GetTranscriptionStatusTool
@@ -73,9 +78,16 @@ from my_beautiful_choir.tools.view_tool.deletion.delete_choir_tool import Delete
 from my_beautiful_choir.tools.view_tool.deletion.delete_score_tool import DeleteScoreTool
 from my_beautiful_choir.tools.view_tool.deletion.delete_work_tool import DeleteWorkTool
 from my_beautiful_choir.tools.view_tool.repertoire.show_repertoire_tool import ShowRepertoireTool
+from my_beautiful_choir.tools.view_tool.work.confirm_score_finalisation_tool import (
+    ConfirmScoreFinalisationTool,
+)
+from my_beautiful_choir.tools.view_tool.work.download_score_pdf_tool import DownloadScorePdfTool
 from my_beautiful_choir.tools.view_tool.work.download_score_tool import DownloadScoreTool
 from my_beautiful_choir.tools.view_tool.work.preview_deletion_from_work_view_tool import (
     PreviewDeletionFromWorkViewTool,
+)
+from my_beautiful_choir.tools.view_tool.work.preview_score_finalisation_tool import (
+    PreviewScoreFinalisationTool,
 )
 from my_beautiful_choir.tools.view_tool.work.show_work_tool import ShowWorkTool
 from my_beautiful_choir.tools.view_tool.work.upload_score_tool import UploadScoreTool
@@ -123,6 +135,9 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     pending_confirmations = providers.Singleton[InMemoryPendingConfirmations[DeletionPreview]](
         InMemoryPendingConfirmations, clock=clock
     )
+    pending_finalisations = providers.Singleton[
+        InMemoryPendingConfirmations[tuple[object, FinalisationPreview]]
+    ](InMemoryPendingConfirmations, clock=clock)
     conversation_confirmations = providers.Singleton[
         InMemoryPendingConfirmations[tuple[str, DeletionPreview]]
     ](InMemoryPendingConfirmations, clock=clock)
@@ -156,6 +171,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     google_drive_source = providers.Factory(GoogleDriveScoreSource)
     uploaded_score_source = providers.Factory(UploadedScoreSource)
 
+    score_validator = providers.Singleton(MusicXmlScoreValidator)
     score_service = providers.Singleton(
         ScoreService,
         unit_of_work=unit_of_work,
@@ -164,6 +180,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
         file_storage=file_storage,
         format_detector=score_format_detector,
         opener=score_opener,
+        validator=score_validator,
     )
 
     recognition_installation = providers.Singleton(
@@ -187,7 +204,49 @@ class PersonalModeContainer(containers.DeclarativeContainer):
     )
     pdf_page_renderer = providers.Singleton(PdfiumPageRenderer)
 
+    finalisation_enabled = settings.provided.score_lifecycle.trusted_finalisation_host
+    musescore_executable = settings.provided.score_lifecycle.musescore_executable
+    score_pdf_exporter = providers.Singleton(
+        MuseScorePdfExporter,
+        executable=musescore_executable,
+        timeout_seconds=settings.provided.score_lifecycle.pdf_timeout_seconds,
+    )
+    pdf_watermarker = providers.Singleton(PdfiumWatermarker)
+    show_work = providers.Singleton(
+        ShowWorkTool,
+        view=work_view,
+        repertoire=repertoire_service,
+        scores=score_service,
+        supports_transcription=True,
+        supports_finalisation=finalisation_enabled,
+        supports_pdf_export=providers.Callable(bool, musescore_executable),
+    )
+
     mode_tools = providers.List(
+        _metered(DuplicateScoreAsDraftTool, metrics, scores=score_service),
+        _metered(
+            PreviewScoreFinalisationTool,
+            metrics,
+            work_view=show_work,
+            scores=score_service,
+            pending=pending_finalisations,
+            enabled=finalisation_enabled,
+        ),
+        _metered(
+            ConfirmScoreFinalisationTool,
+            metrics,
+            view=work_view,
+            scores=score_service,
+            pending=pending_finalisations,
+        ),
+        _metered(
+            DownloadScorePdfTool,
+            metrics,
+            view=work_view,
+            scores=score_service,
+            exporter=score_pdf_exporter,
+            watermarker=pdf_watermarker,
+        ),
         _metered(
             FindScoreSourcesTool, metrics, scores=score_service, repertoire=repertoire_service
         ),
@@ -221,14 +280,7 @@ class PersonalModeContainer(containers.DeclarativeContainer):
             repertoire=repertoire_service,
             choirs=choir_service,
         ),
-        _metered(
-            ShowWorkTool,
-            metrics,
-            view=work_view,
-            repertoire=repertoire_service,
-            scores=score_service,
-            supports_transcription=providers.Object(True),
-        ),
+        providers.Singleton(MeteredTool, inner=show_work, metrics=metrics),
         _metered(
             UploadScoreTool,
             metrics,

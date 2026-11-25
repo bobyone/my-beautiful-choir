@@ -1,22 +1,27 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Score repository on an SQL database."""
 
 import builtins
 from collections.abc import Collection
+from dataclasses import replace
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Row, case, delete, func, insert, select
+from sqlalchemy import Row, case, delete, func, insert, select, update
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from my_beautiful_choir.persistence.sql.tables import scores, works
-from my_beautiful_choir.scores.errors import ScoreNotFoundError
+from my_beautiful_choir.persistence.sql.tables import score_version_counters, scores, works
+from my_beautiful_choir.scores.errors import ScoreNotFoundError, StaleFinalisationError
 from my_beautiful_choir.scores.formats.score_format import ScoreFormat
+from my_beautiful_choir.scores.originating_score import OriginatingScore
 from my_beautiful_choir.scores.score import Score
 from my_beautiful_choir.scores.score_origin import ScoreOrigin
 from my_beautiful_choir.scores.score_repository import ScoreRepository
+from my_beautiful_choir.scores.score_state import ScoreState
 
 _COLUMNS = (
     scores.c.id,
@@ -33,6 +38,12 @@ _COLUMNS = (
     scores.c.content_origin,
     scores.c.transcription_run_id,
     scores.c.movement_number,
+    scores.c.state,
+    scores.c.version_number,
+    scores.c.draft_revision,
+    scores.c.originating_score_id,
+    scores.c.originating_score_label,
+    scores.c.originating_score_version,
 )
 
 
@@ -51,6 +62,16 @@ def _score(row: Row[*tuple[Any, ...]]) -> Score:
         source_score_id=row.source_score_id,
         transcription_run_id=row.transcription_run_id,
         movement_number=row.movement_number,
+        state=ScoreState(row.state),
+        version_number=row.version_number,
+        draft_revision=row.draft_revision,
+        originating_score=(
+            OriginatingScore(
+                row.originating_score_id, row.originating_score_label, row.originating_score_version
+            )
+            if row.originating_score_id is not None
+            else None
+        ),
     )
 
 
@@ -60,8 +81,11 @@ class SqlScoreRepository(ScoreRepository):
     def __init__(self, connection: AsyncConnection) -> None:
         self._connection = connection
 
-    async def add(self, score: Score) -> None:
-        """Insert the score."""
+    async def add(self, score: Score) -> Score:
+        """Insert the score, numbering final scores under the caller's transaction."""
+        if score.state is ScoreState.FINAL:
+            score = replace(score, version_number=await self._next_version(score.work_id))
+        origin = score.originating_score
         await self._connection.execute(
             insert(scores).values(
                 id=score.id,
@@ -87,8 +111,45 @@ class SqlScoreRepository(ScoreRepository):
                 link=score.link,
                 storage_key=score.storage_key,
                 added_at=score.added_at,
+                state=score.state.value,
+                version_number=score.version_number,
+                draft_revision=score.draft_revision,
+                originating_score_id=origin.id if origin else None,
+                originating_score_label=origin.label if origin else None,
+                originating_score_version=origin.version_number if origin else None,
             )
         )
+        return score
+
+    async def _next_version(self, work_id: UUID) -> int:
+        counter = score_version_counters.c
+        result = await self._connection.execute(
+            sqlite_insert(score_version_counters)
+            .values(work_id=work_id, last_number=1)
+            .on_conflict_do_update(
+                index_elements=[counter.work_id], set_={"last_number": counter.last_number + 1}
+            )
+            .returning(counter.last_number)
+        )
+        return int(result.scalar_one())
+
+    async def finalise(self, score: Score) -> Score:
+        """Promote the reviewed draft within the caller's write transaction."""
+        version = await self._next_version(score.work_id)
+        result = await self._connection.execute(
+            update(scores)
+            .where(
+                scores.c.id == score.id,
+                scores.c.work_id == score.work_id,
+                scores.c.state == ScoreState.DRAFT.value,
+                scores.c.draft_revision == score.draft_revision,
+            )
+            .values(state=ScoreState.FINAL.value, version_number=version, draft_revision=None)
+            .returning(scores.c.id)
+        )
+        if result.scalar_one_or_none() is None:
+            raise StaleFinalisationError()
+        return replace(score, state=ScoreState.FINAL, version_number=version, draft_revision=None)
 
     async def get(self, score_id: UUID) -> Score:
         """Score with this id; raises ``ScoreNotFoundError``."""

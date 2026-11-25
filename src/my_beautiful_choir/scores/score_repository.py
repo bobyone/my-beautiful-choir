@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Score repository abstraction."""
@@ -15,8 +16,12 @@ class ScoreRepository(ABC):
     """Stores the scores (not their content); used within a unit of work."""
 
     @abstractmethod
-    async def add(self, score: Score) -> None:
-        """Add a new score."""
+    async def add(self, score: Score) -> Score:
+        """Add a new score, assigning a version number if it is final."""
+
+    @abstractmethod
+    async def finalise(self, score: Score) -> Score:
+        """Finalise the expected draft revision and return its assigned version."""
 
     @abstractmethod
     async def get(self, score_id: UUID) -> Score:

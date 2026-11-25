@@ -4,12 +4,18 @@
 
 """Decode and validate MusicXML safely without retrieving external resources."""
 
+from __future__ import annotations
+
 import codecs
 import re
+from typing import TYPE_CHECKING
 from xml.parsers import expat
 
 from my_beautiful_choir.scores.musicxml.errors import InvalidMusicXmlError
 from my_beautiful_choir.scores.score_rules import MAXIMUM_SIZE
+
+if TYPE_CHECKING:
+    from pyexpat import XMLParserType
 
 _ROOTS = {"score-partwise", "score-timewise"}
 _ENCODING = re.compile(r"""^(<\?xml\s+[^?]*?\bencoding\s*=\s*)(['"])[^'"]+\2""")
@@ -29,11 +35,7 @@ def musicxml_text(content: bytes) -> str:
         raise InvalidMusicXmlError(
             "Provide a non-empty MusicXML score within the score size limit."
         )
-    parser = expat.ParserCreate()
-    parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
-    # MusicXML exports may declare a public DTD. Ignore it and reject entity declarations.
-    parser.ExternalEntityRefHandler = lambda *_: 0
-    parser.EntityDeclHandler = _reject_entity
+    parser = xml_parser()
     root: str | None = None
 
     def record_root(name: str, attributes: dict[str, str]) -> None:
@@ -55,6 +57,15 @@ def musicxml_text(content: bytes) -> str:
     if root not in _ROOTS:
         raise InvalidMusicXmlError("Provide a partwise or timewise MusicXML score.")
     return text
+
+
+def xml_parser() -> XMLParserType:
+    """Create a parser that ignores public DTDs and rejects entity declarations."""
+    parser = expat.ParserCreate()
+    parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
+    parser.ExternalEntityRefHandler = lambda *_: 0
+    parser.EntityDeclHandler = _reject_entity
+    return parser
 
 
 def _reject_entity(*_: object) -> None:

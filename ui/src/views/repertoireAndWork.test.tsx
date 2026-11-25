@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2026 bobyone
+// SPDX-FileContributor: bobyone
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -164,6 +165,137 @@ describe("repertoire and work views", () => {
       { name: "transcribe_score", arguments: { score_id: score.id } },
       { name: "get_transcription_status", arguments: { job_id: "job" } },
     ]);
+  });
+
+  const finalScore = {
+    id: "final-1",
+    label: "Full score",
+    state: "final",
+    version_number: 1,
+    size: 120,
+    format: "musicxml",
+  };
+  const draftScore = {
+    id: "draft-1",
+    label: "Review copy",
+    state: "draft",
+    size: 120,
+    format: "mxl",
+    draft_date: "2026-11-25T09:00:00Z",
+    originating_score: { id: finalScore.id, label: finalScore.label, version_number: 1 },
+  };
+  const lifecycleWork = {
+    ...workResult,
+    scores: [finalScore, draftScore],
+    supports_finalisation: true,
+    supports_pdf_export: true,
+  };
+  const previewReply = () => ({
+    ...result({ ...lifecycleWork, finalisation: draftScore }),
+    _meta: { finalisation_token: "private-token" },
+  });
+
+  it("duplicates, previews and finalises a draft only after the confirmation button", async () => {
+    host.answerToolCall = ({ name }) => {
+      if (name === "duplicate_score_as_draft") return result({ score: draftScore });
+      if (name === "preview_score_finalisation") return previewReply();
+      return result({
+        score: { ...draftScore, state: "final", draft_date: null, version_number: 2 },
+      });
+    };
+    await show(WorkApp, result({ ...lifecycleWork, scores: [finalScore] }));
+    expect(screen.getByRole("heading", { name: "Final scores" })).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate as draft" }));
+    await screen.findByText("Draft created.");
+    expect(screen.getByRole("heading", { name: "Drafts" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "From Full score v1" }).getAttribute("href")).toBe(
+      "#score-final-1",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Finalise score" }));
+    let dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/Review copy/)).toBeDefined();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+    expect(host.toolCalls.map(({ name }) => name)).toEqual([
+      "duplicate_score_as_draft",
+      "preview_score_finalisation",
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Finalise score" }));
+    dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Finalise score" }));
+    await screen.findByText("Score finalised.");
+    expect(host.toolCalls.at(-1)).toEqual({
+      name: "confirm_score_finalisation",
+      arguments: { token: "private-token" },
+    });
+    expect(screen.queryByRole("heading", { name: "Drafts" })).toBeNull();
+    expect(screen.getByText("v2")).toBeDefined();
+  });
+
+  it("shows a model-requested preview and leaves a stale draft editable", async () => {
+    host.answerToolCall = () => result({ finalisation_stale: true });
+    await show(WorkApp, previewReply());
+    const dialog = await screen.findByRole("dialog");
+    expect(host.toolCalls).toHaveLength(0);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Finalise score" }));
+    await screen.findByText(/confirmation expired/);
+    expect(screen.getByRole("heading", { name: "Drafts" })).toBeDefined();
+  });
+
+  it("reports invalid drafts and refuses a public confirmation token", async () => {
+    host.answerToolCall = () => result({ validation_errors: ["invalid"] });
+    await show(
+      WorkApp,
+      result({
+        ...lifecycleWork,
+        scores: [draftScore],
+        finalisation: draftScore,
+        finalisation_token: "public",
+      }),
+    );
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByText("From Full score v1")).toBeDefined();
+    expect(screen.queryByRole("link", { name: "From Full score v1" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Finalise score" }));
+    await screen.findByText(/draft could not be validated/);
+    host.answerToolCall = () => error;
+    fireEvent.click(screen.getByRole("button", { name: "Finalise score" }));
+    await screen.findByText(/action failed/);
+  });
+
+  it("reports a failed duplication and a failed finalisation call", async () => {
+    host.answerToolCall = () => error;
+    await show(WorkApp, result(lifecycleWork));
+    fireEvent.click(screen.getByRole("button", { name: "Duplicate as draft" }));
+    await screen.findByText(/action failed/);
+    host.answerToolCall = ({ name }) =>
+      name === "preview_score_finalisation" ? previewReply() : error;
+    fireEvent.click(screen.getByRole("button", { name: "Finalise score" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Finalise score" }));
+    await screen.findByText(/action failed/);
+    expect(screen.getByRole("heading", { name: "Drafts" })).toBeDefined();
+  });
+
+  it("downloads the rendered draft PDF through the host", async () => {
+    const file = {
+      type: "resource",
+      resource: { uri: "file:///score%20-%20DRAFT.pdf", mimeType: "application/pdf", blob: "UERG" },
+    } as const;
+    host.capabilities = { downloadFile: {} };
+    host.answerToolCall = () => ({ content: [file] });
+    await show(WorkApp, result({ ...lifecycleWork, scores: [draftScore] }));
+    fireEvent.click(screen.getByRole("button", { name: "Download PDF" }));
+    await screen.findByText("Score downloaded.");
+    expect(host.toolCalls).toEqual([
+      { name: "download_score_pdf", arguments: { score_id: draftScore.id } },
+    ]);
+    expect(host.downloads).toEqual([[file]]);
+    host.answerToolCall = () => error;
+    fireEvent.click(screen.getByRole("button", { name: "Download PDF" }));
+    await screen.findByText(/Could not download the score/);
   });
 
   it("shows all movements in order and does not duplicate a reused result", async () => {

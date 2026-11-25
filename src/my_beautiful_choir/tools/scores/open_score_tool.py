@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Tool opening a score on the user's computer."""
@@ -9,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from my_beautiful_choir.scores.score_service import ScoreService
 from my_beautiful_choir.tools.repertoire.work_data import work_label
-from my_beautiful_choir.tools.scores.score_data import score_data
+from my_beautiful_choir.tools.scores.score_data import describe_score, score_data
 from my_beautiful_choir.tools.tool import Tool
 from my_beautiful_choir.tools.tool_context import ToolContext
 from my_beautiful_choir.tools.tool_result import ToolResult
@@ -51,8 +52,8 @@ class OpenScoreTool(Tool[OpenScoreArguments]):
         work, score = await self._service.open_score(arguments.score_id)
         return ToolResult(
             text=(
-                f"The score {score.label!r} of the work {work_label(work)} was opened on the "
-                "user's computer."
+                f"The score {describe_score(score)} of the work {work_label(work)} "
+                "was opened on the user's computer."
             ),
             structured={"work_id": str(work.id), "score": score_data(score)},
         )

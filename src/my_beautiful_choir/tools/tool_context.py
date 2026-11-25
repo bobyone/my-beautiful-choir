@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Context of a tool call."""
@@ -14,3 +15,5 @@ class ToolContext:
 
     confirmation: ConfirmationRequester
     """Asks the user to confirm an action during this call."""
+    session: object | None = None
+    """Opaque identity of the calling connection."""

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Exceptions of the scores notion."""
@@ -13,6 +14,34 @@ MEGABYTE = 1024 * 1024
 
 class ScoresError(DomainError):
     """Base class of the errors related to the scores."""
+
+
+class FinalScoreProtectedError(ScoresError):
+    """The requested change would affect a final score."""
+
+    def __init__(self) -> None:
+        super().__init__("This score is final. Duplicate it as a draft to change it.")
+
+
+class DraftScoreNotAllowedError(ScoresError):
+    """This use requires a final score."""
+
+    def __init__(self) -> None:
+        super().__init__("This score is a draft. Finalise it or choose a final score.")
+
+
+class ScoreNotDuplicableError(ScoresError):
+    """The score cannot be duplicated as an editable draft."""
+
+    def __init__(self) -> None:
+        super().__init__("Choose a final MusicXML or compressed MusicXML score to duplicate.")
+
+
+class StaleFinalisationError(ScoresError):
+    """The reviewed draft is no longer current."""
+
+    def __init__(self) -> None:
+        super().__init__("The draft changed. Review it again before finalising.")
 
 
 class UnsupportedScoreFormatError(ScoresError):

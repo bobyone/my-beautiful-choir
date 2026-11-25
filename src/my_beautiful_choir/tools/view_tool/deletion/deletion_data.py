@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026 bobyone
+# SPDX-FileContributor: bobyone
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 """Structured content and English texts shared by the deletion tools."""
@@ -10,6 +11,7 @@ from typing import cast
 from uuid import UUID
 
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.scores.score_state import ScoreState
 
 
 class DeletionStatus(StrEnum):
@@ -36,6 +38,11 @@ def deletion_label(deletion: Deletion) -> str:
         case DeletionTarget.WORK:
             label += f' of the choir "{deletion.parent_name}"'
         case DeletionTarget.SCORE:
+            match deletion.score_state:
+                case ScoreState.DRAFT:
+                    label += " (draft)"
+                case ScoreState.FINAL:
+                    label += f" (final v{deletion.version_number})"
             label += f' of the work "{deletion.parent_name}"'
         case DeletionTarget.CHOIR:
             pass
@@ -72,6 +79,8 @@ def deletion_data(
                 if deletion.movement_number is not None
                 else {}
             ),
+            **({"score_state": deletion.score_state.value} if deletion.score_state else {}),
+            **({"version_number": deletion.version_number} if deletion.version_number else {}),
             **({"added_at": deletion.added_at.isoformat()} if deletion.added_at else {}),
         },
     }
@@ -95,6 +104,12 @@ def deletion_from_data(data: Mapping[str, object]) -> Deletion:
         score_count=int(str(described["score_count"])),
         movement_number=None if movement_number is None else int(str(movement_number)),
         added_at=None if added_at is None else datetime.fromisoformat(str(added_at)),
+        score_state=ScoreState(str(described["score_state"]))
+        if "score_state" in described
+        else None,
+        version_number=int(str(described["version_number"]))
+        if "version_number" in described
+        else None,
     )
 
 

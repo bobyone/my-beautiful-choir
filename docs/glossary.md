@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2026 bobyone
+SPDX-FileContributor: bobyone
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
@@ -26,6 +27,10 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Deletion preview | Summary and record state covered by a deletion confirmation. | `DeletionPreview` | | deletion preview | aperçu de suppression |
 | Download | Saving of a copy of a score on the user's device through the client; the repertoire is not changed. | `download` | `work.downloadScore` | Download | Télécharger |
 | Download name | File name proposed for a download: the original name without its extension, otherwise the score label, made safe for common file systems, followed by the extension of the score format. | `download_name` | | download name | nom de téléchargement |
+| Draft score | Dated, editable score of a work that can be finalised. | `ScoreState.DRAFT` | `work.draftScore` | Draft | Brouillon |
+| Duplication as a draft | Creation of an independent draft from a final score in the same work. | `duplicate_as_draft` | `work.duplicateDraft` | Duplicate as draft | Dupliquer en brouillon |
+| Final score | Numbered score with immutable content and metadata. It can be deleted after confirmation. | `ScoreState.FINAL` | `work.finalScore` | Final | Finale |
+| Finalisation | Promotion of a validated draft to a final score after explicit user confirmation. | `finalise` | `work.finaliseScore` | Finalise score | Finaliser la partition |
 | Instance | One deployment of the application in web mode, hosting several choirs. | `Instance` | | instance | instance |
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
@@ -34,6 +39,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Movement | Section of a source score, possibly starting or ending within a page. | `movement_number` | `glossary.movement` | Movement {number} | Mouvement {number} |
 | Notes | Optional information about a work. | `Work.notes` | `glossary.notes` | Notes | Notes |
 | Original name | Name of the file of a score when it was added; metadata only, never used as a path, and kept unchanged. | `Score.original_name` | | original name | nom d'origine |
+| Originating score | Final score from which a draft was duplicated. Its label and version are kept if it is deleted. | `OriginatingScore` | `work.originatingScore` | From {label} v{versionNumber} | D?apr?s {label} v{versionNumber} |
 | Personal mode | Mode where the application runs locally over stdio for a single implicit user, without accounts. | `Mode.PERSONAL` | `glossary.personalMode` | personal mode | mode perso |
 | Public Google Drive link | Google Drive sharing link of a file that anyone with the link can access. | `GoogleDriveLink` | | public Google Drive link | lien Google Drive public |
 | Repertoire | Set of musical works a choir sings or learns. | `Repertoire` | `glossary.repertoire` | Repertoire | Répertoire |
@@ -51,6 +57,8 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Title | Required name of a work. | `Work.title` | `glossary.title` | Title | Titre |
 | Transcription | MusicXML score produced by optical recognition of one movement of a source score. | `TranscriptionJob` | `glossary.transcription` | Transcription | Transcription |
 | Transcription run | One completed processing of a source score, with its expected number of movements. | `TranscriptionRun` | | transcription run | lancement de transcription |
+| Validation report | Errors found when validating a draft. Errors block finalisation. | `ValidationReport` | | validation report | rapport de validation |
+| Version number | Increasing number of a final score, unique in its work and never reused. | `Score.version_number` | | version number | num?ro de version |
 | Verification | Comparison of a transcription with its source score to identify differences and report the passages inspected. | | | verification | vérification |
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
