@@ -27,10 +27,21 @@ def test_codex_marketplace_points_to_the_shared_plugin() -> None:
     assert plugin_root.joinpath("skills", "install", "SKILL.md").is_file()
 
 
-def test_plugin_versions_match_the_application() -> None:
+def test_portable_plugin_version_matches_the_application() -> None:
     python_project = tomllib.loads(ROOT.joinpath("pyproject.toml").read_text(encoding="utf-8"))
     version = re.sub(r"\.dev(\d+)$", r"-dev.\1", python_project["project"]["version"])
 
-    for path in ("plugin.json", ".claude-plugin/plugin.json"):
-        manifest = json.loads(ROOT.joinpath(path).read_text(encoding="utf-8"))
-        assert manifest["version"] == version
+    manifest = json.loads(ROOT.joinpath("plugin.json").read_text(encoding="utf-8"))
+    assert manifest["version"] == version
+
+
+def test_claude_plugin_follows_the_main_branch() -> None:
+    """Claude Code uses the commit as the version only when none is declared."""
+    manifest = json.loads(
+        ROOT.joinpath(".claude-plugin", "plugin.json").read_text(encoding="utf-8")
+    )
+    marketplace = json.loads(
+        ROOT.joinpath(".claude-plugin", "marketplace.json").read_text(encoding="utf-8")
+    )
+    assert "version" not in manifest
+    assert all("version" not in entry for entry in marketplace["plugins"])

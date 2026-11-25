@@ -142,8 +142,10 @@ Never bypass the hook (`--no-verify`): fix the failure instead.
   *Unreleased*, with its issue number.
 - Update the plugin skills (`skills/`) and development skills
   (`.claude/skills/`, `.agents/skills/`) in the same commit as the behaviour
-  they describe. Keep the versions in `plugin.json` and
-  `.claude-plugin/plugin.json` aligned with the version in `pyproject.toml`.
+  they describe. Keep the version in `plugin.json` aligned with the version
+  in `pyproject.toml`. Do not add a `version` to `.claude-plugin/plugin.json`
+  or to its marketplace entry: Claude Code then uses the commit as the
+  version, so every merge into `main` reaches plugin users.
 - Changes to personal data processing update the
   [records of processing](docs/privacy/records-of-processing.md).
 

@@ -106,7 +106,12 @@ committed settings file nor in user settings):
 ```
 
 Then guide the user to turn on automatic updates for this marketplace in
-Claude Code: `/plugin` → *Marketplaces* → my-beautiful-choir.
+Claude Code: `/plugin` → *Marketplaces* → my-beautiful-choir. A marketplace
+added from claude.ai has automatic updates on by default. The plugin follows
+the `main` branch: each merge is picked up at the next update.
+
+Never copy the skills into a client by hand (folder or archive upload): such
+a copy is never updated. Remove it and install the plugin instead.
 
 ## When something fails
 

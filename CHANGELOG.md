@@ -16,6 +16,8 @@ and this project adheres to
 
 ### Fixed
 
+- Let Claude Code and claude.ai plugin users receive every merge into `main`:
+  the Claude Code plugin manifest no longer declares a fixed version (#26).
 - Keep temporary copies of opened scores in a private directory (#7).
 - Require a fresh confirmation if a deletion preview changes (#7).
 
