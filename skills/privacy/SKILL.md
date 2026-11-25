@@ -17,7 +17,8 @@ advice.
 
 ## Who is responsible
 
-- **Personal mode**: the server stores the repertoire on the user's
+- **Personal mode**: the server stores the repertoire and the events
+  (concerts, rehearsals, their places, notes and programmes) on the user's
   computer. The MCP client handles tool calls and results. The user can
   request an import from Google Drive, which then receives the computer's
   IP address and the file id. PDF transcription runs locally. When the

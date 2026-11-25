@@ -28,6 +28,7 @@ The first version covers the choir's repertoire and scores.
 - [Install the plugin in Codex](docs/how-to/install-the-plugin-in-codex.md)
 - [Architecture](docs/architecture.md)
 - [Manage score versions and download draft PDFs](docs/how-to/manage-score-versions.md)
+- [Manage the events of a choir](docs/how-to/manage-events.md)
 - [How-to guides](docs/how-to/)
 - [Glossary](docs/glossary.md)
 - [Architecture decision records](docs/decisions/)
