@@ -16,6 +16,10 @@ from my_beautiful_choir.choirs.choir import Choir
 from my_beautiful_choir.choirs.choir_name import choir_name_key
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
 from my_beautiful_choir.choirs.errors import ChoirNotFoundError
+from my_beautiful_choir.events.errors import EventNotFoundError
+from my_beautiful_choir.events.event import Event
+from my_beautiful_choir.events.event_repository import EventRepository
+from my_beautiful_choir.events.period import Period
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork
 from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 from my_beautiful_choir.repertoire.work import Work
@@ -40,6 +44,7 @@ class InMemoryData:
     scores: dict[UUID, Score] = field(default_factory=dict)
     score_versions: dict[UUID, int] = field(default_factory=dict)
     runs: list[TranscriptionRun] = field(default_factory=list)
+    events: dict[UUID, Event] = field(default_factory=dict)
 
 
 class InMemoryChoirRepository(ChoirRepository):
@@ -77,6 +82,8 @@ class InMemoryChoirRepository(ChoirRepository):
         del self._data.choirs[choir_id]
         for work in [w for w in self._data.works.values() if w.choir_id == choir_id]:
             await InMemoryWorkRepository(self._data).delete(work.id)
+        for event in [e for e in self._data.events.values() if e.choir_id == choir_id]:
+            del self._data.events[event.id]
 
 
 class InMemoryWorkRepository(WorkRepository):
@@ -129,6 +136,13 @@ class InMemoryWorkRepository(WorkRepository):
         del self._data.works[work_id]
         for score in [s for s in self._data.scores.values() if s.work_id == work_id]:
             del self._data.scores[score.id]
+        for event in self._data.events.values():
+            if any(entry.work_id == work_id for entry in event.programme):
+                programme = tuple(
+                    replace(entry, work_id=None) if entry.work_id == work_id else entry
+                    for entry in event.programme
+                )
+                self._data.events[event.id] = replace(event, programme=programme)
 
     async def count(self, choir_id: UUID) -> int:
         return sum(1 for work in self._data.works.values() if work.choir_id == choir_id)
@@ -231,6 +245,57 @@ class InMemoryTranscriptionRunRepository(TranscriptionRunRepository):
         )
 
 
+class InMemoryEventRepository(EventRepository):
+    """Events kept in the data of a unit of work, with the current titles of their works."""
+
+    def __init__(self, data: InMemoryData) -> None:
+        self._data = data
+
+    def _with_current_titles(self, event: Event) -> Event:
+        programme = tuple(
+            replace(entry, work_title=self._data.works[entry.work_id].title)
+            if entry.work_id in self._data.works
+            else entry
+            for entry in event.programme
+        )
+        return replace(event, programme=programme)
+
+    async def add(self, event: Event) -> None:
+        self._data.events[event.id] = event
+
+    async def get(self, event_id: UUID) -> Event:
+        if event_id not in self._data.events:
+            raise EventNotFoundError(event_id)
+        return self._with_current_titles(self._data.events[event_id])
+
+    async def update(self, event: Event) -> None:
+        self._data.events[event.id] = event
+
+    async def delete(self, event_id: UUID) -> None:
+        del self._data.events[event_id]
+
+    async def list_overlapping(self, choir_id: UUID, period: Period) -> builtins.list[Event]:
+        return sorted(
+            (
+                self._with_current_titles(event)
+                for event in self._data.events.values()
+                if event.choir_id == choir_id
+                and period.overlaps(event.details.starts_at, event.details.ends_at)
+            ),
+            key=lambda event: (event.details.starts_at, event.title, event.id.hex),
+        )
+
+    async def count_of_choir(self, choir_id: UUID) -> int:
+        return sum(1 for event in self._data.events.values() if event.choir_id == choir_id)
+
+    async def count_referencing_work(self, work_id: UUID) -> int:
+        return sum(
+            1
+            for event in self._data.events.values()
+            if any(entry.work_id == work_id for entry in event.programme)
+        )
+
+
 class InMemoryDatabase:
     """Committed data, and units of work working on a copy of it."""
 
@@ -265,6 +330,10 @@ class InMemoryUnitOfWork(UnitOfWork):
     @property
     def transcription_runs(self) -> InMemoryTranscriptionRunRepository:
         return InMemoryTranscriptionRunRepository(self._data)
+
+    @property
+    def events(self) -> InMemoryEventRepository:
+        return InMemoryEventRepository(self._data)
 
     async def __aenter__(self) -> Self:
         self._data = copy.deepcopy(self._database.data)

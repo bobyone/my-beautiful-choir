@@ -9,6 +9,7 @@ from types import TracebackType
 from typing import Self
 
 from my_beautiful_choir.choirs.choir_repository import ChoirRepository
+from my_beautiful_choir.events.event_repository import EventRepository
 from my_beautiful_choir.repertoire.work_repository import WorkRepository
 from my_beautiful_choir.scores.recognition.transcription_run_repository import (
     TranscriptionRunRepository,
@@ -56,6 +57,11 @@ class UnitOfWork(ABC):
     @abstractmethod
     def transcription_runs(self) -> TranscriptionRunRepository:
         """Repository of completed transcription runs."""
+
+    @property
+    @abstractmethod
+    def events(self) -> EventRepository:
+        """Repository of the events."""
 
     @abstractmethod
     async def start_snapshot(self, *, for_update: bool = False) -> None:

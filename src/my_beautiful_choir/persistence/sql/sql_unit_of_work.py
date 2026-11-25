@@ -9,6 +9,7 @@ from typing import Self
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncTransaction
 
 from my_beautiful_choir.choirs.sql.sql_choir_repository import SqlChoirRepository
+from my_beautiful_choir.events.sql.sql_event_repository import SqlEventRepository
 from my_beautiful_choir.persistence.unit_of_work import UnitOfWork
 from my_beautiful_choir.repertoire.sql.sql_work_repository import SqlWorkRepository
 from my_beautiful_choir.scores.sql.sql_score_repository import SqlScoreRepository
@@ -55,6 +56,11 @@ class SqlUnitOfWork(UnitOfWork):
     def transcription_runs(self) -> SqlTranscriptionRunRepository:
         """Completed transcription runs, in the transaction of this unit of work."""
         return SqlTranscriptionRunRepository(self.connection)
+
+    @property
+    def events(self) -> SqlEventRepository:
+        """Events, in the transaction of this unit of work."""
+        return SqlEventRepository(self.connection)
 
     async def __aenter__(self) -> Self:
         """Open a connection and begin a transaction."""
