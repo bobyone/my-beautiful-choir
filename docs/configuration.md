@@ -37,6 +37,11 @@ invalid key with the expected value on stderr and exits with code 2 (see
 | `MBC_SCORE_LIFECYCLE__TRUSTED_FINALISATION_HOST` | boolean | `false` | no | Personal mode: enable finalisation after verifying that the MCP Apps host keeps private result metadata and app-only tool calls out of the model. |
 | `MBC_SCORE_LIFECYCLE__MUSESCORE_EXECUTABLE` | absolute executable path | empty | no | Personal mode: MuseScore Studio executable for optional score PDF export. |
 | `MBC_SCORE_LIFECYCLE__PDF_TIMEOUT_SECONDS` | integer from 1 to 600 | `60` | no | Personal mode: maximum runtime of one MuseScore Studio PDF export. |
+| `MBC_SCORE_READING__LABEL_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned part or measure label. |
+| `MBC_SCORE_READING__LYRIC_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned lyric field. |
+| `MBC_SCORE_READING__DIRECTION_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in each returned direction field. |
+| `MBC_SCORE_READING__OTHER_TEXT_CHARS` | integer from 1 to 2000 | `280` | no | Personal mode: maximum characters in other returned score text fields. |
+| `MBC_SCORE_READING__PAGE_CHARS` | integer from 1000 to 12000 | `12000` | no | Personal mode: total character budget per score inspection result page. |
 | `MBC_WEB__HOST` | IP address or host name | `127.0.0.1` | no | Web mode: address to listen on. Use `0.0.0.0` in a container. |
 | `MBC_WEB__PORT` | integer from 1 to 65535 | `9000` | no | Web mode: port to listen on. |
 | `MBC_WEB__ALLOWED_HOSTS` | comma-separated list of `host:port` | empty | no | Web mode: `Host` header values accepted, as a protection against DNS rebinding. Empty means the local host only. Required when listening on `0.0.0.0`. |

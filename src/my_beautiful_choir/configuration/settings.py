@@ -14,6 +14,7 @@ from my_beautiful_choir.configuration.data_dir import default_data_dir
 from my_beautiful_choir.configuration.mode import Mode
 from my_beautiful_choir.configuration.recognition_settings import RecognitionSettings
 from my_beautiful_choir.configuration.score_lifecycle_settings import ScoreLifecycleSettings
+from my_beautiful_choir.configuration.score_reading_settings import ScoreReadingSettings
 from my_beautiful_choir.configuration.web_settings import WebSettings
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -40,3 +41,4 @@ class Settings(BaseSettings):
     web: WebSettings = Field(default_factory=WebSettings)
     recognition: RecognitionSettings = Field(default_factory=RecognitionSettings)
     score_lifecycle: ScoreLifecycleSettings = Field(default_factory=ScoreLifecycleSettings)
+    score_reading: ScoreReadingSettings = Field(default_factory=ScoreReadingSettings)

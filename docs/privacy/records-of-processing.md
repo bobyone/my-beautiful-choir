@@ -58,6 +58,16 @@ and tokens are kept in memory until confirmation or expiry. A surviving
 duplicate keeps its originating score label and version until the duplicate
 is deleted.
 
+In personal mode the score inspection tools read authorised scores
+locally. Descriptions and measure pages return bounded labels,
+lyrics, musical directions and musical data to the selected MCP
+client. That client may send them to the user's model provider.
+Comparison returns positions and change categories. It can compare
+omitted fields locally without sharing their text. Inspection
+creates no persistent copy. Tool responses mark score text as
+untrusted and explicitly indicate fields omitted by the configured
+length limits.
+
 ### P3. Local transcription and verification (implemented)
 
 | Item | Description |

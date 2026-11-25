@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Score exchange notation v1",
+  "type": "object",
+  "required": [
+    "notation_version",
+    "score_id",
+    "snapshot",
+    "state",
+    "part",
+    "range_start",
+    "pitch_mode",
+    "untrusted_data",
+    "next_offset",
+    "records",
+    "unsupported"
+  ],
+  "properties": {
+    "notation_version": {
+      "const": 1
+    },
+    "score_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "snapshot": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "state": {
+      "enum": [
+        "draft",
+        "final"
+      ]
+    },
+    "version_number": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "draft_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "originating_score": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "version_number"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "version_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "part": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "range_start": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pitch_mode": {
+      "enum": [
+        "written",
+        "sounding"
+      ]
+    },
+    "untrusted_data": {
+      "const": true
+    },
+    "next_offset": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/measure"
+      }
+    },
+    "unsupported": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/text"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "omitted"
+          ],
+          "properties": {
+            "omitted": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "pitch": {
+      "type": "object",
+      "required": [
+        "step",
+        "octave",
+        "alter"
+      ],
+      "properties": {
+        "step": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G"
+          ]
+        },
+        "octave": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 10
+        },
+        "alter": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(?:/[1-9][0-9]*)?$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "notation": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/text"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/text"
+              },
+              {
+                "$ref": "#/$defs/text"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/notation"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "kind",
+        "offset"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(?:/[1-9][0-9]*)?$"
+        },
+        "duration": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(?:/[1-9][0-9]*)?$"
+        },
+        "staff": {
+          "$ref": "#/$defs/text"
+        },
+        "voice": {
+          "$ref": "#/$defs/text"
+        },
+        "pitch": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/pitch"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^-?[0-9]+(?:/[1-9][0-9]*)?$"
+              },
+              "minItems": 1,
+              "maxItems": 2
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "written_pitch": {
+          "$ref": "#/$defs/pitch"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/notation"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "measure",
+        "event"
+      ],
+      "properties": {
+        "measure": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "event": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "span": {
+      "type": "object",
+      "required": [
+        "kind",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/$defs/location"
+        },
+        "end": {
+          "$ref": "#/$defs/location"
+        }
+      },
+      "additionalProperties": false
+    },
+    "measure": {
+      "type": "object",
+      "required": [
+        "position",
+        "label",
+        "implicit",
+        "opening",
+        "events",
+        "incoming",
+        "outgoing",
+        "unsupported"
+      ],
+      "properties": {
+        "position": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "implicit": {
+          "type": "boolean"
+        },
+        "opening": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          }
+        },
+        "incoming": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "outgoing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "unsupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

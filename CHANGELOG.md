@@ -23,6 +23,8 @@ and this project adheres to
 
 ### Added
 
+- Describe, read by measure and compare stored MusicXML scores in personal mode (#28).
+
 - Add draft and final score states, per-work versions, duplication, user-confirmed
   finalisation and optional watermarked draft PDF export in personal mode (#26).
 - In personal mode, find scores by work ID, title or a reference in the

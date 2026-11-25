@@ -25,6 +25,7 @@ from mcp.types import (
     ImageContent,
     InputRequiredResult,
     TextContent,
+    ToolAnnotations,
 )
 from pydantic import Field, ValidationError
 from pydantic.fields import FieldInfo
@@ -205,5 +206,15 @@ class McpServerBuilder:
             extensions=[apps],
         )
         for tool in text_tools:
-            server.add_tool(_handler_for(tool), name=tool.name, description=tool.description)
+            annotations = (
+                ToolAnnotations(read_only_hint=True, destructive_hint=False, open_world_hint=False)
+                if tool.read_only
+                else None
+            )
+            server.add_tool(
+                _handler_for(tool),
+                name=tool.name,
+                description=tool.description,
+                annotations=annotations,
+            )
         return server
