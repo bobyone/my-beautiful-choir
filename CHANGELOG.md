@@ -23,7 +23,6 @@ and this project adheres to
 
 - Add draft and final score states, per-work versions, duplication, user-confirmed
   finalisation and optional watermarked draft PDF export in personal mode (#26).
-
 - In personal mode, find scores by work ID, title or a reference in the
   title and send them in the conversation without opening a view (#22).
 - Transcribe PDFs with multiple movements in personal mode. The application
