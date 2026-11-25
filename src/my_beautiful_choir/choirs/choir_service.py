@@ -176,6 +176,7 @@ class ChoirService(Deleter):
             choir.name,
             work_count=len(works),
             score_count=len(scores),
+            event_count=await unit_of_work.events.count_of_choir(choir.id),
         )
         return DeletionPreview(
             deletion,

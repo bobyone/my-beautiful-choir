@@ -180,7 +180,12 @@ class RepertoireService(Deleter):
         choir = await unit_of_work.choirs.get(work.choir_id)
         scores = await unit_of_work.scores.list(work.id)
         deletion = Deletion(
-            DeletionTarget.WORK, work.id, work.title, choir.name, score_count=len(scores)
+            DeletionTarget.WORK,
+            work.id,
+            work.title,
+            choir.name,
+            score_count=len(scores),
+            event_count=await unit_of_work.events.count_referencing_work(work.id),
         )
         return DeletionPreview(
             deletion, works=(work,), scores=tuple(sorted(scores, key=lambda score: score.id))

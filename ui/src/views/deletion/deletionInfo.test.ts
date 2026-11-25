@@ -21,6 +21,16 @@ const movement = {
   movement_number: 2,
   added_at: "2026-11-24T09:30:00+00:00",
 };
+const concert = {
+  target: "event",
+  name: "Christmas concert",
+  parent_name: "Chœur de Lyon",
+  work_count: 0,
+  score_count: 0,
+  event_kind: "concert",
+  starts_at: "2026-12-20T19:30:00+00:00",
+  programme_entry_count: 3,
+};
 
 describe("parseDeletionInfo", () => {
   it("converts a valid payload to the view representation", () => {
@@ -53,6 +63,39 @@ describe("parseDeletionInfo", () => {
     });
   });
 
+  it("parses an event deletion", () => {
+    expect(
+      parseDeletionInfo({
+        content: [],
+        structuredContent: { status: "deleted", deletion: concert },
+      }),
+    ).toEqual({
+      status: "deleted",
+      deletion: {
+        target: "event",
+        name: "Christmas concert",
+        parentName: "Chœur de Lyon",
+        workCount: 0,
+        scoreCount: 0,
+        eventKind: "concert",
+        startsAt: concert.starts_at,
+        programmeEntryCount: 3,
+      },
+    });
+  });
+
+  it("parses the events counted by a work deletion", () => {
+    expect(
+      parseDeletionInfo({
+        content: [],
+        structuredContent: {
+          status: "deleted",
+          deletion: { ...deletion, target: "work", event_count: 2 },
+        },
+      }),
+    ).toMatchObject({ deletion: { eventCount: 2 } });
+  });
+
   it.each([
     { status: "pending", deletion, token: "" },
     { status: "pending", deletion, token: 5 },
@@ -69,6 +112,11 @@ describe("parseDeletionInfo", () => {
     { status: "deleted", deletion: { ...movement, target: "work" } },
     { status: "deleted", deletion: { ...movement, movement_number: undefined } },
     { status: "deleted", deletion: { ...movement, added_at: "invalid" } },
+    { status: "deleted", deletion: { ...deletion, event_count: -1 } },
+    { status: "deleted", deletion: { ...concert, programme_entry_count: 1.5 } },
+    { status: "deleted", deletion: { ...concert, event_kind: "party" } },
+    { status: "deleted", deletion: { ...concert, event_kind: undefined } },
+    { status: "deleted", deletion: { ...concert, starts_at: "invalid" } },
   ])("rejects a malformed deletion result", (structuredContent) => {
     expect(parseDeletionInfo({ content: [], structuredContent })).toBeUndefined();
   });

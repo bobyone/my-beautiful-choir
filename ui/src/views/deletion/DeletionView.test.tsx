@@ -86,6 +86,49 @@ describe("DeletionView", () => {
     );
   });
 
+  it("shows the kind, start, choir and programme of an event", async () => {
+    const startsAt = "2026-12-20T19:30:00+00:00";
+    await renderView(
+      {
+        kind: "pending",
+        deletion: {
+          target: "event",
+          name: "Concert de Noël",
+          parentName: "Chœur de Lyon",
+          workCount: 0,
+          scoreCount: 0,
+          eventKind: "rehearsal",
+          startsAt,
+          programmeEntryCount: 3,
+        },
+      },
+      "fr",
+    );
+    for (const text of ["Répétition", "Concert de Noël", "Chorale", "Chœur de Lyon"]) {
+      expect(screen.getByText(text)).toBeDefined();
+    }
+    expect(screen.getByText("Entrées de programme")).toBeDefined();
+    const start = screen.getByRole("time");
+    expect(start.getAttribute("datetime")).toBe(startsAt);
+    expect(start.textContent).toBe(
+      new Intl.DateTimeFormat("fr", { dateStyle: "medium", timeStyle: "short" }).format(
+        new Date(startsAt),
+      ),
+    );
+  });
+
+  it.each([
+    ["work", "In event programmes"],
+    ["choir", "Events"],
+  ] as const)("shows the events counted by a %s deletion", async (target, label) => {
+    await renderView({
+      kind: "pending",
+      deletion: { ...choir, target, eventCount: 2 },
+    });
+    expect(screen.getByText(label)).toBeDefined();
+    expect(screen.getByText("2")).toBeDefined();
+  });
+
   it.each<DeletionState>([
     { kind: "loading" },
     { kind: "connection-error" },

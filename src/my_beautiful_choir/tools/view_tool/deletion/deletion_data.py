@@ -11,6 +11,7 @@ from typing import cast
 from uuid import UUID
 
 from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.events.event_kind import EventKind
 from my_beautiful_choir.scores.score_state import ScoreState
 
 
@@ -27,13 +28,14 @@ class DeletionStatus(StrEnum):
     """Awaiting the user's confirmation in the view, under a token."""
 
 
-def _count(number: int, noun: str) -> str:
-    return f"{number} {noun}" if number == 1 else f"{number} {noun}s"
+def _count(number: int, noun: str, plural: str | None = None) -> str:
+    return f"{number} {noun}" if number == 1 else f"{number} {plural or noun + 's'}"
 
 
 def deletion_label(deletion: Deletion) -> str:
     """What the deletion removes, in English: 'the work "Ave Maria" of the choir "Chœur"…'."""
-    label = f'the {deletion.target.value} "{deletion.name}"'
+    kind = deletion.event_kind.value if deletion.event_kind else deletion.target.value
+    label = f'the {kind} "{deletion.name}"'
     match deletion.target:
         case DeletionTarget.WORK:
             label += f' of the choir "{deletion.parent_name}"'
@@ -44,15 +46,30 @@ def deletion_label(deletion: Deletion) -> str:
                 case ScoreState.FINAL:
                     label += f" (final v{deletion.version_number})"
             label += f' of the work "{deletion.parent_name}"'
+        case DeletionTarget.EVENT:
+            if deletion.starts_at is not None:
+                label += f" starting {deletion.starts_at.isoformat()}"
+            label += f' of the choir "{deletion.parent_name}"'
         case DeletionTarget.CHOIR:
             pass
     contents = [
-        _count(count, noun)
-        for count, noun in ((deletion.work_count, "work"), (deletion.score_count, "score"))
+        _count(count, noun, plural)
+        for count, noun, plural in (
+            (deletion.work_count, "work", None),
+            (deletion.score_count, "score", None),
+            (deletion.programme_entry_count, "programme entry", "programme entries"),
+        )
         if count
     ]
+    if deletion.target is DeletionTarget.CHOIR and deletion.event_count:
+        contents.append(_count(deletion.event_count, "event"))
     if contents:
         label += " with its " + " and ".join(contents)
+    if deletion.target is DeletionTarget.WORK and deletion.event_count:
+        label += (
+            f", which stays without a link in the programme of "
+            f"{_count(deletion.event_count, 'event')}"
+        )
     return label
 
 
@@ -82,6 +99,14 @@ def deletion_data(
             **({"score_state": deletion.score_state.value} if deletion.score_state else {}),
             **({"version_number": deletion.version_number} if deletion.version_number else {}),
             **({"added_at": deletion.added_at.isoformat()} if deletion.added_at else {}),
+            **({"event_count": deletion.event_count} if deletion.event_count else {}),
+            **({"event_kind": deletion.event_kind.value} if deletion.event_kind else {}),
+            **({"starts_at": deletion.starts_at.isoformat()} if deletion.starts_at else {}),
+            **(
+                {"programme_entry_count": deletion.programme_entry_count}
+                if deletion.programme_entry_count
+                else {}
+            ),
         },
     }
     if token is not None:
@@ -95,6 +120,7 @@ def deletion_from_data(data: Mapping[str, object]) -> Deletion:
     parent_name = described["parent_name"]
     movement_number = described.get("movement_number")
     added_at = described.get("added_at")
+    starts_at = described.get("starts_at")
     return Deletion(
         target=DeletionTarget(str(described["target"])),
         target_id=UUID(str(described["id"])),
@@ -110,6 +136,10 @@ def deletion_from_data(data: Mapping[str, object]) -> Deletion:
         version_number=int(str(described["version_number"]))
         if "version_number" in described
         else None,
+        event_count=int(str(described.get("event_count", 0))),
+        event_kind=EventKind(str(described["event_kind"])) if "event_kind" in described else None,
+        starts_at=None if starts_at is None else datetime.fromisoformat(str(starts_at)),
+        programme_entry_count=int(str(described.get("programme_entry_count", 0))),
     )
 
 

@@ -15,6 +15,10 @@ from my_beautiful_choir.choirs.choir import Choir
 from my_beautiful_choir.choirs.choir_service import find_choir
 from my_beautiful_choir.clock.clock import Clock
 from my_beautiful_choir.configuration.event_settings import EventSettings
+from my_beautiful_choir.deletion.deleter import Deleter
+from my_beautiful_choir.deletion.deletion import Deletion, DeletionTarget
+from my_beautiful_choir.deletion.deletion_preview import DeletionPreview
+from my_beautiful_choir.deletion.stale_confirmation_error import StaleConfirmationError
 from my_beautiful_choir.events.errors import EventNotFoundError
 from my_beautiful_choir.events.event import Event, EventChanges, EventDetails
 from my_beautiful_choir.events.event_kind import EventKind
@@ -35,8 +39,8 @@ from my_beautiful_choir.persistence.unit_of_work import UnitOfWork, UnitOfWorkFa
 from my_beautiful_choir.repertoire.errors import WorkNotFoundError
 
 
-class EventService:
-    """Creates, edits, finds and lists the events of a choir.
+class EventService(Deleter):
+    """Creates, edits, finds, lists and deletes the events of a choir.
 
     Every event read goes through the visibility rule: an event the current
     observer may not see is reported as not found.
@@ -183,6 +187,54 @@ class EventService:
             events = await unit_of_work.events.list_overlapping(target.id, period)
         visible = (visible_event(event, observer) for event in events)
         return EventListing(target, period, tuple(seen for seen in visible if seen is not None))
+
+    @property
+    def deletion_target(self) -> DeletionTarget:
+        """Events."""
+        return DeletionTarget.EVENT
+
+    async def describe_deletion(self, target_id: UUID) -> DeletionPreview:
+        """The event, its choir, its start and its number of programme entries.
+
+        Raises:
+            EventNotFoundError: if no event has this id, or the user may not see it.
+            AccessDeniedError: if the user may not manage the events of its choir.
+        """
+        async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot()
+            return await self._deletion(unit_of_work, target_id)
+
+    async def delete(self, preview: DeletionPreview) -> Deletion:
+        """Delete the event and its programme.
+
+        Raises:
+            EventNotFoundError: if no event has this id, or the user may not see it.
+            StaleConfirmationError: if the event changed since the preview.
+        """
+        target_id = preview.deletion.target_id
+        async with self._unit_of_work() as unit_of_work:
+            await unit_of_work.start_snapshot(for_update=True)
+            current = await self._deletion(unit_of_work, target_id)
+            if current != preview:
+                raise StaleConfirmationError(current)
+            await unit_of_work.events.delete(target_id)
+            await unit_of_work.commit()
+        return current.deletion
+
+    async def _deletion(self, unit_of_work: UnitOfWork, event_id: UUID) -> DeletionPreview:
+        event = await self._visible(unit_of_work, event_id)
+        self._authorization.require(Permission.MANAGE_EVENTS, event.choir_id)
+        choir = await unit_of_work.choirs.get(event.choir_id)
+        deletion = Deletion(
+            DeletionTarget.EVENT,
+            event.id,
+            event.title,
+            choir.name,
+            event_kind=event.kind,
+            starts_at=event.details.starts_at,
+            programme_entry_count=len(event.programme),
+        )
+        return DeletionPreview(deletion, events=(event,))
 
     async def _visible(self, unit_of_work: UnitOfWork, event_id: UUID) -> Event:
         """The whole event, once the observer may see it."""
