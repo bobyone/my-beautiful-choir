@@ -25,9 +25,8 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Default choir | Choir used when a request names none. | `Choir.is_default` | | default choir | chorale par défaut |
 | Deletion | Removal of a choir, a work or a score with everything it contains; it cannot be undone and the user always confirms it. | `Deletion` | `glossary.deletion` | Deletion | Suppression |
 | Deletion preview | Summary and record state covered by a deletion confirmation. | `DeletionPreview` | | deletion preview | aperçu de suppression |
+| Detected anomaly | Musical irregularity that score reading can establish and locate. | `detected_anomaly` | | detected anomaly | anomalie détectée |
 | Download | Saving of a copy of a score on the user's device through the client; the repertoire is not changed. | `download` | `work.downloadScore` | Download | Télécharger |
-| Correspondence | One-to-one match of parts or measures when comparing scores. | `Match` | | match | correspondance |
-| Detected anomaly | Musical irregularity that score reading can establish and locate. | `detected_anomalies` | | detected anomaly | anomalie détectée |
 | Download name | File name proposed for a download: the original name without its extension, otherwise the score label, made safe for common file systems, followed by the extension of the score format. | `download_name` | | download name | nom de téléchargement |
 | Draft date | Creation date of a draft, displayed in the user's time zone. | `draft_date` (`Score.added_at`) | | draft date | date du brouillon |
 | Draft score | Dated, editable score of a work that can be finalised. | `ScoreState.DRAFT` | `work.draftScore` | Draft | Brouillon |
@@ -40,6 +39,7 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Instance administrator | Account allowed to manage the instance, its choirs and its accounts. | `InstanceAdministrator` | | instance administrator | administrateur de l'instance |
 | Instrument | Singing voice or instrument associated with the events of a part. | `Part.instruments` | | instrument | instrument |
 | Manager | Member role allowing to manage the choir's repertoire, scores and members. | `Role.MANAGER` | | manager | gestionnaire |
+| Match | One-to-one association of parts or measures when comparing scores. | `Match` | | match | correspondance |
 | Measure | Ordered segment of a part with a printed label that may recur. | `Measure` | | measure | mesure |
 | Measure range | Contiguous measures of one part, including both endpoints. | `read_measures` | | measure range | plage de mesures |
 | Membership | Link between an account and a choir, with one role. | `Membership` | | membership | adhésion |
@@ -74,8 +74,8 @@ reference; catalogues not yet reviewed by a native speaker are listed in
 | Voicing | Distribution of voices a work is written for (for example SATB). | `Work.voicing` | `glossary.voicing` | Voicing | Effectif vocal |
 | Web mode | Mode where the application is a hosted service over HTTP, with accounts and several choirs. | `Mode.WEB` | `glossary.webMode` | web mode | mode web |
 | Work | Musical work of a choir's repertoire. | `Work` | `glossary.work` | Work | Œuvre |
-| Written pitch | Pitch as notated, including its spelling and alteration. | `Pitch` | | written pitch | hauteur écrite |
 | Work reference | A complete catalogue reference written in the title of a work, such as NL15.2. | `work_reference` | | work reference | référence de l'œuvre |
+| Written pitch | Pitch as notated, including its spelling and alteration. | `Pitch` | | written pitch | hauteur écrite |
 
 Terms without a translation key are not shown in the user interface yet;
 their key is added with the first screen that displays them.
